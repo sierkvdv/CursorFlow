@@ -363,6 +363,160 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     }
   }, [enabled, natureVisuals, particleCount]);
 
+  // Nature background effects
+  const [natureBackground, setNatureBackground] = useState({
+    rainDrops: [] as Array<{ x: number; y: number; speed: number; life: number }>,
+    lightning: { active: false; intensity: 0; x: number; y: number },
+    mist: [] as Array<{ x: number; y: number; opacity: number; size: number }>,
+    wind: 0
+  });
+
+  // Add nature background effects
+  const addNatureBackground = useCallback(() => {
+    if (!enabled) return;
+
+    // Add rain drops based on audio intensity
+    const audioIntensity = Math.random(); // This would be connected to actual audio levels
+    if (audioIntensity > 0.3) {
+      const newDrops: Array<{ x: number; y: number; speed: number; life: number }> = [];
+      const dropCount = Math.floor(audioIntensity * 5);
+      
+      for (let i = 0; i < dropCount; i++) {
+        newDrops.push({
+          x: Math.random() * window.innerWidth,
+          y: -10,
+          speed: 2 + Math.random() * 3,
+          life: 1
+        });
+      }
+      
+      setNatureBackground(prev => ({
+        ...prev,
+        rainDrops: [...prev.rainDrops, ...newDrops].slice(-50) // Limit to 50 drops
+      }));
+    }
+
+    // Add lightning based on audio intensity
+    if (audioIntensity > 0.8 && Math.random() > 0.95) {
+      setNatureBackground(prev => ({
+        ...prev,
+        lightning: {
+          active: true,
+          intensity: 0.8 + Math.random() * 0.2,
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight * 0.3
+        }
+      }));
+      
+      // Deactivate lightning after a short time
+      setTimeout(() => {
+        setNatureBackground(prev => ({
+          ...prev,
+          lightning: { ...prev.lightning, active: false }
+        }));
+      }, 100 + Math.random() * 200);
+    }
+
+    // Add mist particles
+    if (audioIntensity > 0.5) {
+      const newMist: Array<{ x: number; y: number; opacity: number; size: number }> = [];
+      const mistCount = Math.floor(audioIntensity * 3);
+      
+      for (let i = 0; i < mistCount; i++) {
+        newMist.push({
+          x: Math.random() * window.innerWidth,
+          y: window.innerHeight + 10,
+          opacity: 0.1 + Math.random() * 0.2,
+          size: 20 + Math.random() * 40
+        });
+      }
+      
+      setNatureBackground(prev => ({
+        ...prev,
+        mist: [...prev.mist, ...newMist].slice(-20) // Limit to 20 mist particles
+      }));
+    }
+
+    // Update wind based on audio
+    setNatureBackground(prev => ({
+      ...prev,
+      wind: Math.sin(Date.now() * 0.001) * 0.5 + Math.random() * 0.5
+    }));
+  }, [enabled]);
+
+  // Update nature background animation
+  useEffect(() => {
+    if (!enabled) return;
+
+    const animateNature = () => {
+      setNatureBackground(prev => {
+        // Update rain drops
+        const updatedDrops = prev.rainDrops.map(drop => ({
+          ...drop,
+          y: drop.y + drop.speed + prev.wind,
+          life: drop.life - 0.02
+        })).filter(drop => drop.y < window.innerHeight + 10 && drop.life > 0);
+
+        // Update mist particles
+        const updatedMist = prev.mist.map(mist => ({
+          ...mist,
+          y: mist.y - (1 + prev.wind * 2),
+          opacity: mist.opacity - 0.005
+        })).filter(mist => mist.y > -50 && mist.opacity > 0);
+
+        return {
+          ...prev,
+          rainDrops: updatedDrops,
+          mist: updatedMist
+        };
+      });
+    };
+
+    const interval = setInterval(animateNature, 50);
+    return () => clearInterval(interval);
+  }, [enabled]);
+
+  // Draw nature background
+  const drawNatureBackground = useCallback((ctx: CanvasRenderingContext2D) => {
+    if (!enabled) return;
+
+    ctx.save();
+    
+    // Draw lightning flash
+    if (natureBackground.lightning.active) {
+      const gradient = ctx.createRadialGradient(
+        natureBackground.lightning.x, natureBackground.lightning.y, 0,
+        natureBackground.lightning.x, natureBackground.lightning.y, window.innerWidth * 0.8
+      );
+      gradient.addColorStop(0, `rgba(255, 255, 255, ${natureBackground.lightning.intensity * 0.1})`);
+      gradient.addColorStop(0.3, `rgba(200, 220, 255, ${natureBackground.lightning.intensity * 0.05})`);
+      gradient.addColorStop(1, 'transparent');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+
+    // Draw rain drops
+    ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
+    ctx.lineWidth = 1;
+    natureBackground.rainDrops.forEach(drop => {
+      ctx.beginPath();
+      ctx.moveTo(drop.x, drop.y);
+      ctx.lineTo(drop.x + natureBackground.wind * 5, drop.y + 15);
+      ctx.stroke();
+    });
+
+    // Draw mist particles
+    natureBackground.mist.forEach(mist => {
+      ctx.fillStyle = `rgba(150, 150, 200, ${mist.opacity * 0.1})`;
+      ctx.beginPath();
+      ctx.arc(mist.x, mist.y, mist.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }, [enabled, natureBackground]);
+
   return {
     particles,
     trail,
@@ -374,6 +528,8 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     enabled,
     natureVisuals, // Expose natureVisuals
     updateNatureVisuals, // Expose updateNatureVisuals
-    addNatureParticles // Expose addNatureParticles
+    addNatureParticles, // Expose addNatureParticles
+    addNatureBackground, // Expose addNatureBackground
+    drawNatureBackground // Expose drawNatureBackground
   };
 }; 

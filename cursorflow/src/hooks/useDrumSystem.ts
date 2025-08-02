@@ -25,7 +25,7 @@ interface DrumSystemOptions {
 export const useDrumSystem = (options: DrumSystemOptions = {}) => {
   const { 
     enabled = true, 
-    volume = 0.8,
+    volume = 1.2, // Increased from 0.8 to make drums more audible
     autoPlay = true,
     baseBpm = 120
   } = options;
@@ -259,7 +259,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           oscillator.frequency.exponentialRampToValueAtTime(0.01, currentTime + 0.4);
           filterNode.frequency.setValueAtTime(200 + (Math.random() * 800), currentTime);
           filterNode.frequency.exponentialRampToValueAtTime(20, currentTime + 0.4);
-          gainNode.gain.setValueAtTime(volume * (0.2 + Math.random() * 0.3), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.4 + Math.random() * 0.4), currentTime); // Increased from 0.2-0.5 to 0.4-0.8
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.4);
           break;
         
@@ -268,7 +268,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           oscillator.frequency.setValueAtTime(snareFreq, currentTime);
           filterNode.frequency.setValueAtTime(1000 + (Math.random() * 2000), currentTime);
           filterNode.frequency.exponentialRampToValueAtTime(30, currentTime + 0.3);
-          gainNode.gain.setValueAtTime(volume * (0.15 + Math.random() * 0.2), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.3 + Math.random() * 0.3), currentTime); // Increased from 0.15-0.35 to 0.3-0.6
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.3);
           break;
         
@@ -276,7 +276,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           const hihatFreq = 150 + (Math.random() * 300); // 150-450 Hz (much lower)
           oscillator.frequency.setValueAtTime(hihatFreq, currentTime);
           filterNode.frequency.setValueAtTime(2000 + (Math.random() * 3000), currentTime);
-          gainNode.gain.setValueAtTime(volume * (0.1 + Math.random() * 0.15), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.25 + Math.random() * 0.25), currentTime); // Increased from 0.1-0.25 to 0.25-0.5
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.1);
           break;
         
@@ -284,7 +284,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           const clapFreq = 200 + (Math.random() * 400); // 200-600 Hz (much lower)
           oscillator.frequency.setValueAtTime(clapFreq, currentTime);
           filterNode.frequency.setValueAtTime(1500 + (Math.random() * 2000), currentTime);
-          gainNode.gain.setValueAtTime(volume * (0.15 + Math.random() * 0.2), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.3 + Math.random() * 0.3), currentTime); // Increased from 0.15-0.35 to 0.3-0.6
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.2);
           break;
 
@@ -294,7 +294,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           oscillator.frequency.exponentialRampToValueAtTime(10, currentTime + 0.5);
           filterNode.frequency.setValueAtTime(400 + (Math.random() * 600), currentTime);
           filterNode.frequency.exponentialRampToValueAtTime(50, currentTime + 0.5);
-          gainNode.gain.setValueAtTime(volume * (0.2 + Math.random() * 0.25), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.4 + Math.random() * 0.4), currentTime); // Increased from 0.2-0.45 to 0.4-0.8
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.5);
           break;
 
@@ -302,7 +302,7 @@ export const useDrumSystem = (options: DrumSystemOptions = {}) => {
           const crashFreq = 100 + (Math.random() * 200); // 100-300 Hz (much lower)
           oscillator.frequency.setValueAtTime(crashFreq, currentTime);
           filterNode.frequency.setValueAtTime(1500 + (Math.random() * 2000), currentTime);
-          gainNode.gain.setValueAtTime(volume * (0.1 + Math.random() * 0.15), currentTime);
+          gainNode.gain.setValueAtTime(volume * (0.25 + Math.random() * 0.25), currentTime); // Increased from 0.1-0.25 to 0.25-0.5
           gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.8);
           break;
       }

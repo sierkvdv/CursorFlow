@@ -24,7 +24,7 @@ export const useMelodySystem = (options: MelodySystemOptions = {}) => {
   const { 
     enabled = true, 
     baseFrequency = 220, 
-    volume = 0.15, // MUCH QUIETER - reduced from 0.6 to 0.15
+    volume = 0.4, // Increased from 0.15 to make it audible
     autoPlay = true 
   } = options;
   
@@ -174,8 +174,8 @@ export const useMelodySystem = (options: MelodySystemOptions = {}) => {
       filterNode.Q.setValueAtTime(1 + Math.abs(pitchOffset) * 2, currentTime);
 
       // MUCH QUIETER volume with crazy modulation
-      const baseVolume = volume * 0.1; // Very quiet base
-      const positionVolume = 0.1 + Math.abs(pitchOffset) * 0.05; // Minimal position effect
+      const baseVolume = volume * 0.3; // Increased from 0.1 to make notes audible
+      const positionVolume = 0.3 + Math.abs(pitchOffset) * 0.1; // Increased from 0.1
       const velocityVolume = 0.8 + Math.abs(velocity) * 0.2; // Small velocity effect
       const xVolume = 0.5 + (xRatio * 0.5); // X position affects volume
       const dynamicVolume = baseVolume * positionVolume * velocityVolume * xVolume;

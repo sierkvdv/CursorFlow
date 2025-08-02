@@ -31,7 +31,18 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { cursorPosition, isMoving } = useCursorTracking({ enabled });
-  const { particles, trail, ripples, addParticles, updateTrail, natureVisuals, updateNatureVisuals, addNatureParticles } = useVisualEffects({ 
+  const { 
+    particles, 
+    trail, 
+    ripples, 
+    addParticles, 
+    updateTrail, 
+    natureVisuals, 
+    updateNatureVisuals, 
+    addNatureParticles,
+    addNatureBackground,
+    drawNatureBackground
+  } = useVisualEffects({
     enabled: showParticles || showTrail 
   });
   const { playCursorMove, playClick } = useAudioEffects({ enabled: audioEnabled });
@@ -111,9 +122,13 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
     }
 
     // Update nature visuals based on mouse position
-    if (showParticles) {
+    if (showParticles && updateNatureVisuals) {
       updateNatureVisuals(cursorPosition.x, cursorPosition.y);
-      addNatureParticles();
+    }
+
+    // Add nature background effects based on audio intensity
+    if (showParticles && addNatureBackground) {
+      addNatureBackground();
     }
 
     // Throttled and randomized cursor movement sound
@@ -445,6 +460,11 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
           }
           
           ctx.restore();
+        }
+
+        // Draw subtle nature background effects (rain, lightning, mist)
+        if (showParticles && drawNatureBackground) {
+          drawNatureBackground(ctx);
         }
 
         lastRenderTime = currentTime;
