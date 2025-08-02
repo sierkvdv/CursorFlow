@@ -24,21 +24,21 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
   });
   const { playCursorMove, playClick } = useAudioEffects({ enabled: audioEnabled });
 
-  // Handle cursor movement
-  useEffect(() => {
-    if (!enabled) return;
+      // Handle cursor movement
+    useEffect(() => {
+      if (!enabled) return;
 
-    updateTrail(cursorPosition.x, cursorPosition.y);
-    
-    if (isMoving && showParticles) {
-      // Add particles less frequently for better performance
-      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, 2);
-    }
+      updateTrail(cursorPosition.x, cursorPosition.y);
+      
+      if (isMoving && showParticles) {
+        // Add particles more frequently for smoother effect
+        addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, 3);
+      }
 
-    if (isMoving && audioEnabled) {
-      playCursorMove(cursorPosition.velocity);
-    }
-  }, [cursorPosition, isMoving, enabled, showParticles, audioEnabled, updateTrail, addParticles, playCursorMove]);
+      if (isMoving && audioEnabled) {
+        playCursorMove(cursorPosition.velocity);
+      }
+    }, [cursorPosition, isMoving, enabled, showParticles, audioEnabled, updateTrail, addParticles, playCursorMove]);
 
   // Handle clicks
   const handleClick = useCallback(() => {
@@ -76,19 +76,21 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
       if (showTrail && trail.length > 1) {
         ctx.save();
         
-        // Only render every 3rd point for better performance
-        for (let i = 0; i < trail.length; i += 3) {
+        // Render every 2nd point for smoother trail
+        for (let i = 0; i < trail.length; i += 2) {
           const point = trail[i];
-          const alpha = Math.max(0.05, i / trail.length * 0.5);
-          const size = Math.max(8, 25 * alpha);
+          const age = Date.now() - point.timestamp;
+          const maxAge = 500; // 500ms max age
+          const alpha = Math.max(0.05, (1 - age / maxAge) * 0.8);
+          const size = Math.max(4, 16 * alpha);
           
           // Create radial gradient for cloud effect
           const gradient = ctx.createRadialGradient(
             point.x, point.y, 0,
             point.x, point.y, size
           );
-          gradient.addColorStop(0, `rgba(0, 255, 136, ${alpha * 0.6})`);
-          gradient.addColorStop(0.7, `rgba(0, 255, 136, ${alpha * 0.2})`);
+          gradient.addColorStop(0, `rgba(0, 255, 136, ${alpha * 0.8})`);
+          gradient.addColorStop(0.6, `rgba(0, 255, 136, ${alpha * 0.4})`);
           gradient.addColorStop(1, 'transparent');
           
           ctx.fillStyle = gradient;

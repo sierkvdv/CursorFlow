@@ -44,8 +44,8 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       life: 1,
-      maxLife: Math.random() * 0.8 + 0.4, // Shorter life for better performance
-      size: Math.random() * 3 + 1.5, // Smaller particles
+      maxLife: Math.random() * 0.4 + 0.2, // Much shorter life for faster fade
+      size: Math.random() * 2 + 1, // Smaller particles
       color: colors[Math.floor(Math.random() * colors.length)]
     };
   }, []);
@@ -57,9 +57,9 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
           ...particle,
           x: particle.x + particle.vx,
           y: particle.y + particle.vy,
-          vx: particle.vx * 0.98, // Faster decay
-          vy: particle.vy * 0.98, // Faster decay
-          life: particle.life - 0.02 // Faster fade
+          vx: particle.vx * 0.95, // Much faster decay
+          vy: particle.vy * 0.95, // Much faster decay
+          life: particle.life - 0.04 // Much faster fade
         }))
         .filter(particle => particle.life > 0)
     );
@@ -68,8 +68,8 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
   const addParticles = useCallback((x: number, y: number, velocity: number, count: number = 1) => {
     if (!enabled) return;
 
-    // Add particles less frequently for better performance
-    if (Math.random() > 0.4) return;
+    // Add particles more frequently for smoother effect
+    if (Math.random() > 0.2) return;
 
     const newParticles: Particle[] = [];
     for (let i = 0; i < count; i++) {
@@ -85,8 +85,11 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
   const updateTrail = useCallback((x: number, y: number) => {
     if (!enabled) return;
 
+    const currentTime = Date.now();
     setTrail(prev => {
-      const newTrail = [...prev, { x, y, timestamp: Date.now() }];
+      // Remove old trail points that are older than 500ms
+      const filteredTrail = prev.filter(point => currentTime - point.timestamp < 500);
+      const newTrail = [...filteredTrail, { x, y, timestamp: currentTime }];
       return newTrail.slice(-trailLength);
     });
   }, [enabled, trailLength]);

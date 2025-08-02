@@ -24,7 +24,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
   const [isMoving, setIsMoving] = useState(false);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
-  const [lastTime, setLastTime] = useState(Date.now());
+  const [lastTime, setLastTime] = useState(performance.now());
 
   const calculateVelocity = useCallback((currentX: number, currentY: number, lastX: number, lastY: number, timeDiff: number) => {
     const distance = Math.sqrt(Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2));
@@ -45,8 +45,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!enabled) return;
 
-    const currentTime = Date.now();
-    const timeDiff = currentTime - lastTime;
+    const currentTime = performance.now(); // Use performance.now() for more precise timing
+    const timeDiff = Math.max(1, currentTime - lastTime); // Prevent division by zero
     
     const newPosition = {
       x: event.clientX,
@@ -56,6 +56,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPosition.x, lastPosition.y, timeDiff);
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPosition.x, lastPosition.y);
 
+    // Update position immediately for smoother tracking
     setCursorPosition({
       x: newPosition.x,
       y: newPosition.y,
@@ -63,7 +64,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       direction
     });
 
-    setIsMoving(velocity > 0.1);
+    setIsMoving(velocity > 0.05); // Lower threshold for more responsive movement
     setLastPosition(newPosition);
     setLastTime(currentTime);
   }, [enabled, lastPosition, lastTime, calculateVelocity, calculateDirection]);
