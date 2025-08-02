@@ -123,53 +123,90 @@ export const useAudioEffects = (options: AudioManagerOptions = {}) => {
   const playCursorMove = useCallback((velocity: number) => {
     if (velocity < 0.1) return;
 
-    const frequency = Math.min(800, 200 + velocity * 100);
-    const volume = Math.min(0.6, velocity * 0.06);
+    // Much higher chance to skip cursor sound (70% chance)
+    if (Math.random() < 0.7) return;
+
+    // Much more subtle frequency calculation
+    const baseFreq = 200 + Math.random() * 200; // Random base between 200-400 (lower range)
+    const velocityFreq = velocity * (20 + Math.random() * 40); // Much smaller velocity multiplier
+    const frequency = Math.min(600, baseFreq + velocityFreq); // Lower max frequency
+    
+    // Much more subtle volume
+    const baseVolume = 0.01 + Math.random() * 0.03; // Much lower base volume
+    const velocityVolume = velocity * (0.01 + Math.random() * 0.02); // Much smaller velocity multiplier
+    const volume = Math.min(0.15, baseVolume + velocityVolume); // Much lower max volume
     
     // Random wave type for cursor movement
-    const waveTypes = ['sine', 'triangle', 'sawtooth'] as const;
+    const waveTypes = ['sine', 'triangle'] as const; // Removed harsh wave types
     const randomType = waveTypes[Math.floor(Math.random() * waveTypes.length)];
     
-    // Main cursor sound
-    playTone(frequency, 0.08, volume, randomType);
+    // Longer, softer duration
+    const duration = 0.1 + Math.random() * 0.15; // Random between 0.1-0.25s (longer and softer)
     
-    // Subtle echo for cursor movement
-    if (velocity > 0.3) {
+    // Main cursor sound
+    playTone(frequency, duration, volume, randomType);
+    
+    // Much less frequent echo (only 15% chance)
+    if (Math.random() < 0.15 && velocity > 0.4) {
+      const echoDelay = 80 + Math.random() * 120; // Longer delay 80-200ms
+      const echoFreq = frequency * (0.8 + Math.random() * 0.3); // Smaller frequency variation
+      const echoVolume = volume * (0.1 + Math.random() * 0.2); // Much lower volume variation
+      const echoDuration = duration * (0.5 + Math.random() * 0.4); // Longer duration variation
+      
       setTimeout(() => {
-        playTone(frequency * 1.2, 0.05, volume * 0.4, randomType);
-      }, 50);
+        playTone(echoFreq, echoDuration, echoVolume, randomType);
+      }, echoDelay);
     }
+    
+    // Remove second echo completely
   }, [playTone]);
 
-  const playClick = useCallback(() => {
-    // Generate random click sound with echo and delay
-    const sounds = [
-      { freq: 400, type: 'square', duration: 0.2 },
-      { freq: 300, type: 'sawtooth', duration: 0.15 },
-      { freq: 500, type: 'triangle', duration: 0.25 },
-      { freq: 350, type: 'square', duration: 0.18 },
-      { freq: 450, type: 'sine', duration: 0.22 }
+  const playClick = useCallback((button: 'left' | 'right' = 'left') => {
+    // Different sounds for left and right clicks
+    const leftClickSounds = [
+      { freq: 400, type: 'square', duration: 0.2, volume: 0.6 },
+      { freq: 350, type: 'sawtooth', duration: 0.18, volume: 0.5 },
+      { freq: 450, type: 'triangle', duration: 0.22, volume: 0.55 },
+      { freq: 380, type: 'square', duration: 0.19, volume: 0.52 },
+      { freq: 420, type: 'sine', duration: 0.21, volume: 0.58 }
     ];
     
+    const rightClickSounds = [
+      { freq: 300, type: 'sawtooth', duration: 0.25, volume: 0.5 },
+      { freq: 280, type: 'square', duration: 0.23, volume: 0.48 },
+      { freq: 320, type: 'triangle', duration: 0.26, volume: 0.52 },
+      { freq: 290, type: 'sawtooth', duration: 0.24, volume: 0.49 },
+      { freq: 310, type: 'sine', duration: 0.27, volume: 0.51 }
+    ];
+    
+    const sounds = button === 'left' ? leftClickSounds : rightClickSounds;
     const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
     
     // Main sound
-    playTone(randomSound.freq, randomSound.duration, 0.6, randomSound.type as any);
+    playTone(randomSound.freq, randomSound.duration, randomSound.volume, randomSound.type as any);
     
-    // Echo effect with delay
+    // Echo effect with delay - different for left/right
+    const echoDelay = button === 'left' ? 120 : 180;
     setTimeout(() => {
-      playTone(randomSound.freq * 0.8, randomSound.duration * 0.7, 0.3, randomSound.type as any);
-    }, 150);
+      playTone(randomSound.freq * 0.8, randomSound.duration * 0.7, randomSound.volume * 0.4, randomSound.type as any);
+    }, echoDelay);
     
-    // Second echo
+    // Second echo - different timing
     setTimeout(() => {
-      playTone(randomSound.freq * 0.6, randomSound.duration * 0.5, 0.15, randomSound.type as any);
-    }, 300);
+      playTone(randomSound.freq * 0.6, randomSound.duration * 0.5, randomSound.volume * 0.2, randomSound.type as any);
+    }, echoDelay * 2.5);
     
-    // Third echo
+    // Third echo - different timing
     setTimeout(() => {
-      playTone(randomSound.freq * 0.4, randomSound.duration * 0.3, 0.08, randomSound.type as any);
-    }, 450);
+      playTone(randomSound.freq * 0.4, randomSound.duration * 0.3, randomSound.volume * 0.1, randomSound.type as any);
+    }, echoDelay * 4);
+    
+    // Additional subtle click for right click
+    if (button === 'right') {
+      setTimeout(() => {
+        playTone(randomSound.freq * 1.2, 0.05, randomSound.volume * 0.3, 'sine');
+      }, 50);
+    }
   }, [playTone]);
 
   const playHover = useCallback(() => {

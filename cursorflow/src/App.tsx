@@ -97,12 +97,16 @@ function App() {
         </div>
       </div>
 
-      {/* Cursor Tracker */}
+      {/* Cursor Tracker - WITH SIMPLIFIED AMBIENT AUDIO (no setInterval) */}
       <CursorTracker
         enabled={effectsEnabled}
         showTrail={effectsEnabled}
         showParticles={effectsEnabled}
         audioEnabled={audioEnabled}
+        melodyEnabled={audioEnabled}
+        drumEnabled={audioEnabled}
+        ambientEnabled={audioEnabled}
+        natureEnabled={audioEnabled}
       />
 
       {/* Interactive Elements */}
@@ -202,6 +206,48 @@ function App() {
                 </div>
                 <h3 className="text-4xl font-bold mb-8 text-yellow-300 group-hover:text-yellow-200 transition-colors">Performance</h3>
                 <p className="text-gray-300 leading-relaxed text-2xl max-w-2xl mx-auto">Optimized for smooth 60fps performance on all devices</p>
+              </motion.div>
+
+              {/* Interactive Melody - NEW FEATURE */}
+              <motion.div
+                variants={featureVariants}
+                whileHover="hover"
+                className="group text-center p-20 rounded-3xl hover:bg-white/5 transition-all duration-500 cursor-pointer"
+                onClick={handleTestAudio}
+              >
+                <div className="w-32 h-32 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group-hover:from-green-400/30 group-hover:to-emerald-500/30 transition-all duration-500">
+                  <span className="text-6xl">🎵</span>
+                </div>
+                <h3 className="text-4xl font-bold mb-8 text-green-300 group-hover:text-green-200 transition-colors">Interactive Melody</h3>
+                <p className="text-gray-300 leading-relaxed text-2xl max-w-2xl mx-auto">Move your mouse vertically to control the pitch of a beautiful melody</p>
+              </motion.div>
+
+              {/* Interactive Drum Loop - NEW FEATURE */}
+              <motion.div
+                variants={featureVariants}
+                whileHover="hover"
+                className="group text-center p-20 rounded-3xl hover:bg-white/5 transition-all duration-500 cursor-pointer"
+                onClick={handleTestAudio}
+              >
+                <div className="w-32 h-32 bg-gradient-to-br from-red-400/20 to-pink-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group-hover:from-red-400/30 group-hover:to-pink-500/30 transition-all duration-500">
+                  <span className="text-6xl">🥁</span>
+                </div>
+                <h3 className="text-4xl font-bold mb-8 text-red-300 group-hover:text-red-200 transition-colors">Interactive Drum Loop</h3>
+                <p className="text-gray-300 leading-relaxed text-2xl max-w-2xl mx-auto">Move your mouse horizontally to change BPM and drum patterns</p>
+              </motion.div>
+
+              {/* Ambient Background Audio - NEW FEATURE */}
+              <motion.div
+                variants={featureVariants}
+                whileHover="hover"
+                className="group text-center p-20 rounded-3xl hover:bg-white/5 transition-all duration-500 cursor-pointer"
+                onClick={handleTestAudio}
+              >
+                <div className="w-32 h-32 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group-hover:from-indigo-400/30 group-hover:to-purple-500/30 transition-all duration-500">
+                  <span className="text-6xl">🌊</span>
+                </div>
+                <h3 className="text-4xl font-bold mb-8 text-indigo-300 group-hover:text-indigo-200 transition-colors">Ambient Background</h3>
+                <p className="text-gray-300 leading-relaxed text-2xl max-w-2xl mx-auto">Subtle ambient sounds that vary with your mouse movement</p>
               </motion.div>
             </motion.div>
 
