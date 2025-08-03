@@ -51,7 +51,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleAudio}
         onMouseEnter={() => handleMouseEnter('audio')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-16 h-16 bg-gradient-to-br from-blue-500/30 to-blue-600/20 backdrop-blur-md border-2 border-blue-400/50 rounded-2xl hover:border-blue-300/70 hover:from-blue-400/40 hover:to-blue-500/30 transition-all duration-500 shadow-xl hover:shadow-blue-500/30 hover:scale-110"
+        className="relative group w-16 h-16 bg-gradient-to-br from-blue-500/30 to-blue-600/20 backdrop-blur-md border-2 border-blue-400/50 rounded-2xl hover:border-blue-300/70 hover:from-blue-400/40 hover:to-blue-500/30 transition-all duration-500 shadow-xl hover:shadow-blue-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           {audioEnabled ? (
@@ -95,7 +95,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleEffects}
         onMouseEnter={() => handleMouseEnter('effects')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-16 h-16 bg-gradient-to-br from-purple-500/30 to-purple-600/20 backdrop-blur-md border-2 border-purple-400/50 rounded-2xl hover:border-purple-300/70 hover:from-purple-400/40 hover:to-purple-500/30 transition-all duration-500 shadow-xl hover:shadow-purple-500/30 hover:scale-110"
+        className="relative group w-16 h-16 bg-gradient-to-br from-purple-500/30 to-purple-600/20 backdrop-blur-md border-2 border-purple-400/50 rounded-2xl hover:border-purple-300/70 hover:from-purple-400/40 hover:to-purple-500/30 transition-all duration-500 shadow-xl hover:shadow-purple-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           {effectsEnabled ? (
@@ -132,7 +132,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleSettings}
         onMouseEnter={() => handleMouseEnter('settings')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-16 h-16 bg-gradient-to-br from-orange-500/30 to-orange-600/20 backdrop-blur-md border-2 border-orange-400/50 rounded-2xl hover:border-orange-300/70 hover:from-orange-400/40 hover:to-orange-500/30 transition-all duration-500 shadow-xl hover:shadow-orange-500/30 hover:scale-110"
+        className="relative group w-16 h-16 bg-gradient-to-br from-orange-500/30 to-orange-600/20 backdrop-blur-md border-2 border-orange-400/50 rounded-2xl hover:border-orange-300/70 hover:from-orange-400/40 hover:to-orange-500/30 transition-all duration-500 shadow-xl hover:shadow-orange-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           <Settings className="w-8 h-8 text-orange-200 group-hover:text-orange-100 transition-colors" />

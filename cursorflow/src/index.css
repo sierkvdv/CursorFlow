@@ -2,26 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide cursor globally for immersive experience */
+/* Hide cursor globally for immersive experience, but show for interactive elements */
 * {
-  cursor: none !important;
+  cursor: none;
 }
 
-/* Ensure interactive elements also have no cursor */
-button, a, input, select, textarea, [role="button"] {
-  cursor: none !important;
+/* Show cursor for interactive elements */
+button, a, input, select, textarea, [role="button"], .interactive-element {
+  cursor: pointer !important;
 }
 
 /* Mobile-specific styles */
 @media (max-width: 768px) {
   * {
-    cursor: none !important;
+    cursor: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+  }
+  
+  /* Show cursor for interactive elements on mobile too */
+  button, a, input, select, textarea, [role="button"], .interactive-element {
+    cursor: pointer !important;
   }
   
   /* Prevent zoom on double tap */

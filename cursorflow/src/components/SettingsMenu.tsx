@@ -89,6 +89,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                 console.error('Error closing settings:', error);
               }
             }}
+            className="interactive-element"
             style={{
               padding: '0.5rem',
               borderRadius: '0.5rem',
@@ -126,6 +127,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     console.error('Error toggling audio:', error);
                   }
                 }}
+                className="interactive-element"
                 style={{
                   position: 'relative',
                   width: '3rem',
