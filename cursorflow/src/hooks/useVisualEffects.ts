@@ -366,7 +366,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
   // Nature background effects
   const [natureBackground, setNatureBackground] = useState({
     rainDrops: [] as Array<{ x: number; y: number; speed: number; life: number }>,
-    lightning: { active: false; intensity: 0; x: number; y: number },
+    lightning: { active: false, intensity: 0, x: 0, y: 0 },
     mist: [] as Array<{ x: number; y: number; opacity: number; size: number }>,
     wind: 0
   });

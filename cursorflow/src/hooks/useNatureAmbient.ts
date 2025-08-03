@@ -7,29 +7,41 @@ interface NatureAmbientOptions {
 
 export const useNatureAmbient = ({
   enabled = true,
-  baseVolume = 0.5 // Much higher volume to ensure audibility
+  baseVolume = 0.3 // Balanced volume for bassline
 }: NatureAmbientOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const isPlayingRef = useRef(false);
   const lastUpdateRef = useRef(0);
   
-  // Simple oscillators for each nature sound
-  const seaOscRef = useRef<OscillatorNode | null>(null);
-  const rainOscRef = useRef<OscillatorNode | null>(null);
-  const riverOscRef = useRef<OscillatorNode | null>(null);
-  const waterfallOscRef = useRef<OscillatorNode | null>(null);
+  // Multiple oscillators for each nature sound to create rich basslines
+  const seaOsc1Ref = useRef<OscillatorNode | null>(null);
+  const seaOsc2Ref = useRef<OscillatorNode | null>(null);
+  const rainOsc1Ref = useRef<OscillatorNode | null>(null);
+  const rainOsc2Ref = useRef<OscillatorNode | null>(null);
+  const riverOsc1Ref = useRef<OscillatorNode | null>(null);
+  const riverOsc2Ref = useRef<OscillatorNode | null>(null);
+  const waterfallOsc1Ref = useRef<OscillatorNode | null>(null);
+  const waterfallOsc2Ref = useRef<OscillatorNode | null>(null);
   
-  // Gain nodes for each nature sound
-  const seaGainRef = useRef<GainNode | null>(null);
-  const rainGainRef = useRef<GainNode | null>(null);
-  const riverGainRef = useRef<GainNode | null>(null);
-  const waterfallGainRef = useRef<GainNode | null>(null);
+  // Gain nodes for each oscillator
+  const seaGain1Ref = useRef<GainNode | null>(null);
+  const seaGain2Ref = useRef<GainNode | null>(null);
+  const rainGain1Ref = useRef<GainNode | null>(null);
+  const rainGain2Ref = useRef<GainNode | null>(null);
+  const riverGain1Ref = useRef<GainNode | null>(null);
+  const riverGain2Ref = useRef<GainNode | null>(null);
+  const waterfallGain1Ref = useRef<GainNode | null>(null);
+  const waterfallGain2Ref = useRef<GainNode | null>(null);
   
   // Filter nodes for each nature sound
   const seaFilterRef = useRef<BiquadFilterNode | null>(null);
   const rainFilterRef = useRef<BiquadFilterNode | null>(null);
   const riverFilterRef = useRef<BiquadFilterNode | null>(null);
   const waterfallFilterRef = useRef<BiquadFilterNode | null>(null);
+  
+  // LFO (Low Frequency Oscillator) for modulation
+  const lfoRef = useRef<OscillatorNode | null>(null);
+  const lfoGainRef = useRef<GainNode | null>(null);
   
   // Echo/Delay nodes
   const delayRef = useRef<DelayNode | null>(null);
@@ -40,7 +52,7 @@ export const useNatureAmbient = ({
     if (!enabled) return;
 
     try {
-      console.log('Initializing nature ambient audio...');
+      console.log('Initializing dynamic nature bassline audio...');
       
       // Close existing context if it exists
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
@@ -60,114 +72,159 @@ export const useNatureAmbient = ({
       
       console.log('Audio context state:', audioContextRef.current.state);
       
-      // Create gain nodes for volume control
-      seaGainRef.current = audioContextRef.current.createGain();
-      rainGainRef.current = audioContextRef.current.createGain();
-      riverGainRef.current = audioContextRef.current.createGain();
-      waterfallGainRef.current = audioContextRef.current.createGain();
+      // Create LFO for modulation
+      lfoRef.current = audioContextRef.current.createOscillator();
+      lfoRef.current.type = 'sine';
+      lfoRef.current.frequency.setValueAtTime(0.1, audioContextRef.current.currentTime); // Very slow LFO
+      lfoGainRef.current = audioContextRef.current.createGain();
+      lfoGainRef.current.gain.setValueAtTime(10, audioContextRef.current.currentTime); // LFO depth
+      
+      // Create gain nodes for each oscillator
+      seaGain1Ref.current = audioContextRef.current.createGain();
+      seaGain2Ref.current = audioContextRef.current.createGain();
+      rainGain1Ref.current = audioContextRef.current.createGain();
+      rainGain2Ref.current = audioContextRef.current.createGain();
+      riverGain1Ref.current = audioContextRef.current.createGain();
+      riverGain2Ref.current = audioContextRef.current.createGain();
+      waterfallGain1Ref.current = audioContextRef.current.createGain();
+      waterfallGain2Ref.current = audioContextRef.current.createGain();
       
       // Create filter nodes for each nature sound
       seaFilterRef.current = audioContextRef.current.createBiquadFilter();
       seaFilterRef.current.type = 'lowpass';
-      seaFilterRef.current.frequency.setValueAtTime(200, audioContextRef.current.currentTime); // Less aggressive filtering
-      seaFilterRef.current.Q.setValueAtTime(0.8, audioContextRef.current.currentTime); // Less sharp filter
+      seaFilterRef.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime);
+      seaFilterRef.current.Q.setValueAtTime(1.2, audioContextRef.current.currentTime);
       
       rainFilterRef.current = audioContextRef.current.createBiquadFilter();
-      rainFilterRef.current.type = 'lowpass'; // Changed from highpass to lowpass
-      rainFilterRef.current.frequency.setValueAtTime(150, audioContextRef.current.currentTime); // Less aggressive filtering
-      rainFilterRef.current.Q.setValueAtTime(0.6, audioContextRef.current.currentTime);
+      rainFilterRef.current.type = 'lowpass';
+      rainFilterRef.current.frequency.setValueAtTime(200, audioContextRef.current.currentTime);
+      rainFilterRef.current.Q.setValueAtTime(0.8, audioContextRef.current.currentTime);
       
       riverFilterRef.current = audioContextRef.current.createBiquadFilter();
       riverFilterRef.current.type = 'lowpass';
-      riverFilterRef.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime); // Less aggressive filtering
-      riverFilterRef.current.Q.setValueAtTime(0.7, audioContextRef.current.currentTime);
+      riverFilterRef.current.frequency.setValueAtTime(150, audioContextRef.current.currentTime);
+      riverFilterRef.current.Q.setValueAtTime(1.0, audioContextRef.current.currentTime);
       
       waterfallFilterRef.current = audioContextRef.current.createBiquadFilter();
       waterfallFilterRef.current.type = 'lowpass';
-      waterfallFilterRef.current.frequency.setValueAtTime(250, audioContextRef.current.currentTime); // Less aggressive filtering
-      waterfallFilterRef.current.Q.setValueAtTime(0.9, audioContextRef.current.currentTime);
+      waterfallFilterRef.current.frequency.setValueAtTime(180, audioContextRef.current.currentTime);
+      waterfallFilterRef.current.Q.setValueAtTime(1.1, audioContextRef.current.currentTime);
       
       // Create echo/delay effect
       delayRef.current = audioContextRef.current.createDelay();
-      delayRef.current.delayTime.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      delayRef.current.delayTime.setValueAtTime(0.4, audioContextRef.current.currentTime);
       
       delayGainRef.current = audioContextRef.current.createGain();
-      delayGainRef.current.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      delayGainRef.current.gain.setValueAtTime(0.4, audioContextRef.current.currentTime);
       
-      // Set initial volumes to a higher value for immediate audibility
-      const initialVolume = baseVolume * 3.0; // Much higher initial volume
-      console.log('Setting initial volumes to:', initialVolume);
+      // Create oscillators with different wave types for rich basslines
+      // Sea: Deep bass with two oscillators
+      seaOsc1Ref.current = audioContextRef.current.createOscillator();
+      seaOsc1Ref.current.type = 'sine';
+      seaOsc1Ref.current.frequency.setValueAtTime(40, audioContextRef.current.currentTime); // Deep bass
+      seaOsc1Ref.current.connect(seaGain1Ref.current);
       
-      seaGainRef.current.gain.setValueAtTime(initialVolume, audioContextRef.current.currentTime);
-      rainGainRef.current.gain.setValueAtTime(initialVolume, audioContextRef.current.currentTime);
-      riverGainRef.current.gain.setValueAtTime(initialVolume, audioContextRef.current.currentTime);
-      waterfallGainRef.current.gain.setValueAtTime(initialVolume, audioContextRef.current.currentTime);
+      seaOsc2Ref.current = audioContextRef.current.createOscillator();
+      seaOsc2Ref.current.type = 'triangle';
+      seaOsc2Ref.current.frequency.setValueAtTime(80, audioContextRef.current.currentTime); // Harmonic
+      seaOsc2Ref.current.connect(seaGain2Ref.current);
       
-      // Create sea oscillator (very low frequency for deep waves)
-      seaOscRef.current = audioContextRef.current.createOscillator();
-      seaOscRef.current.type = 'sine'; // Much softer than sawtooth
-      seaOscRef.current.frequency.setValueAtTime(0.8, audioContextRef.current.currentTime); // Much lower frequency
+      // Rain: Medium bass with two oscillators
+      rainOsc1Ref.current = audioContextRef.current.createOscillator();
+      rainOsc1Ref.current.type = 'sawtooth';
+      rainOsc1Ref.current.frequency.setValueAtTime(60, audioContextRef.current.currentTime);
+      rainOsc1Ref.current.connect(rainGain1Ref.current);
       
-      seaOscRef.current.connect(seaFilterRef.current);
-      seaFilterRef.current.connect(seaGainRef.current);
-      seaGainRef.current.connect(delayRef.current);
+      rainOsc2Ref.current = audioContextRef.current.createOscillator();
+      rainOsc2Ref.current.type = 'square';
+      rainOsc2Ref.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime);
+      rainOsc2Ref.current.connect(rainGain2Ref.current);
+      
+      // River: Flowing bass with two oscillators
+      riverOsc1Ref.current = audioContextRef.current.createOscillator();
+      riverOsc1Ref.current.type = 'sine';
+      riverOsc1Ref.current.frequency.setValueAtTime(50, audioContextRef.current.currentTime);
+      riverOsc1Ref.current.connect(riverGain1Ref.current);
+      
+      riverOsc2Ref.current = audioContextRef.current.createOscillator();
+      riverOsc2Ref.current.type = 'triangle';
+      riverOsc2Ref.current.frequency.setValueAtTime(100, audioContextRef.current.currentTime);
+      riverOsc2Ref.current.connect(riverGain2Ref.current);
+      
+      // Waterfall: Rushing bass with two oscillators
+      waterfallOsc1Ref.current = audioContextRef.current.createOscillator();
+      waterfallOsc1Ref.current.type = 'sawtooth';
+      waterfallOsc1Ref.current.frequency.setValueAtTime(70, audioContextRef.current.currentTime);
+      waterfallOsc1Ref.current.connect(waterfallGain1Ref.current);
+      
+      waterfallOsc2Ref.current = audioContextRef.current.createOscillator();
+      waterfallOsc2Ref.current.type = 'square';
+      waterfallOsc2Ref.current.frequency.setValueAtTime(140, audioContextRef.current.currentTime);
+      waterfallOsc2Ref.current.connect(waterfallGain2Ref.current);
+      
+      // Connect gains to filters
+      seaGain1Ref.current.connect(seaFilterRef.current);
+      seaGain2Ref.current.connect(seaFilterRef.current);
+      rainGain1Ref.current.connect(rainFilterRef.current);
+      rainGain2Ref.current.connect(rainFilterRef.current);
+      riverGain1Ref.current.connect(riverFilterRef.current);
+      riverGain2Ref.current.connect(riverFilterRef.current);
+      waterfallGain1Ref.current.connect(waterfallFilterRef.current);
+      waterfallGain2Ref.current.connect(waterfallFilterRef.current);
+      
+      // Connect filters to delay and destination
+      seaFilterRef.current.connect(delayRef.current);
+      rainFilterRef.current.connect(delayRef.current);
+      riverFilterRef.current.connect(delayRef.current);
+      waterfallFilterRef.current.connect(delayRef.current);
+      
+      seaFilterRef.current.connect(audioContextRef.current.destination);
+      rainFilterRef.current.connect(audioContextRef.current.destination);
+      riverFilterRef.current.connect(audioContextRef.current.destination);
+      waterfallFilterRef.current.connect(audioContextRef.current.destination);
+      
+      // Connect delay
       delayRef.current.connect(delayGainRef.current);
       delayGainRef.current.connect(audioContextRef.current.destination);
-      seaGainRef.current.connect(audioContextRef.current.destination);
-      
-      // Create rain oscillator (medium frequency for water drops)
-      rainOscRef.current = audioContextRef.current.createOscillator();
-      rainOscRef.current.type = 'sine'; // Much softer than sawtooth
-      rainOscRef.current.frequency.setValueAtTime(150, audioContextRef.current.currentTime); // Much lower frequency
-      
-      rainOscRef.current.connect(rainFilterRef.current);
-      rainFilterRef.current.connect(rainGainRef.current);
-      rainGainRef.current.connect(delayRef.current);
-      rainGainRef.current.connect(audioContextRef.current.destination);
-      
-      // Create river oscillator (low frequency for flowing water)
-      riverOscRef.current = audioContextRef.current.createOscillator();
-      riverOscRef.current.type = 'sine'; // Much softer than square
-      riverOscRef.current.frequency.setValueAtTime(80, audioContextRef.current.currentTime); // Much lower frequency
-      
-      riverOscRef.current.connect(riverFilterRef.current);
-      riverFilterRef.current.connect(riverGainRef.current);
-      riverGainRef.current.connect(delayRef.current);
-      riverGainRef.current.connect(audioContextRef.current.destination);
-      
-      // Create waterfall oscillator (medium-low frequency for rushing water)
-      waterfallOscRef.current = audioContextRef.current.createOscillator();
-      waterfallOscRef.current.type = 'sine'; // Much softer than sawtooth
-      waterfallOscRef.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime); // Much lower frequency
-      
-      waterfallOscRef.current.connect(waterfallFilterRef.current);
-      waterfallFilterRef.current.connect(waterfallGainRef.current);
-      waterfallGainRef.current.connect(delayRef.current);
-      waterfallGainRef.current.connect(audioContextRef.current.destination);
       
       // Start all oscillators
-      seaOscRef.current.start();
-      rainOscRef.current.start();
-      riverOscRef.current.start();
-      waterfallOscRef.current.start();
+      seaOsc1Ref.current.start();
+      seaOsc2Ref.current.start();
+      rainOsc1Ref.current.start();
+      rainOsc2Ref.current.start();
+      riverOsc1Ref.current.start();
+      riverOsc2Ref.current.start();
+      waterfallOsc1Ref.current.start();
+      waterfallOsc2Ref.current.start();
+      lfoRef.current.start();
+      
+      // Set initial volumes
+      const initialVolume = baseVolume * 2.0;
+      seaGain1Ref.current.gain.setValueAtTime(initialVolume * 0.8, audioContextRef.current.currentTime);
+      seaGain2Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime);
+      rainGain1Ref.current.gain.setValueAtTime(initialVolume * 0.7, audioContextRef.current.currentTime);
+      rainGain2Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime);
+      riverGain1Ref.current.gain.setValueAtTime(initialVolume * 0.6, audioContextRef.current.currentTime);
+      riverGain2Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime);
+      waterfallGain1Ref.current.gain.setValueAtTime(initialVolume * 0.8, audioContextRef.current.currentTime);
+      waterfallGain2Ref.current.gain.setValueAtTime(initialVolume * 0.5, audioContextRef.current.currentTime);
       
       isPlayingRef.current = true;
-      console.log('Nature ambient audio initialized successfully with volume:', initialVolume);
+      console.log('Dynamic nature bassline initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize nature ambient audio:', error);
+      console.error('Failed to initialize nature bassline audio:', error);
     }
   }, [enabled, baseVolume]);
 
-  // Update nature sounds based on mouse position
+  // Update nature bassline based on mouse position
   const updateNatureFromMouse = useCallback((x: number, y: number, velocity: number) => {
     if (!enabled || !audioContextRef.current || !isPlayingRef.current) {
-      console.log('Nature update skipped:', { enabled, hasContext: !!audioContextRef.current, isPlaying: isPlayingRef.current });
       return;
     }
 
-    // Throttle updates - much faster for better responsiveness
+    // Throttle updates for performance
     const now = Date.now();
-    if (now - lastUpdateRef.current < 50) return; // Much faster updates for better response
+    if (now - lastUpdateRef.current < 30) return; // Fast updates for responsive bassline
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
@@ -177,155 +234,131 @@ export const useNatureAmbient = ({
     const xNormalized = x / window.innerWidth;
     const yNormalized = y / window.innerHeight;
     
-    // Much more distinct quadrant-based volume calculation with balanced volumes
-    const seaVolume = Math.pow(1 - xNormalized, 2) * Math.pow(1 - yNormalized, 2) * baseVolume * 6.0; // Much higher
-    const rainVolume = Math.pow(1 - xNormalized, 1.5) * Math.pow(yNormalized, 2) * baseVolume * 5.8; // Much higher
-    const riverVolume = Math.pow(xNormalized, 2) * Math.pow(1 - yNormalized, 1.5) * baseVolume * 5.9; // Much higher
-    const waterfallVolume = Math.pow(xNormalized, 1.5) * Math.pow(yNormalized, 2) * baseVolume * 6.2; // Much higher
+    // Dynamic volume calculation based on mouse position
+    const seaVolume = Math.pow(1 - xNormalized, 2) * Math.pow(1 - yNormalized, 2) * baseVolume * 4.0;
+    const rainVolume = Math.pow(1 - xNormalized, 1.5) * Math.pow(yNormalized, 2) * baseVolume * 3.8;
+    const riverVolume = Math.pow(xNormalized, 2) * Math.pow(1 - yNormalized, 1.5) * baseVolume * 3.9;
+    const waterfallVolume = Math.pow(xNormalized, 1.5) * Math.pow(yNormalized, 2) * baseVolume * 4.2;
     
-    // Much stronger velocity-based variation
-    const velocityMultiplier = 1 + (velocity * 2.0); // Much stronger velocity effect
+    // Velocity-based intensity
+    const velocityMultiplier = 1 + (velocity * 1.5);
     
-    // Ensure minimum volume for audibility - balanced minimum
-    const minVolume = baseVolume * 1.0; // Much higher minimum to ensure constant presence
+    // Ensure minimum volume for constant presence
+    const minVolume = baseVolume * 0.8;
     
-    // Update volumes with much slower, spacey changes
-    if (seaGainRef.current) {
+    // Update volumes with smooth transitions
+    if (seaGain1Ref.current && seaGain2Ref.current) {
       const finalSeaVolume = Math.max(minVolume, seaVolume * velocityMultiplier);
-      seaGainRef.current.gain.setTargetAtTime(finalSeaVolume, audioTime, 1.5); // Much slower
-      console.log('Sea volume:', finalSeaVolume, 'at position:', { x: xNormalized, y: yNormalized });
+      seaGain1Ref.current.gain.setTargetAtTime(finalSeaVolume * 0.8, audioTime, 0.3);
+      seaGain2Ref.current.gain.setTargetAtTime(finalSeaVolume * 0.4, audioTime, 0.3);
     }
-    if (rainGainRef.current) {
+    if (rainGain1Ref.current && rainGain2Ref.current) {
       const finalRainVolume = Math.max(minVolume, rainVolume * velocityMultiplier);
-      rainGainRef.current.gain.setTargetAtTime(finalRainVolume, audioTime, 1.5); // Much slower
-      console.log('Rain volume:', finalRainVolume, 'at position:', { x: xNormalized, y: yNormalized });
+      rainGain1Ref.current.gain.setTargetAtTime(finalRainVolume * 0.7, audioTime, 0.3);
+      rainGain2Ref.current.gain.setTargetAtTime(finalRainVolume * 0.3, audioTime, 0.3);
     }
-    if (riverGainRef.current) {
+    if (riverGain1Ref.current && riverGain2Ref.current) {
       const finalRiverVolume = Math.max(minVolume, riverVolume * velocityMultiplier);
-      riverGainRef.current.gain.setTargetAtTime(finalRiverVolume, audioTime, 1.5); // Much slower
-      console.log('River volume:', finalRiverVolume, 'at position:', { x: xNormalized, y: yNormalized });
+      riverGain1Ref.current.gain.setTargetAtTime(finalRiverVolume * 0.6, audioTime, 0.3);
+      riverGain2Ref.current.gain.setTargetAtTime(finalRiverVolume * 0.4, audioTime, 0.3);
     }
-    if (waterfallGainRef.current) {
+    if (waterfallGain1Ref.current && waterfallGain2Ref.current) {
       const finalWaterfallVolume = Math.max(minVolume, waterfallVolume * velocityMultiplier);
-      waterfallGainRef.current.gain.setTargetAtTime(finalWaterfallVolume, audioTime, 1.5); // Much slower
-      console.log('Waterfall volume:', finalWaterfallVolume, 'at position:', { x: xNormalized, y: yNormalized });
+      waterfallGain1Ref.current.gain.setTargetAtTime(finalWaterfallVolume * 0.8, audioTime, 0.3);
+      waterfallGain2Ref.current.gain.setTargetAtTime(finalWaterfallVolume * 0.5, audioTime, 0.3);
     }
     
-    // Update frequencies for more dynamic sound with wild variations
-    if (seaOscRef.current) {
-      // Deep sea waves with very low frequency variations
-      const time = audioTime * 0.2; // Slower time for deep waves
-      const seaFreq = 0.2 + Math.sin(time * 1.5) * 0.3 + Math.sin(xNormalized * Math.PI * 2.0) * 0.2 + Math.sin(time * 0.8) * 0.4;
-      seaOscRef.current.frequency.setTargetAtTime(seaFreq, audioTime, 0.8); // Slower changes for deep sound
-    }
-    if (rainOscRef.current) {
-      // Rain drops with medium frequency variations
-      const time = audioTime * 0.6; // Medium speed for rain
-      const rainFreq = 80 + Math.sin(time * 2.0) * 60 + Math.sin(yNormalized * Math.PI * 3.0) * 40 + Math.sin(time * 1.5) * 80;
-      rainOscRef.current.frequency.setTargetAtTime(rainFreq, audioTime, 0.4); // Medium changes
-    }
-    if (riverOscRef.current) {
-      // Flowing river with low frequency variations
-      const time = audioTime * 0.4; // Medium speed for river
-      const riverFreq = 40 + Math.sin(time * 1.8) * 30 + Math.sin((xNormalized + yNormalized) * Math.PI * 2.5) * 25 + Math.sin(time * 1.2) * 35;
-      riverOscRef.current.frequency.setTargetAtTime(riverFreq, audioTime, 0.5); // Medium changes
-    }
-    if (waterfallOscRef.current) {
-      // Rushing waterfall with medium-low frequency variations
-      const time = audioTime * 0.7; // Faster for rushing water
-      const waterfallFreq = 60 + Math.sin(time * 2.2) * 50 + Math.sin((xNormalized - yNormalized) * Math.PI * 3.5) * 35 + Math.sin(time * 1.8) * 45;
-      waterfallOscRef.current.frequency.setTargetAtTime(waterfallFreq, audioTime, 0.3); // Faster changes
+    // Dynamic frequency modulation for bassline variation
+    const time = audioTime * 0.5;
+    
+    // Sea: Deep bass with slow modulation
+    if (seaOsc1Ref.current && seaOsc2Ref.current) {
+      const baseFreq1 = 40 + Math.sin(time * 0.3) * 10 + Math.sin(xNormalized * Math.PI * 2) * 15;
+      const baseFreq2 = baseFreq1 * 2 + Math.sin(time * 0.5) * 20 + Math.sin(yNormalized * Math.PI * 3) * 10;
+      
+      seaOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.2);
+      seaOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.2);
     }
     
-    // Update filters based on mouse Y position - lower mouse = more filtering
+    // Rain: Medium bass with faster modulation
+    if (rainOsc1Ref.current && rainOsc2Ref.current) {
+      const baseFreq1 = 60 + Math.sin(time * 0.8) * 25 + Math.sin((xNormalized + yNormalized) * Math.PI * 4) * 20;
+      const baseFreq2 = baseFreq1 * 1.8 + Math.sin(time * 1.2) * 30 + Math.sin(xNormalized * Math.PI * 5) * 15;
+      
+      rainOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.15);
+      rainOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.15);
+    }
+    
+    // River: Flowing bass with medium modulation
+    if (riverOsc1Ref.current && riverOsc2Ref.current) {
+      const baseFreq1 = 50 + Math.sin(time * 0.6) * 20 + Math.sin((xNormalized - yNormalized) * Math.PI * 3) * 18;
+      const baseFreq2 = baseFreq1 * 2.2 + Math.sin(time * 0.9) * 25 + Math.sin(yNormalized * Math.PI * 4) * 12;
+      
+      riverOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.18);
+      riverOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.18);
+    }
+    
+    // Waterfall: Rushing bass with fast modulation
+    if (waterfallOsc1Ref.current && waterfallOsc2Ref.current) {
+      const baseFreq1 = 70 + Math.sin(time * 1.1) * 35 + Math.sin(xNormalized * Math.PI * 6) * 25;
+      const baseFreq2 = baseFreq1 * 1.6 + Math.sin(time * 1.5) * 40 + Math.sin((xNormalized + yNormalized) * Math.PI * 7) * 20;
+      
+      waterfallOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.12);
+      waterfallOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.12);
+    }
+    
+    // Update filters based on mouse position for tone variation
     if (seaFilterRef.current) {
-      // Sea filter: lower mouse = lower cutoff frequency (more filtering)
-      const baseCutoff = 200 - (yNormalized * 150); // 200Hz at top, 50Hz at bottom
-      const wobble = Math.sin(audioTime * 0.5) * 30; // Add wobble variation
-      const seaCutoff = Math.max(50, baseCutoff + wobble); // Ensure minimum 50Hz
-      seaFilterRef.current.frequency.setTargetAtTime(seaCutoff, audioTime, 0.8);
+      const cutoff = 120 - (yNormalized * 80) + Math.sin(time * 0.4) * 20;
+      seaFilterRef.current.frequency.setTargetAtTime(Math.max(40, cutoff), audioTime, 0.4);
     }
     if (rainFilterRef.current) {
-      // Rain filter: lower mouse = lower cutoff frequency (more filtering)
-      const baseCutoff = 150 - (yNormalized * 100); // 150Hz at top, 50Hz at bottom
-      const wobble = Math.sin(audioTime * 0.7) * 40; // Add wobble variation
-      const rainCutoff = Math.max(50, baseCutoff + wobble); // Ensure minimum 50Hz
-      rainFilterRef.current.frequency.setTargetAtTime(rainCutoff, audioTime, 0.8);
+      const cutoff = 200 - (yNormalized * 120) + Math.sin(time * 0.7) * 30;
+      rainFilterRef.current.frequency.setTargetAtTime(Math.max(60, cutoff), audioTime, 0.3);
     }
     if (riverFilterRef.current) {
-      // River filter: lower mouse = lower cutoff frequency (more filtering)
-      const baseCutoff = 120 - (yNormalized * 80); // 120Hz at top, 40Hz at bottom
-      const wobble = Math.sin(audioTime * 0.6) * 35; // Add wobble variation
-      const riverCutoff = Math.max(40, baseCutoff + wobble); // Ensure minimum 40Hz
-      riverFilterRef.current.frequency.setTargetAtTime(riverCutoff, audioTime, 0.8);
+      const cutoff = 150 - (yNormalized * 100) + Math.sin(time * 0.5) * 25;
+      riverFilterRef.current.frequency.setTargetAtTime(Math.max(50, cutoff), audioTime, 0.35);
     }
     if (waterfallFilterRef.current) {
-      // Waterfall filter: lower mouse = lower cutoff frequency (more filtering)
-      const baseCutoff = 250 - (yNormalized * 180); // 250Hz at top, 70Hz at bottom
-      const wobble = Math.sin(audioTime * 0.8) * 50; // Add wobble variation
-      const waterfallCutoff = Math.max(70, baseCutoff + wobble); // Ensure minimum 70Hz
-      waterfallFilterRef.current.frequency.setTargetAtTime(waterfallCutoff, audioTime, 0.8);
+      const cutoff = 180 - (yNormalized * 110) + Math.sin(time * 0.9) * 35;
+      waterfallFilterRef.current.frequency.setTargetAtTime(Math.max(55, cutoff), audioTime, 0.25);
     }
+    
+    // Update LFO rate based on mouse movement
+    if (lfoRef.current) {
+      const lfoRate = 0.1 + (velocity * 0.3) + Math.sin(time * 0.2) * 0.1;
+      lfoRef.current.frequency.setTargetAtTime(lfoRate, audioTime, 0.5);
+    }
+    
   }, [enabled, baseVolume]);
 
   // Start nature ambient audio
   const startNature = useCallback(async () => {
     if (!enabled || isPlayingRef.current) return;
     console.log('Starting nature ambient...');
+    isPlayingRef.current = true;
     await initAudio();
   }, [enabled, initAudio]);
 
   // Stop nature ambient audio
   const stopNature = useCallback(() => {
-    if (!audioContextRef.current || !isPlayingRef.current) return;
-
-    console.log('Stopping nature ambient...');
-    
-    // Stop all oscillators
-    if (seaOscRef.current) seaOscRef.current.stop();
-    if (rainOscRef.current) rainOscRef.current.stop();
-    if (riverOscRef.current) riverOscRef.current.stop();
-    if (waterfallOscRef.current) waterfallOscRef.current.stop();
-    
-    // Clear references
-    seaOscRef.current = null;
-    rainOscRef.current = null;
-    riverOscRef.current = null;
-    waterfallOscRef.current = null;
-    seaGainRef.current = null;
-    rainGainRef.current = null;
-    riverGainRef.current = null;
-    waterfallGainRef.current = null;
-    
-    if (audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close();
-    }
-    audioContextRef.current = null;
+    console.log('Nature: Stopping nature ambient...');
     isPlayingRef.current = false;
-    
-    console.log('Nature ambient audio stopped');
-  }, [enabled]);
+    // Don't close audio context - other systems might be using it
+    // Just stop playing by setting the flag
+  }, []);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    if (enabled) {
-      console.log('Nature ambient: Auto-initializing...');
-      initAudio();
-    } else {
-      stopNature();
-    }
-    return () => {
-      stopNature();
-    };
-  }, [enabled, initAudio, stopNature]);
-
-  // Force start when enabled changes
+  // Auto-start when enabled changes
   useEffect(() => {
     if (enabled && !isPlayingRef.current) {
-      console.log('Nature ambient: Force starting...');
-      initAudio();
+      console.log('Nature ambient: Auto-starting...');
+      startNature();
+    } else if (!enabled && isPlayingRef.current) {
+      console.log('Nature ambient: Auto-stopping...');
+      stopNature();
     }
-  }, [enabled, initAudio]);
+  }, [enabled, startNature, stopNature]);
 
   // Handle user interaction to start audio context
   useEffect(() => {

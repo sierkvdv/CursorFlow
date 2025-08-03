@@ -40,8 +40,8 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   }, []);
 
   return (
-    <div className="fixed top-8 right-8 z-50 flex flex-col gap-4">
-      {/* Audio Button - COMPLETELY REDESIGNED */}
+    <div className="fixed top-8 right-8 z-30 flex flex-col gap-4">
+      {/* Audio Button */}
       <motion.button
         variants={buttonVariants}
         initial="initial"
@@ -85,7 +85,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         </AnimatePresence>
       </motion.button>
 
-      {/* Effects Button - COMPLETELY REDESIGNED */}
+      {/* Effects Button */}
       <motion.button
         variants={buttonVariants}
         initial="initial"
@@ -122,7 +122,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         </AnimatePresence>
       </motion.button>
 
-      {/* Settings Button - COMPLETELY REDESIGNED */}
+      {/* Settings Button */}
       <motion.button
         variants={buttonVariants}
         initial="initial"

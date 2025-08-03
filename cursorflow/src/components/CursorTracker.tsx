@@ -1,250 +1,45 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useCursorTracking } from '../hooks/useCursorTracking';
 import { useVisualEffects } from '../hooks/useVisualEffects';
-import { useAudioEffects } from '../hooks/useAudioEffects';
-import { useMelodySystem } from '../hooks/useMelodySystem';
-import { useDrumSystem } from '../hooks/useDrumSystem';
-import { useAmbientAudio } from '../hooks/useAmbientAudio';
 import { useNatureAmbient } from '../hooks/useNatureAmbient';
+import { useMelodyAmbient } from '../hooks/useMelodyAmbient';
+import { useRhythmAmbient } from '../hooks/useRhythmAmbient';
 
 interface CursorTrackerProps {
   enabled?: boolean;
   showTrail?: boolean;
   showParticles?: boolean;
   audioEnabled?: boolean;
+  natureEnabled?: boolean;
   melodyEnabled?: boolean;
   drumEnabled?: boolean;
   ambientEnabled?: boolean;
-  natureEnabled?: boolean;
+  onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
 
-export const CursorTracker: React.FC<CursorTrackerProps> = ({
-  enabled = true,
-  showTrail = true,
-  showParticles = true,
-  audioEnabled = true,
-  melodyEnabled = true,
-  drumEnabled = true,
-  ambientEnabled = true,
-  natureEnabled = true
-}) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { cursorPosition, isMoving } = useCursorTracking({ enabled });
-  const { 
+// Memoized canvas component for better performance
+const CanvasRenderer = React.memo(({ 
+  canvasRef, 
+  showTrail, 
+  showParticles, 
+  trail, 
     particles, 
-    trail, 
     ripples, 
-    addParticles, 
-    updateTrail, 
     natureVisuals, 
-    updateNatureVisuals, 
-    addNatureParticles,
-    addNatureBackground,
+  cursorPosition, 
     drawNatureBackground
-  } = useVisualEffects({
-    enabled: showParticles || showTrail 
-  });
-  const { playCursorMove, playClick } = useAudioEffects({ enabled: audioEnabled });
-  
-  // Initialize audio systems with error handling
-  const melodySystem = useMelodySystem({ enabled: melodyEnabled });
-  const drumSystem = useDrumSystem({ enabled: drumEnabled });
-  const ambientSystem = useAmbientAudio({ enabled: ambientEnabled });
-  const natureSystem = useNatureAmbient({ enabled: natureEnabled });
-
-  const { startMelody, updateMelodyFromMouse, isPlaying: isMelodyPlaying, currentPitch } = melodySystem || {};
-  const { startDrumLoop, updateDrumFromMouse, isPlaying: isDrumPlaying, currentBpm, currentPattern } = drumSystem || {};
-  const { startAmbient, updateAmbientFromMouse, isPlaying: isAmbientPlaying } = ambientSystem || {};
-  const { startNature, updateNatureFromMouse, isPlaying: isNaturePlaying } = natureSystem || {};
-
-  console.log('CursorTracker rendering...');
-
-  // Start audio systems immediately when component mounts
-  useEffect(() => {
-    if (drumEnabled && drumSystem && !isDrumPlaying && startDrumLoop) {
-      console.log('Starting drum system...');
-      try {
-        startDrumLoop();
-      } catch (error) {
-        console.error('Failed to start drum system:', error);
-      }
-    }
-    
-    if (melodyEnabled && melodySystem && !isMelodyPlaying && startMelody) {
-      console.log('Starting melody system...');
-      try {
-        startMelody();
-      } catch (error) {
-        console.error('Failed to start melody system:', error);
-      }
-    }
-    
-    if (ambientEnabled && ambientSystem && !isAmbientPlaying && startAmbient) {
-      console.log('Starting ambient audio...');
-      try {
-        startAmbient();
-      } catch (error) {
-        console.error('Failed to start ambient audio:', error);
-      }
-    }
-    
-    if (natureEnabled && natureSystem && !isNaturePlaying && startNature) {
-      console.log('Starting nature ambient...');
-      try {
-        startNature();
-      } catch (error) {
-        console.error('Failed to start nature ambient:', error);
-      }
-    }
-  }, [drumEnabled, melodyEnabled, ambientEnabled, natureEnabled, isDrumPlaying, isMelodyPlaying, isAmbientPlaying, isNaturePlaying, startDrumLoop, startMelody, startAmbient, startNature, drumSystem, melodySystem, ambientSystem, natureSystem]);
-
-  // Initialize nature ambient audio when component mounts
-  useEffect(() => {
-    if (natureEnabled && enabled && natureSystem) {
-      console.log('Starting nature ambient system...');
-      natureSystem.startNature();
-    } else if (!natureEnabled && natureSystem) {
-      console.log('Stopping nature ambient system...');
-      natureSystem.stopNature();
-    }
-  }, [natureEnabled, enabled, natureSystem]);
-
-  // Handle cursor movement with throttling - optimized with useCallback
-  const handleCursorUpdate = useCallback(() => {
-    if (!enabled) return;
-
-    updateTrail(cursorPosition.x, cursorPosition.y);
-    
-    if (isMoving && showParticles) {
-      // Add particles more frequently for smoother effect
-      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, 2);
-    }
-
-    // Update nature visuals based on mouse position
-    if (showParticles && updateNatureVisuals) {
-      updateNatureVisuals(cursorPosition.x, cursorPosition.y);
-    }
-
-    // Add nature background effects based on audio intensity
-    if (showParticles && addNatureBackground) {
-      addNatureBackground();
-    }
-
-    // Throttled and randomized cursor movement sound
-    if (isMoving && audioEnabled) {
-      // Much slower triggering - only 3% chance per frame instead of 15%
-      const shouldPlay = Math.random() < 0.03; // 3% chance per frame
-      if (shouldPlay && cursorPosition.velocity > 0.3) { // Higher velocity threshold
-        playCursorMove(cursorPosition.velocity);
-      }
-    }
-
-    // Update melody based on vertical mouse position - ALWAYS UPDATE
-    if (melodyEnabled && melodySystem && updateMelodyFromMouse) {
-      try {
-        updateMelodyFromMouse(cursorPosition.y, cursorPosition.velocity, cursorPosition.x);
-      } catch (error) {
-        console.error('Melody update error:', error);
-      }
-    }
-
-    // Update drum loop based on horizontal mouse position
-    if (drumEnabled && drumSystem && updateDrumFromMouse) {
-      try {
-        updateDrumFromMouse(cursorPosition.x, cursorPosition.velocity);
-      } catch (error) {
-        console.error('Drum update error:', error);
-      }
-    }
-
-    // Update ambient audio based on mouse movement
-    if (ambientEnabled && ambientSystem && updateAmbientFromMouse) {
-      try {
-        updateAmbientFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      } catch (error) {
-        console.error('Ambient update error:', error);
-      }
-    }
-
-    // Update nature ambient based on mouse movement
-    if (natureEnabled && natureSystem && updateNatureFromMouse) {
-      try {
-        updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      } catch (error) {
-        console.error('Nature update error:', error);
-      }
-    }
-  }, [
-    enabled, 
-    cursorPosition.x, 
-    cursorPosition.y, 
-    cursorPosition.velocity, 
-    isMoving, 
-    showParticles, 
-    audioEnabled, 
-    melodyEnabled, 
-    drumEnabled, 
-    ambientEnabled,
-    natureEnabled,
-    updateTrail,
-    addParticles,
-    updateNatureVisuals,
-    addNatureParticles,
-    playCursorMove,
-    updateMelodyFromMouse,
-    updateDrumFromMouse,
-    updateAmbientFromMouse,
-    updateNatureFromMouse,
-    melodySystem,
-    drumSystem,
-    ambientSystem,
-    natureSystem
-  ]);
-
-  useEffect(() => {
-    handleCursorUpdate();
-  }, [handleCursorUpdate]);
-
-  // Handle clicks with different sounds for left and right
-  const handleLeftClick = useCallback(() => {
-    if (!enabled || !audioEnabled) return;
-    playClick('left');
-  }, [enabled, audioEnabled, playClick]);
-
-  const handleRightClick = useCallback((event: MouseEvent) => {
-    if (!enabled || !audioEnabled) return;
-    event.preventDefault();
-    playClick('right');
-  }, [enabled, audioEnabled, playClick]);
-
-  useEffect(() => {
-    document.addEventListener('click', handleLeftClick);
-    document.addEventListener('contextmenu', handleRightClick);
-    return () => {
-      document.removeEventListener('click', handleLeftClick);
-      document.removeEventListener('contextmenu', handleRightClick);
-    };
-  }, [handleLeftClick, handleRightClick]);
-
-  // Debug logging for audio systems
-  useEffect(() => {
-    console.log('Audio Systems Status:', {
-      drumEnabled,
-      isDrumPlaying,
-      currentBpm,
-      currentPattern,
-      melodyEnabled,
-      isMelodyPlaying,
-      currentPitch,
-      ambientEnabled,
-      isAmbientPlaying,
-      natureEnabled,
-      isNaturePlaying
-    });
-  }, [drumEnabled, isDrumPlaying, currentBpm, currentPattern, melodyEnabled, isMelodyPlaying, currentPitch, ambientEnabled, isAmbientPlaying, natureEnabled, isNaturePlaying]);
-
-  // Optimized canvas rendering
+}: {
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  showTrail: boolean;
+  showParticles: boolean;
+  trail: any[];
+  particles: any[];
+  ripples: any[];
+  natureVisuals: any;
+  cursorPosition: { x: number; y: number };
+  drawNatureBackground?: (ctx: CanvasRenderingContext2D) => void;
+}) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -481,15 +276,196 @@ export const CursorTracker: React.FC<CursorTrackerProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [showTrail, showParticles, trail, particles, ripples, natureVisuals, cursorPosition]);
+  }, [showTrail, showParticles, trail, particles, ripples, natureVisuals, cursorPosition, drawNatureBackground]);
+
+  return null;
+});
+
+export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
+  enabled = true,
+  showTrail = true,
+  showParticles = true,
+  audioEnabled = true,
+  natureEnabled = true,
+  melodyEnabled = true,
+  drumEnabled = true,
+  ambientEnabled = true,
+  onMouseMove
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { cursorPosition, isMoving } = useCursorTracking({ enabled });
+  const { 
+    particles, 
+    trail, 
+    ripples, 
+    addParticles, 
+    updateTrail, 
+    natureVisuals, 
+    updateNatureVisuals, 
+    addNatureParticles,
+    addNatureBackground,
+    drawNatureBackground
+  } = useVisualEffects({
+    enabled: showParticles || showTrail 
+  });
+
+  // Initialize audio systems with proper error handling
+  const natureSystem = useNatureAmbient({ 
+    enabled: natureEnabled && audioEnabled 
+  });
+  
+  const melodySystem = useMelodyAmbient({ 
+    enabled: melodyEnabled && audioEnabled 
+  });
+  
+  const rhythmSystem = useRhythmAmbient({ 
+    enabled: drumEnabled && audioEnabled 
+  });
+
+  // Safely destructure audio system functions with fallbacks
+  const { 
+    startNature, 
+    updateNatureFromMouse, 
+    isPlaying: isNaturePlaying, 
+    stopNature 
+  } = natureSystem || {};
+  
+  const { 
+    startMelody, 
+    updateMelodyFromMouse, 
+    isPlaying: isMelodyPlaying, 
+    stopMelody 
+  } = melodySystem || {};
+  
+  const { 
+    startRhythm, 
+    updateRhythmFromMouse, 
+    isPlaying: isRhythmPlaying, 
+    stopRhythm 
+  } = rhythmSystem || {};
+
+  // Memoized audio systems status for debugging
+  const audioSystemsStatus = useMemo(() => ({
+    natureEnabled,
+    isNaturePlaying,
+    melodyEnabled,
+    isMelodyPlaying,
+    drumEnabled,
+    isRhythmPlaying
+  }), [natureEnabled, isNaturePlaying, melodyEnabled, isMelodyPlaying, drumEnabled, isRhythmPlaying]);
+
+  // Handle cursor movement with throttling - optimized with useCallback
+  const handleCursorUpdate = useCallback(() => {
+    if (!enabled) return;
+
+    updateTrail(cursorPosition.x, cursorPosition.y);
+    
+    if (isMoving && showParticles) {
+      // Add particles more frequently for smoother effect
+      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, 2);
+    }
+
+    // Update nature visuals based on mouse position
+    if (showParticles && updateNatureVisuals) {
+      updateNatureVisuals(cursorPosition.x, cursorPosition.y);
+    }
+
+    // Add nature background effects based on audio intensity
+    if (showParticles && addNatureBackground) {
+      addNatureBackground();
+    }
+
+    // Update audio systems based on mouse movement with enhanced error handling
+    if (audioEnabled) {
+      // Update nature ambient based on mouse movement
+      if (natureEnabled && updateNatureFromMouse) {
+        try {
+          updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        } catch (error) {
+          console.error('Error updating nature audio:', error);
+        }
+      }
+      
+      // Update melody ambient based on mouse movement
+      if (melodyEnabled && updateMelodyFromMouse) {
+        try {
+          updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        } catch (error) {
+          console.error('Error updating melody audio:', error);
+        }
+      }
+      
+      // Update rhythm ambient based on mouse movement
+      if (drumEnabled && updateRhythmFromMouse) {
+        try {
+          updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        } catch (error) {
+          console.error('Error updating rhythm audio:', error);
+        }
+      }
+
+      // Call parent mouse move handler
+      if (onMouseMove) {
+        try {
+          onMouseMove(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        } catch (error) {
+          console.error('Error in parent mouse move handler:', error);
+        }
+      }
+    }
+  }, [
+    enabled, 
+    cursorPosition.x, 
+    cursorPosition.y, 
+    cursorPosition.velocity, 
+    isMoving, 
+    showParticles, 
+    audioEnabled,
+    natureEnabled,
+    melodyEnabled,
+    drumEnabled,
+    updateTrail,
+    addParticles,
+    updateNatureVisuals,
+    addNatureParticles,
+    natureSystem,
+    melodySystem,
+    rhythmSystem,
+    updateNatureFromMouse,
+    updateMelodyFromMouse,
+    updateRhythmFromMouse,
+    onMouseMove
+  ]);
+
+  useEffect(() => {
+    handleCursorUpdate();
+  }, [handleCursorUpdate]);
+
+  // Debug logging for audio systems
+  useEffect(() => {
+    console.log('Beautiful Audio Systems Status:', audioSystemsStatus);
+  }, [audioSystemsStatus]);
 
   if (!enabled) return null;
 
   return (
+    <>
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-30"
       style={{ mixBlendMode: 'screen' }}
     />
+      <CanvasRenderer
+        canvasRef={canvasRef}
+        showTrail={showTrail}
+        showParticles={showParticles}
+        trail={trail}
+        particles={particles}
+        ripples={ripples}
+        natureVisuals={natureVisuals}
+        cursorPosition={cursorPosition}
+        drawNatureBackground={drawNatureBackground}
+      />
+    </>
   );
-};
+});

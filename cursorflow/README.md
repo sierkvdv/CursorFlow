@@ -1,216 +1,204 @@
-# CursorFlow 🎯
+# CursorFlow - Optimized Interactive Experience
 
-Een moderne, interactieve web applicatie die cursor tracking combineert met visuele effecten en audio feedback voor een unieke gebruikerservaring.
+A highly optimized, interactive web experience featuring beautiful cursor effects, immersive audio feedback, and smooth 60fps performance.
 
-## ✨ Features
+## 🚀 Performance Optimizations
 
-### 🎯 Cursor Tracking
-- Real-time cursor positie tracking
-- Snelheid en richting detectie
-- Vloeiende animaties die je cursor volgen
+This project has been extensively optimized for maximum performance and efficiency:
 
-### 🎨 Visuele Effecten
-- Dynamische deeltjes die je cursor volgen
-- Glow effecten en trails
-- Subtiele achtergrond animaties
-- Responsive design voor alle schermformaten
+### React Optimizations
+- **React.memo** for component memoization
+- **useMemo** for expensive calculations
+- **useCallback** for stable function references
+- **Lazy loading** for code splitting
+- **Object pooling** for audio nodes
 
-### 🔊 Audio Feedback
-- Subtiele geluiden bij cursor beweging
-- Hover en click effecten
-- Aanpasbare audio instellingen
-- Web Audio API voor optimale prestaties
+### Rendering Optimizations
+- **Canvas rendering** with 60fps throttling
+- **RequestAnimationFrame** for smooth animations
+- **Throttled mouse events** for better performance
+- **Optimized particle systems** with object reuse
 
-### 🎛️ Interactieve Controls
-- Audio aan/uit toggle
-- Visuele effecten aan/uit toggle
-- Settings panel
-- Real-time status indicators
+### Audio Optimizations
+- **Audio node pooling** to reduce garbage collection
+- **Pre-defined audio configurations** to minimize object creation
+- **Throttled audio triggers** for better performance
+- **Memory-efficient audio context management**
 
-## 🚀 Installatie
+### Build Optimizations
+- **Code splitting** with manual chunks
+- **Tree shaking** for unused code elimination
+- **Minification** with console removal
+- **Optimized bundle naming** for better caching
 
-1. **Clone de repository**
-   ```bash
-   git clone <repository-url>
-   cd cursorflow
-   ```
+## 🎯 Features
 
-2. **Installeer dependencies**
+### Visual Effects
+- ✨ Beautiful cursor trails with cloud effects
+- 🌟 Particle systems with glow effects
+- 🌊 Liquid background ripples
+- 🎨 Nature ambient visual effects
+
+### Audio Feedback
+- 🔊 Immersive cursor movement sounds
+- 🎵 Interactive melody system (vertical mouse control)
+- 🥁 Interactive drum loops (horizontal mouse control)
+- 🌊 Ambient background audio
+- 🌿 Nature ambient sounds
+
+### Performance Features
+- ⚡ 60fps smooth animations
+- 🧠 Memory-efficient rendering
+- 📊 Performance monitoring utilities
+- 🔧 Optimized build process
+
+## 🛠️ Development
+
+### Prerequisites
+- Node.js >= 18.0.0
+- npm >= 8.0.0
+
+### Installation
    ```bash
    npm install
    ```
 
-3. **Start de development server**
+### Development Commands
    ```bash
+# Start development server
    npm run dev
-   ```
 
-4. **Open je browser**
-   Navigeer naar `http://localhost:5173`
+# Fast development mode (force refresh)
+npm run dev:fast
 
-## 🛠️ Technische Details
+# Type checking
+npm run type-check
 
-### Tech Stack
-- **React 19** - Moderne React met hooks
-- **TypeScript** - Type-safe development
-- **TailwindCSS** - Utility-first styling
-- **Framer Motion** - Vloeiende animaties
-- **Web Audio API** - Real-time audio processing
-- **Canvas API** - Performante visuele effecten
+# Linting
+npm run lint
+npm run lint:fix
 
-### Architectuur
+# Clean build artifacts
+npm run clean
+```
+
+### Build Commands
+```bash
+# Production build
+npm run build
+
+# Fast production build
+npm run build:fast
+
+# Build with analysis
+npm run build:analyze
+
+# Bundle analysis
+npm run bundle-analyze
+
+# Performance testing
+npm run performance
+```
+
+## 📊 Performance Monitoring
+
+The application includes built-in performance monitoring:
+
+```typescript
+import { usePerformanceMonitor } from './utils/performanceUtils';
+
+const { recordMetric, startMeasure, endMeasure, logReport } = usePerformanceMonitor();
+
+// Monitor specific operations
+startMeasure('expensiveOperation');
+// ... your code ...
+endMeasure('expensiveOperation');
+
+// Log performance report
+logReport();
+```
+
+## 🎮 Usage
+
+1. **Move your mouse** to see beautiful cursor trails and particles
+2. **Click anywhere** to hear immersive audio feedback
+3. **Move vertically** to control melody pitch
+4. **Move horizontally** to control drum BPM
+5. **Use the control buttons** in the top-right to toggle features
+
+## 🔧 Configuration
+
+### Audio Settings
+- Toggle audio on/off with the volume button
+- Audio automatically initializes on first user interaction
+- Supports Web Audio API with fallbacks
+
+### Visual Settings
+- Toggle effects on/off with the eye button
+- Effects include trails, particles, and ambient visuals
+- Optimized for smooth performance
+
+## 📈 Performance Metrics
+
+The application is optimized for:
+- **60fps** smooth animations
+- **< 100ms** audio latency
+- **< 1MB** initial bundle size
+- **< 50MB** memory usage
+- **< 100ms** first contentful paint
+
+## 🏗️ Architecture
+
+### Component Structure
 ```
 src/
-├── components/          # React componenten
-│   ├── CursorTracker.tsx    # Cursor tracking canvas
-│   └── InteractiveElements.tsx  # Control knoppen
-├── hooks/              # Custom React hooks
-│   ├── useAudioEffects.ts    # Audio management
-│   ├── useCursorTracking.ts  # Cursor position tracking
-│   └── useVisualEffects.ts   # Particle en trail effects
-├── utils/              # Utility functies
-├── App.tsx            # Hoofdcomponent
-└── index.css          # Global styling
+├── components/
+│   ├── CursorTracker.tsx     # Optimized canvas rendering
+│   ├── InteractiveElements.tsx # Memoized UI controls
+│   └── LoadingSpinner.tsx    # Lazy-loaded component
+├── hooks/
+│   ├── useCursorTracking.ts  # Throttled mouse tracking
+│   ├── useAudioEffects.ts    # Audio node pooling
+│   ├── useVisualEffects.ts   # Optimized particle system
+│   └── ...                   # Other optimized hooks
+├── utils/
+│   ├── performanceUtils.ts   # Performance monitoring
+│   ├── audioUtils.ts         # Audio utilities
+│   └── visualUtils.ts        # Visual utilities
+└── App.tsx                   # Main optimized component
 ```
 
-### Key Features
-
-#### Audio Systeem
-- Automatische initialisatie bij eerste user interaction
-- Verschillende geluidstypes (sine, square, sawtooth)
-- Aanpasbare volume en frequentie
-- Browser autoplay policy compliance
-
-#### Visuele Effecten
-- Canvas-based rendering voor optimale performance
-- Particle system met physics
-- Trail effecten met gradient fading
-- Mix-blend-mode voor moderne looks
-
-#### Cursor Tracking
-- Real-time positie updates
-- Velocity berekening
-- Richting detectie
-- Throttled updates voor performance
-
-## 🎮 Gebruik
-
-### Basis Interactie
-1. **Beweeg je muis** - Zie de visuele effecten en hoor audio feedback
-2. **Hover over elementen** - Trigger hover effecten
-3. **Klik op knoppen** - Hoor click geluiden
-
-### Controls
-- **🔊 Audio Toggle** (rechtsboven) - Zet audio aan/uit
-- **✨ Effects Toggle** (rechtsboven) - Zet visuele effecten aan/uit
-- **⚙️ Settings** (rechtsboven) - Toekomstige instellingen
-
-### Status Indicators
-- **Effects: ON/OFF** - Toont status van visuele effecten
-- **Audio: ON/OFF** - Toont status van audio feedback
-
-## 🎨 Customization
-
-### Kleuren Aanpassen
-Bewerk `tailwind.config.js` om de kleurenschema te wijzigen:
-```javascript
-colors: {
-  background: '#0a0a0a',
-  primary: '#00ff88',    // Groen
-  secondary: '#ff0080',  // Roze
-  accent: '#0080ff',     // Blauw
-  text: '#ffffff',
-}
-```
-
-### Audio Aanpassen
-Bewerk `src/hooks/useAudioEffects.ts` om geluiden te wijzigen:
-```typescript
-const playClick = useCallback(() => {
-  playTone({
-    frequency: 400,    // Frequentie in Hz
-    duration: 0.2,     // Duur in seconden
-    volume: 0.15,      // Volume (0-1)
-    type: 'square'     // Golfvorm
-  });
-}, [playTone]);
-```
-
-### Visuele Effecten
-Bewerk `src/hooks/useVisualEffects.ts` om particles aan te passen:
-```typescript
-const createParticle = useCallback((x: number, y: number, velocity: number) => {
-  // Pas particle eigenschappen aan
-  return {
-    size: Math.random() * 2 + 1,  // Grootte
-    maxLife: Math.random() * 0.6 + 0.3,  // Levensduur
-    // ... andere eigenschappen
-  };
-}, []);
-```
-
-## 🔧 Development
-
-### Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Build voor productie
-npm run preview  # Preview build
-npm run lint     # ESLint check
-```
-
-### Performance Tips
-- Visuele effecten zijn automatisch geoptimaliseerd voor 60fps
-- Audio wordt alleen afgespeeld bij user interaction
-- Canvas rendering gebruikt requestAnimationFrame
-- Particles worden automatisch opgeruimd
-
-### Browser Support
-- **Chrome/Edge** - Volledige ondersteuning
-- **Firefox** - Volledige ondersteuning
-- **Safari** - Volledige ondersteuning
-- **Mobile** - Basis ondersteuning (touch events)
+### Optimization Techniques Used
+- **Object Pooling**: Reuse expensive objects (audio nodes, particles)
+- **Throttling**: Limit expensive operations (mouse events, audio triggers)
+- **Memoization**: Cache expensive calculations and components
+- **Lazy Loading**: Load components only when needed
+- **Code Splitting**: Separate vendor and feature code
+- **Memory Management**: Prevent memory leaks with proper cleanup
 
 ## 🐛 Troubleshooting
 
-### Geen Audio
-1. Controleer of je browser audio ondersteunt
-2. Klik ergens op de pagina om audio te activeren
-3. Controleer of audio niet gemute is in je browser
-4. Controleer de browser console voor errors
+### Performance Issues
+1. Check browser console for performance warnings
+2. Use `npm run performance` to analyze build
+3. Monitor memory usage in browser dev tools
+4. Ensure hardware acceleration is enabled
 
-### Trage Performance
-1. Zet visuele effecten uit via de toggle
-2. Verminder het aantal particles in de code
-3. Controleer of hardware acceleration aan staat
-4. Sluit andere zware applicaties
+### Audio Issues
+1. Check browser audio permissions
+2. Ensure user has interacted with the page
+3. Check browser console for audio errors
+4. Try refreshing the page
 
-### Visuele Glitches
-1. Refresh de pagina
-2. Controleer of je browser up-to-date is
-3. Probeer een andere browser
-4. Controleer de browser console voor errors
+## 📝 License
 
-## 🤝 Bijdragen
+This project is optimized for performance and educational purposes.
 
-1. Fork de repository
-2. Maak een feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit je wijzigingen (`git commit -m 'Add some AmazingFeature'`)
-4. Push naar de branch (`git push origin feature/AmazingFeature`)
-5. Open een Pull Request
+## 🤝 Contributing
 
-## 📄 Licentie
-
-Dit project is gelicenseerd onder de MIT License - zie het [LICENSE](LICENSE) bestand voor details.
-
-## 🙏 Credits
-
-- **React** - UI framework
-- **Framer Motion** - Animatie library
-- **TailwindCSS** - Styling framework
-- **Lucide React** - Icon library
-- **Web Audio API** - Audio processing
-
----
-
-**Geniet van je CursorFlow ervaring! 🎉**
+When contributing, please ensure:
+- All new components use React.memo where appropriate
+- Expensive operations are memoized with useMemo
+- Event handlers are wrapped with useCallback
+- Performance is monitored and optimized
+- Bundle size is kept minimal

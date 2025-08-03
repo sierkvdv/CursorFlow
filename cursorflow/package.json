@@ -5,10 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "rimraf node_modules/.vite && vite",
+    "dev:force": "vite --force",
+    "dev:host": "vite --host",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build:analyze": "tsc -b && vite build --mode analyze",
     "preview": "vite preview",
-    "stop": "powershell -ExecutionPolicy Bypass -File stop-server.ps1"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "performance": "vite build && lighthouse http://localhost:4173 --output=json --output-path=./lighthouse-report.json",
+    "bundle-analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "stop": "powershell -ExecutionPolicy Bypass -File stop-server.ps1",
+    "clean": "rimraf dist node_modules/.vite",
+    "dev:fast": "vite --force",
+    "build:fast": "vite build --mode production",
+    "restart": "npm run stop && timeout /t 2 && npm run dev:clean"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",
@@ -31,6 +43,24 @@
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "vite-bundle-analyzer": "^0.7.0",
+    "rimraf": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

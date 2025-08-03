@@ -46,7 +46,7 @@
   .cursor-trail {
     position: fixed;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 9997;
     mix-blend-mode: screen;
   }
 

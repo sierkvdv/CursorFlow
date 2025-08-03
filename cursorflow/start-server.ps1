@@ -1,44 +1,41 @@
 Write-Host "Starting CursorFlow Development Server..." -ForegroundColor Green
 Write-Host ""
 
-# Change to the script directory
-Set-Location $PSScriptRoot
+# Check if we're in the right directory
+$currentDir = Get-Location
+$expectedDir = "C:\CursorFlowWebsite\cursorflow"
 
-# Check if node_modules exists, if not install dependencies
-if (-not (Test-Path "node_modules")) {
-    Write-Host "Installing dependencies..." -ForegroundColor Yellow
-    npm install
+if ($currentDir.Path -ne $expectedDir) {
+    Write-Host "Changing to correct directory..." -ForegroundColor Yellow
+    Set-Location $expectedDir
+    Write-Host "Current directory: $(Get-Location)" -ForegroundColor Yellow
+} else {
+    Write-Host "Already in correct directory: $(Get-Location)" -ForegroundColor Green
 }
 
-# Kill any existing Vite processes on port 5173
-Write-Host "Checking for existing server processes..." -ForegroundColor Cyan
+# Clean up any existing processes on port 5173
+Write-Host "Checking for existing processes on port 5173..." -ForegroundColor Cyan
 $existingProcess = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue
 if ($existingProcess) {
     Write-Host "Found existing process on port 5173, terminating..." -ForegroundColor Yellow
     $processId = $existingProcess.OwningProcess
     Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
+    Write-Host "Process terminated successfully." -ForegroundColor Green
 }
 
-# Kill any existing node processes that might be Vite
-Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {
-    $_.ProcessName -eq "node" -and $_.MainWindowTitle -match "vite"
-} | Stop-Process -Force -ErrorAction SilentlyContinue
-
-Write-Host "The server will be available at: http://localhost:5173/" -ForegroundColor Yellow
-Write-Host "If port 5173 is busy, Vite will automatically use the next available port." -ForegroundColor Yellow
-Write-Host ""
-Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Cyan
-Write-Host ""
-
-# Start the development server
-try {
-    npm run dev
-} catch {
-    Write-Host "Error starting server: $_" -ForegroundColor Red
-    Write-Host "Trying to start with explicit port..." -ForegroundColor Yellow
-    npx vite --port 5174 --host 0.0.0.0
+# Clean Vite cache
+Write-Host "Cleaning Vite cache..." -ForegroundColor Cyan
+if (Test-Path "node_modules\.vite") {
+    Remove-Item -Recurse -Force "node_modules\.vite" -ErrorAction SilentlyContinue
+    Write-Host "Vite cache cleaned." -ForegroundColor Green
 }
 
-# Keep the window open
-Read-Host "Press Enter to close" 
+Write-Host ""
+Write-Host "Starting development server with clean cache..." -ForegroundColor Cyan
+Write-Host "Server will be available at: http://localhost:5173" -ForegroundColor Green
+Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
+Write-Host ""
+
+# Start the development server with clean cache
+npm run dev:clean 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 interface CursorPosition {
   x: number;
@@ -10,10 +10,11 @@ interface CursorPosition {
 interface CursorTrackingOptions {
   enabled?: boolean;
   sensitivity?: number;
+  throttleMs?: number;
 }
 
 export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
-  const { enabled = true, sensitivity = 1 } = options;
+  const { enabled = true, sensitivity = 1, throttleMs = 16 } = options;
   
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
     x: 0,
@@ -27,6 +28,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const lastTimeRef = useRef(performance.now());
   const isMovingRef = useRef(false);
   const rafRef = useRef<number | null>(null);
+  const throttleTimeoutRef = useRef<number | null>(null);
   
   // Performance optimization: reuse objects to reduce garbage collection
   const positionObjectRef = useRef<CursorPosition>({
@@ -36,6 +38,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     direction: 'none'
   });
 
+  // Memoized calculation functions
   const calculateVelocity = useCallback((currentX: number, currentY: number, lastX: number, lastY: number, timeDiff: number) => {
     const distance = Math.sqrt(Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2));
     return distance / timeDiff * sensitivity;
@@ -52,8 +55,18 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     }
   }, []);
 
+  // Optimized mouse move handler with throttling
   const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!enabled) return;
+
+    // Throttle mouse events for better performance
+    if (throttleTimeoutRef.current) {
+      return;
+    }
+
+    throttleTimeoutRef.current = window.setTimeout(() => {
+      throttleTimeoutRef.current = null;
+    }, throttleMs);
 
     const currentTime = performance.now();
     const timeDiff = Math.max(1, currentTime - lastTimeRef.current);
@@ -91,12 +104,19 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
     lastPositionRef.current = newPosition;
     lastTimeRef.current = currentTime;
-  }, [enabled, calculateVelocity, calculateDirection]);
+  }, [enabled, calculateVelocity, calculateDirection, throttleMs]);
 
   const handleMouseLeave = useCallback(() => {
     setIsMoving(false);
     isMovingRef.current = false;
   }, []);
+
+  // Memoized return value to prevent unnecessary re-renders
+  const returnValue = useMemo(() => ({
+    cursorPosition,
+    isMoving,
+    enabled
+  }), [cursorPosition, isMoving, enabled]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -110,12 +130,11 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+      }
     };
   }, [enabled, handleMouseMove, handleMouseLeave]);
 
-  return {
-    cursorPosition,
-    isMoving,
-    enabled
-  };
+  return returnValue;
 }; 
