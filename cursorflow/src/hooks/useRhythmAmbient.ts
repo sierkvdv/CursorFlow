@@ -9,14 +9,12 @@ export const useRhythmAmbient = ({
   enabled = false,
   baseVolume = 0.2
 }: RhythmAmbientOptions = {}) => {
-  console.log('🥁 useRhythmAmbient hook called with enabled:', enabled);
-  
   const audioContextRef = useRef<AudioContext | null>(null);
   const isPlayingRef = useRef(false);
   const lastUpdateRef = useRef(0);
   const lastBeatTimeRef = useRef(0);
   
-  // Multiple oscillators for complex drum sounds
+  // Oscillators
   const kickOsc1Ref = useRef<OscillatorNode | null>(null);
   const kickOsc2Ref = useRef<OscillatorNode | null>(null);
   const snareOsc1Ref = useRef<OscillatorNode | null>(null);
@@ -26,7 +24,7 @@ export const useRhythmAmbient = ({
   const tomOsc1Ref = useRef<OscillatorNode | null>(null);
   const tomOsc2Ref = useRef<OscillatorNode | null>(null);
   
-  // Gain nodes for each oscillator
+  // Gain nodes
   const kickGain1Ref = useRef<GainNode | null>(null);
   const kickGain2Ref = useRef<GainNode | null>(null);
   const snareGain1Ref = useRef<GainNode | null>(null);
@@ -36,20 +34,20 @@ export const useRhythmAmbient = ({
   const tomGain1Ref = useRef<GainNode | null>(null);
   const tomGain2Ref = useRef<GainNode | null>(null);
   
-  // Filter nodes for each drum type
+  // Filters
   const kickFilterRef = useRef<BiquadFilterNode | null>(null);
   const snareFilterRef = useRef<BiquadFilterNode | null>(null);
   const hihatFilterRef = useRef<BiquadFilterNode | null>(null);
   const tomFilterRef = useRef<BiquadFilterNode | null>(null);
   
-  // Compressor for punch
+  // Compressor
   const compressorRef = useRef<DynamicsCompressorNode | null>(null);
   
-  // Delay for echo effect
+  // Delay
   const delayRef = useRef<DelayNode | null>(null);
   const delayGainRef = useRef<GainNode | null>(null);
 
-  // Drum patterns and variations
+  // Drum patterns
   const drumPatterns = {
     basic: ['kick', 'snare', 'kick', 'hihat'],
     complex: ['kick', 'snare', 'kick', 'hihat', 'tom', 'snare', 'kick', 'hihat'],
@@ -57,17 +55,13 @@ export const useRhythmAmbient = ({
     slow: ['kick', 'snare', 'kick', 'tom']
   };
 
-  // Initialize audio context and rhythm system
+  // Initialize audio context
   const initAudio = useCallback(async () => {
     if (!enabled) return;
 
     try {
-      console.log('🥁 Initializing responsive rhythm system...');
-      
-      // First, stop and cleanup any existing oscillators
+      // Cleanup existing oscillators
       if (isPlayingRef.current) {
-        console.log('🥁 Cleaning up existing oscillators before reinitializing...');
-        // Stop all oscillators
         try {
           if (kickOsc1Ref.current) {
             kickOsc1Ref.current.stop();
@@ -110,7 +104,6 @@ export const useRhythmAmbient = ({
             tomOsc2Ref.current = null;
           }
           
-          // Disconnect all gain nodes
           if (kickGain1Ref.current) {
             kickGain1Ref.current.disconnect();
             kickGain1Ref.current = null;
@@ -144,7 +137,6 @@ export const useRhythmAmbient = ({
             tomGain2Ref.current = null;
           }
           
-          // Disconnect all filters
           if (kickFilterRef.current) {
             kickFilterRef.current.disconnect();
             kickFilterRef.current = null;
@@ -162,13 +154,11 @@ export const useRhythmAmbient = ({
             tomFilterRef.current = null;
           }
           
-          // Disconnect compressor
           if (compressorRef.current) {
             compressorRef.current.disconnect();
             compressorRef.current = null;
           }
           
-          // Disconnect delay
           if (delayRef.current) {
             delayRef.current.disconnect();
             delayRef.current = null;
@@ -178,29 +168,24 @@ export const useRhythmAmbient = ({
             delayGainRef.current = null;
           }
         } catch (error) {
-          console.error('❌ Error cleaning up existing oscillators:', error);
+          console.error('Error cleaning up existing oscillators:', error);
         }
       }
       
-      // Close existing context if it exists
+      // Close existing context
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        console.log('🥁 Closing existing audio context...');
         await audioContextRef.current.close();
       }
       
       // Create new audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Resume audio context if suspended
+      // Resume if suspended
       if (audioContextRef.current.state === 'suspended') {
-        console.log('🥁 Audio context suspended, attempting to resume...');
         await audioContextRef.current.resume();
-        console.log('🥁 Audio context resumed');
       }
       
-      console.log('🥁 Audio context state:', audioContextRef.current.state);
-      
-      // Create compressor for punch
+      // Create compressor
       compressorRef.current = audioContextRef.current.createDynamicsCompressor();
       compressorRef.current.threshold.setValueAtTime(-20, audioContextRef.current.currentTime);
       compressorRef.current.knee.setValueAtTime(10, audioContextRef.current.currentTime);
@@ -218,7 +203,7 @@ export const useRhythmAmbient = ({
       tomGain1Ref.current = audioContextRef.current.createGain();
       tomGain2Ref.current = audioContextRef.current.createGain();
       
-      // Create filter nodes
+      // Create filters
       kickFilterRef.current = audioContextRef.current.createBiquadFilter();
       kickFilterRef.current.type = 'lowpass';
       kickFilterRef.current.frequency.setValueAtTime(150, audioContextRef.current.currentTime);
@@ -239,7 +224,7 @@ export const useRhythmAmbient = ({
       tomFilterRef.current.frequency.setValueAtTime(200, audioContextRef.current.currentTime);
       tomFilterRef.current.Q.setValueAtTime(1.8, audioContextRef.current.currentTime);
       
-      // Create delay effect
+      // Create delay
       delayRef.current = audioContextRef.current.createDelay();
       delayRef.current.delayTime.setValueAtTime(0.2, audioContextRef.current.currentTime);
       
@@ -247,7 +232,6 @@ export const useRhythmAmbient = ({
       delayGainRef.current.gain.setValueAtTime(0.2, audioContextRef.current.currentTime);
       
       // Create oscillators
-      // Kick drum
       kickOsc1Ref.current = audioContextRef.current.createOscillator();
       kickOsc1Ref.current.type = 'sine';
       kickOsc1Ref.current.frequency.setValueAtTime(80, audioContextRef.current.currentTime);
@@ -258,7 +242,6 @@ export const useRhythmAmbient = ({
       kickOsc2Ref.current.frequency.setValueAtTime(40, audioContextRef.current.currentTime);
       kickOsc2Ref.current.connect(kickGain2Ref.current);
       
-      // Snare drum
       snareOsc1Ref.current = audioContextRef.current.createOscillator();
       snareOsc1Ref.current.type = 'square';
       snareOsc1Ref.current.frequency.setValueAtTime(200, audioContextRef.current.currentTime);
@@ -269,7 +252,6 @@ export const useRhythmAmbient = ({
       snareOsc2Ref.current.frequency.setValueAtTime(400, audioContextRef.current.currentTime);
       snareOsc2Ref.current.connect(snareGain2Ref.current);
       
-      // Hi-hat
       hihatOsc1Ref.current = audioContextRef.current.createOscillator();
       hihatOsc1Ref.current.type = 'square';
       hihatOsc1Ref.current.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
@@ -280,7 +262,6 @@ export const useRhythmAmbient = ({
       hihatOsc2Ref.current.frequency.setValueAtTime(1200, audioContextRef.current.currentTime);
       hihatOsc2Ref.current.connect(hihatGain2Ref.current);
       
-      // Tom
       tomOsc1Ref.current = audioContextRef.current.createOscillator();
       tomOsc1Ref.current.type = 'sine';
       tomOsc1Ref.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime);
@@ -315,55 +296,52 @@ export const useRhythmAmbient = ({
       delayRef.current.connect(delayGainRef.current);
       delayGainRef.current.connect(audioContextRef.current.destination);
       
-                    // Set initial volumes to 0 - oscillators will be controlled by gain envelopes
-       kickGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       kickGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       snareGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       snareGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       hihatGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       hihatGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       tomGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       tomGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       
-       // Start all oscillators (they will be silent until gain is increased)
-       kickOsc1Ref.current.start();
-       kickOsc2Ref.current.start();
-       snareOsc1Ref.current.start();
-       snareOsc2Ref.current.start();
-       hihatOsc1Ref.current.start();
-       hihatOsc2Ref.current.start();
-       tomOsc1Ref.current.start();
-       tomOsc2Ref.current.start();
+      // Set initial volumes to 0
+      kickGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      kickGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      snareGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      snareGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      hihatGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      hihatGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      tomGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      tomGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      
+      // Start oscillators
+      kickOsc1Ref.current.start();
+      kickOsc2Ref.current.start();
+      snareOsc1Ref.current.start();
+      snareOsc2Ref.current.start();
+      hihatOsc1Ref.current.start();
+      hihatOsc2Ref.current.start();
+      tomOsc1Ref.current.start();
+      tomOsc2Ref.current.start();
       
       isPlayingRef.current = true;
-      console.log('🥁 Responsive rhythm system initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize rhythm system:', error);
+      console.error('Failed to initialize rhythm system:', error);
     }
   }, [enabled, baseVolume]);
 
-  // Update rhythm based on mouse movement
+  // Update rhythm from mouse movement
   const updateRhythmFromMouse = useCallback((x: number, y: number, velocity: number) => {
     if (!enabled || !audioContextRef.current || !isPlayingRef.current) {
       return;
     }
 
-    // Throttle updates for performance
+    // Throttle updates
     const now = Date.now();
-    if (now - lastUpdateRef.current < 15) return; // Very fast updates for responsive rhythm
+    if (now - lastUpdateRef.current < 15) return;
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
     const audioTime = ctx.currentTime;
     
-    // Calculate normalized mouse position (0-1)
     const xNormalized = x / window.innerWidth;
     const yNormalized = y / window.innerHeight;
     
-    // Velocity-based intensity
     const velocityMultiplier = 1 + (velocity * 3.0);
     
-    // Determine drum pattern based on mouse position
+    // Determine pattern
     let currentPattern = drumPatterns.basic;
     if (xNormalized < 0.25) {
       currentPattern = drumPatterns.basic;
@@ -375,36 +353,32 @@ export const useRhythmAmbient = ({
       currentPattern = drumPatterns.slow;
     }
     
-    // Calculate beat interval based on velocity (extreme variations)
-    const baseInterval = Math.max(50, 500 - (velocity * 400)); // 50ms to 500ms
-    const intervalVariation = Math.sin(audioTime * 2) * 100; // Add variation
+    // Calculate beat interval
+    const baseInterval = Math.max(50, 500 - (velocity * 400));
+    const intervalVariation = Math.sin(audioTime * 2) * 100;
     const finalInterval = Math.max(20, baseInterval + intervalVariation);
     
-    // Trigger beats based on interval
+    // Trigger beats
     if (audioTime - lastBeatTimeRef.current > (finalInterval / 1000)) {
       lastBeatTimeRef.current = audioTime;
       
-      // Select drum based on Y position and velocity
       const drumIndex = Math.floor((yNormalized + velocity) * currentPattern.length) % currentPattern.length;
       const drumType = currentPattern[drumIndex];
       
-      // Play the selected drum with velocity-based intensity
       playDrumHit(drumType, velocityMultiplier);
       
-      // Sometimes play multiple drums for complex patterns
       if (velocity > 0.3 && Math.random() > 0.5) {
         const secondDrum = currentPattern[(drumIndex + 1) % currentPattern.length];
         setTimeout(() => playDrumHit(secondDrum, velocityMultiplier * 0.7), 50);
       }
     }
     
-    // Update drum frequencies based on mouse position
+    // Update frequencies
     const kickFreq = 80 - (yNormalized * 40) + Math.sin(audioTime * 0.5) * 20;
     const snareFreq = 200 + (xNormalized * 200) + Math.sin(audioTime * 0.7) * 50;
     const hihatFreq = 800 + (velocity * 400) + Math.sin(audioTime * 1.0) * 100;
     const tomFreq = 120 + (yNormalized * 80) + Math.sin(audioTime * 0.6) * 30;
     
-    // Update oscillator frequencies
     if (kickOsc1Ref.current && kickOsc2Ref.current) {
       kickOsc1Ref.current.frequency.setTargetAtTime(kickFreq, audioTime, 0.05);
       kickOsc2Ref.current.frequency.setTargetAtTime(kickFreq * 0.5, audioTime, 0.05);
@@ -425,10 +399,7 @@ export const useRhythmAmbient = ({
       tomOsc2Ref.current.frequency.setTargetAtTime(tomFreq * 1.5, audioTime, 0.06);
     }
     
-         // Note: Gain nodes are now controlled by playDrumHit function with envelopes
-     // No need to update volumes here as they are set to 0 by default
-    
-    // Update filters based on mouse position
+    // Update filters
     if (kickFilterRef.current) {
       const cutoff = 150 - (yNormalized * 100) + Math.sin(audioTime * 0.4) * 30;
       kickFilterRef.current.frequency.setTargetAtTime(Math.max(50, cutoff), audioTime, 0.2);
@@ -449,7 +420,7 @@ export const useRhythmAmbient = ({
       tomFilterRef.current.frequency.setTargetAtTime(Math.max(100, cutoff), audioTime, 0.18);
     }
     
-    // Update delay time based on velocity
+    // Update delay
     if (delayRef.current) {
       const delayTime = 0.1 + (velocity * 0.3) + Math.sin(audioTime * 0.3) * 0.1;
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.3);
@@ -457,7 +428,7 @@ export const useRhythmAmbient = ({
     
   }, [enabled, baseVolume]);
 
-  // Play a drum hit
+  // Play drum hit
   const playDrumHit = useCallback((drumType: string, intensity: number) => {
     if (!audioContextRef.current) return;
     
@@ -467,12 +438,10 @@ export const useRhythmAmbient = ({
     let duration = 0.1;
     let volume = baseVolume * intensity;
     
-    // Configure based on drum type and use existing oscillators
     switch (drumType) {
       case 'kick':
         duration = 0.15;
         volume *= 1.2;
-        // Use existing kick oscillators with envelope
         if (kickGain1Ref.current && kickGain2Ref.current) {
           kickGain1Ref.current.gain.setValueAtTime(0, audioTime);
           kickGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.8, audioTime + 0.001);
@@ -486,7 +455,6 @@ export const useRhythmAmbient = ({
       case 'snare':
         duration = 0.08;
         volume *= 1.0;
-        // Use existing snare oscillators with envelope
         if (snareGain1Ref.current && snareGain2Ref.current) {
           snareGain1Ref.current.gain.setValueAtTime(0, audioTime);
           snareGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.7, audioTime + 0.001);
@@ -500,7 +468,6 @@ export const useRhythmAmbient = ({
       case 'hihat':
         duration = 0.05;
         volume *= 0.8;
-        // Use existing hihat oscillators with envelope
         if (hihatGain1Ref.current && hihatGain2Ref.current) {
           hihatGain1Ref.current.gain.setValueAtTime(0, audioTime);
           hihatGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.6, audioTime + 0.001);
@@ -514,7 +481,6 @@ export const useRhythmAmbient = ({
       case 'tom':
         duration = 0.12;
         volume *= 1.1;
-        // Use existing tom oscillators with envelope
         if (tomGain1Ref.current && tomGain2Ref.current) {
           tomGain1Ref.current.gain.setValueAtTime(0, audioTime);
           tomGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.5, audioTime + 0.001);
@@ -528,19 +494,17 @@ export const useRhythmAmbient = ({
     }
   }, [baseVolume]);
 
-  // Start rhythm system
+  // Start rhythm
   const startRhythm = useCallback(async () => {
     if (!enabled || isPlayingRef.current) return;
-    console.log('🥁 Starting responsive rhythm system...');
     isPlayingRef.current = true;
     await initAudio();
   }, [enabled, initAudio]);
 
-  // Stop rhythm system
+  // Stop rhythm
   const stopRhythm = useCallback(() => {
-    console.log('🛑 Stopping rhythm system...');
+    isPlayingRef.current = false;
     
-    // Stop all oscillators
     try {
       if (kickOsc1Ref.current) {
         kickOsc1Ref.current.stop();
@@ -583,7 +547,6 @@ export const useRhythmAmbient = ({
         tomOsc2Ref.current = null;
       }
       
-      // Disconnect gain nodes
       if (kickGain1Ref.current) {
         kickGain1Ref.current.disconnect();
         kickGain1Ref.current = null;
@@ -617,7 +580,6 @@ export const useRhythmAmbient = ({
         tomGain2Ref.current = null;
       }
       
-      // Disconnect filters
       if (kickFilterRef.current) {
         kickFilterRef.current.disconnect();
         kickFilterRef.current = null;
@@ -635,13 +597,11 @@ export const useRhythmAmbient = ({
         tomFilterRef.current = null;
       }
       
-      // Disconnect compressor
       if (compressorRef.current) {
         compressorRef.current.disconnect();
         compressorRef.current = null;
       }
       
-      // Disconnect delay
       if (delayRef.current) {
         delayRef.current.disconnect();
         delayRef.current = null;
@@ -650,42 +610,32 @@ export const useRhythmAmbient = ({
         delayGainRef.current.disconnect();
         delayGainRef.current = null;
       }
-      
-      console.log('🛑 All rhythm oscillators and nodes stopped and disconnected');
     } catch (error) {
-      console.error('❌ Error stopping rhythm system:', error);
+      console.error('Error stopping rhythm system:', error);
     }
-    
-    // Set playing flag to false after cleanup
-    isPlayingRef.current = false;
   }, []);
 
   // Auto-start when enabled changes
   useEffect(() => {
     if (enabled && !isPlayingRef.current) {
-      console.log('🥁 Rhythm: Auto-starting...');
       startRhythm();
     } else if (!enabled && isPlayingRef.current) {
-      console.log('🥁 Rhythm: Auto-stopping...');
       stopRhythm();
     }
   }, [enabled, startRhythm, stopRhythm]);
 
-  // Handle user interaction to start audio context
+  // Handle user interaction
   useEffect(() => {
     const handleUserInteraction = async () => {
       if (enabled && audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        console.log('🥁 User interaction detected, resuming audio context...');
         try {
           await audioContextRef.current.resume();
-          console.log('🥁 Audio context resumed after user interaction');
         } catch (error) {
-          console.error('❌ Failed to resume audio context:', error);
+          console.error('Failed to resume audio context:', error);
         }
       }
     };
 
-    // Listen for any user interaction
     document.addEventListener('click', handleUserInteraction, { once: true });
     document.addEventListener('keydown', handleUserInteraction, { once: true });
     document.addEventListener('mousemove', handleUserInteraction, { once: true });
@@ -701,7 +651,6 @@ export const useRhythmAmbient = ({
   useEffect(() => {
     return () => {
       if (isPlayingRef.current) {
-        console.log('🥁 Component unmounting, cleaning up rhythm system...');
         stopRhythm();
       }
     };

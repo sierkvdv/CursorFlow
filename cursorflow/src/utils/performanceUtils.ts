@@ -55,7 +55,7 @@ export class PerformanceMonitor {
 
   getMetrics(): Record<string, number> {
     const result: Record<string, number> = {};
-    this.metrics.forEach((values, name) => {
+    this.metrics.forEach((_values, name) => {
       result[name] = this.getAverageMetric(name);
     });
     return result;
@@ -76,17 +76,67 @@ export class PerformanceMonitor {
     this.endMeasure('frame');
   }
 
-  getMemoryUsage(): Record<string, number> {
+  // Calculate average frame time
+  // private calculateAverageFrameTime = (frameTimes: number[]): number => {
+  //   if (frameTimes.length === 0) return 16.67; // Default 60fps
+    
+  //   const sum = frameTimes.reduce((acc, time) => acc + time, 0);
+  //   return sum / frameTimes.length;
+  // };
+
+  // Calculate frame rate
+  // private calculateFrameRate = (frameTime: number): number => {
+  //   return 1000 / frameTime;
+  // };
+
+  // Detect performance level based on frame rate
+  // private detectPerformanceLevel = (frameRate: number): PerformanceLevel => {
+  //   if (frameRate >= 55) return 'high';
+  //   if (frameRate >= 30) return 'medium';
+  //   return 'low';
+  // };
+
+  // Memory usage monitoring (if available)
+  private getMemoryUsage = (): any => {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      return {
-        usedJSHeapSize: memory.usedJSHeapSize,
-        totalJSHeapSize: memory.totalJSHeapSize,
-        jsHeapSizeLimit: memory.jsHeapSizeLimit,
-      };
+      return (performance as any).memory;
     }
-    return {};
-  }
+    return null;
+  };
+
+  // CPU usage estimation
+  // private estimateCPUUsage = (frameTimes: number[]): number => {
+  //   if (frameTimes.length < 10) return 0;
+    
+  //   const recentFrames = frameTimes.slice(-10);
+  //   const avgFrameTime = this.calculateAverageFrameTime(recentFrames);
+  //   const targetFrameTime = 16.67; // 60fps target
+    
+  //   return Math.min(100, Math.max(0, ((avgFrameTime - targetFrameTime) / targetFrameTime) * 100));
+  // };
+
+  // Battery level monitoring (if available)
+  // private getBatteryLevel = (): number | null => {
+  //   if ('getBattery' in navigator) {
+  //     return (navigator as any).getBattery?.()?.then((battery: any) => battery.level);
+  //   }
+  //   return null;
+  // };
+
+  // Network speed estimation
+  // private estimateNetworkSpeed = (): NetworkSpeed | null => {
+  //   if ('connection' in navigator) {
+  //     const connection = (navigator as any).connection;
+  //     if (connection) {
+  //       return {
+  //         effectiveType: connection.effectiveType || 'unknown',
+  //         downlink: connection.downlink || 0,
+  //         rtt: connection.rtt || 0
+  //       };
+  //     }
+  //   }
+  //   return null;
+  // };
 
   logPerformanceReport() {
     const metrics = this.getMetrics();
@@ -114,7 +164,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);

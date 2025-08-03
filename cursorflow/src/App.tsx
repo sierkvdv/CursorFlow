@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CursorTracker } from './components/CursorTracker';
 import { InteractiveElements } from './components/InteractiveElements';
@@ -70,43 +70,6 @@ function App() {
     setNatureEnabled(prev => !prev);
   };
 
-  const handleTestAudio = () => {
-    console.log('🔊 Test audio clicked');
-    
-    try {
-      // Create a simple audio context test
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      console.log('🔊 Audio context created, state:', audioContext.state);
-      
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-          console.log('🔊 Audio context resumed');
-          playTestSound(audioContext);
-        });
-      } else {
-        playTestSound(audioContext);
-      }
-    } catch (error) {
-      console.error('❌ Audio test failed:', error);
-    }
-  };
-
-  const playTestSound = (audioContext: AudioContext) => {
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    
-    osc.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
-    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-    
-    osc.start(audioContext.currentTime);
-    osc.stop(audioContext.currentTime + 0.5);
-    
-    console.log('🔊 Test sound played (440Hz for 0.5s)');
-  };
-
   const audioDebug = {
     isAudioSupported,
     hasUserInteracted,
@@ -114,13 +77,27 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 text-white overflow-hidden relative" style={{ cursor: 'none' }}>
       {/* Background */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        </div>
+        
+        {/* Background Rain Effect */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
+          <div className="rain-drop"></div>
         </div>
       </div>
 
@@ -132,7 +109,6 @@ function App() {
         audioEnabled={audioEnabled}
         melodyEnabled={melodyEnabled}
         drumEnabled={drumEnabled}
-        ambientEnabled={ambientEnabled}
         natureEnabled={natureEnabled}
       />
 
@@ -164,10 +140,10 @@ function App() {
         onToggleNature={handleToggleNature}
       />
 
-      {/* Status Indicators - REORDERED */}
-      <div className="fixed top-8 right-8 z-30 flex flex-col gap-8">
+      {/* Status Indicators - MOVED TO LEFT SIDE */}
+      <div className="fixed top-8 left-8 z-30 flex flex-col gap-8">
         {/* Audio Status - NOW FIRST (with speaker icon) */}
-        <div className="flex items-center justify-between px-8 py-4 bg-blue-500/20 backdrop-blur-md rounded-xl border border-blue-400/30 shadow-lg min-w-[280px]">
+        <div className="flex items-center justify-between px-8 py-4 bg-blue-500/20 backdrop-blur-md rounded-xl border border-blue-400/30 shadow-lg min-w-[320px]">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <svg className="w-6 h-6 text-blue-300" fill="currentColor" viewBox="0 0 24 24">
@@ -177,13 +153,13 @@ function App() {
             </div>
           </div>
           <div className="flex items-center">
-            <span className="text-green-200 font-semibold text-sm">AUDIO SYSTEM</span>
-            <span className="text-xs text-gray-300 ml-2">({audioEnabled ? 'ON' : 'OFF'})</span>
+            <span className="text-green-200 font-semibold text-base">AUDIO SYSTEM</span>
+            <span className="text-sm text-gray-300 ml-2">({audioEnabled ? 'ON' : 'OFF'})</span>
           </div>
         </div>
         
         {/* Visual Effects Status - NOW SECOND (with eye icon) */}
-        <div className="flex items-center justify-between px-8 py-4 bg-red-500/20 backdrop-blur-md rounded-xl border border-red-400/30 shadow-lg min-w-[280px]">
+        <div className="flex items-center justify-between px-8 py-4 bg-red-500/20 backdrop-blur-md rounded-xl border border-red-400/30 shadow-lg min-w-[320px]">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <svg className="w-6 h-6 text-red-300" fill="currentColor" viewBox="0 0 24 24">
@@ -193,13 +169,13 @@ function App() {
             </div>
           </div>
           <div className="flex items-center">
-            <span className="text-yellow-200 font-semibold text-sm">VISUAL EFFECTS</span>
-            <span className="text-xs text-gray-300 ml-2">({effectsEnabled ? 'ON' : 'OFF'})</span>
+            <span className="text-yellow-200 font-semibold text-base">VISUAL EFFECTS</span>
+            <span className="text-sm text-gray-300 ml-2">({effectsEnabled ? 'ON' : 'OFF'})</span>
           </div>
         </div>
         
         {/* Ready Status - NOW THIRD (with settings icon) */}
-        <div className="flex items-center justify-between px-8 py-4 bg-purple-500/20 backdrop-blur-md rounded-xl border border-purple-400/30 shadow-lg min-w-[280px]">
+        <div className="flex items-center justify-between px-8 py-4 bg-purple-500/20 backdrop-blur-md rounded-xl border border-purple-400/30 shadow-lg min-w-[320px]">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 24 24">
@@ -209,8 +185,8 @@ function App() {
             </div>
           </div>
           <div className="flex items-center">
-            <span className="text-pink-200 font-semibold text-sm">SYSTEM STATUS</span>
-            <span className="text-xs text-gray-300 ml-2">({hasUserInteracted ? 'READY' : 'WAITING'})</span>
+            <span className="text-pink-200 font-semibold text-base">SYSTEM STATUS</span>
+            <span className="text-sm text-gray-300 ml-2">({hasUserInteracted ? 'READY' : 'WAITING'})</span>
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Volume2, VolumeX, Eye, EyeOff, Music, Drum, Waves, TreePine } from 'lucide-react';
+import { Volume2, Eye, Settings, Music, Drum } from 'lucide-react';
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -24,16 +23,16 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   onClose,
   audioEnabled,
   effectsEnabled,
-  natureEnabled,
+  // natureEnabled,
   melodyEnabled,
   drumEnabled,
-  ambientEnabled,
+  // ambientEnabled,
   onToggleAudio,
   onToggleEffects,
-  onToggleNature,
+  // onToggleNature,
   onToggleMelody,
-  onToggleDrum,
-  onToggleAmbient
+  onToggleDrum
+  // onToggleAmbient
 }) => {
   if (!isOpen) return null;
 
@@ -101,7 +100,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <X size={20} />
+            <Settings size={20} />
           </button>
         </div>
 
@@ -156,47 +155,6 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             {/* Audio Sub-settings */}
             {audioEnabled && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginLeft: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
-                  <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <TreePine size={16} />
-                    Nature
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      try {
-                        onToggleNature();
-                      } catch (error) {
-                        console.error('Error toggling nature:', error);
-                      }
-                    }}
-                    style={{
-                      position: 'relative',
-                      width: '2.5rem',
-                      height: '1.5rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: natureEnabled ? '#10b981' : '#6b7280',
-                      transition: 'background-color 0.2s'
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '0.125rem',
-                        left: natureEnabled ? '1rem' : '0.125rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                        backgroundColor: 'white',
-                        borderRadius: '50%',
-                        transition: 'left 0.2s'
-                      }}
-                    />
-                  </button>
-                </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
                   <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Music size={16} />

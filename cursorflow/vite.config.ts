@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     // Ensure server starts correctly
-    host: 'localhost', // Changed from 0.0.0.0 to localhost for better Windows compatibility
-    port: 5173,
+    host: 'localhost', // Back to localhost for normal development
+    port: 5173, // Back to original port
     strictPort: false, // Allow fallback to other ports if 5173 is busy
     open: true,
     // Optimize dev server performance

@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useCursorTracking } from '../hooks/useCursorTracking';
 import { useVisualEffects } from '../hooks/useVisualEffects';
 import { useNatureAmbient } from '../hooks/useNatureAmbient';
@@ -14,21 +13,21 @@ interface CursorTrackerProps {
   natureEnabled?: boolean;
   melodyEnabled?: boolean;
   drumEnabled?: boolean;
-  ambientEnabled?: boolean;
   onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
 
-// Memoized canvas component for better performance
+// Optimized canvas renderer with adaptive performance
 const CanvasRenderer = React.memo(({ 
   canvasRef, 
   showTrail, 
   showParticles, 
   trail, 
-    particles, 
-    ripples, 
-    natureVisuals, 
-  cursorPosition, 
-    drawNatureBackground
+  particles, 
+  ripples, 
+  natureVisuals, 
+  cursorPosition,
+  performanceLevel,
+  drawNatureBackground
 }: {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   showTrail: boolean;
@@ -38,6 +37,7 @@ const CanvasRenderer = React.memo(({
   ripples: any[];
   natureVisuals: any;
   cursorPosition: { x: number; y: number };
+  performanceLevel: 'high' | 'medium' | 'low';
   drawNatureBackground?: (ctx: CanvasRenderingContext2D) => void;
 }) => {
   useEffect(() => {
@@ -56,29 +56,39 @@ const CanvasRenderer = React.memo(({
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Optimized animation loop with better performance
+    // Adaptive animation loop based on performance
     let animationId: number | null = null;
     let lastRenderTime = 0;
     
     const animate = (currentTime: number) => {
-      // Throttle rendering to 60fps for smoother performance
-      if (currentTime - lastRenderTime >= 16) {
+      // Adaptive frame rate based on performance
+      const targetFrameRate = performanceLevel === 'high' ? 16 : 
+                             performanceLevel === 'medium' ? 20 : 33;
+      
+      if (currentTime - lastRenderTime >= targetFrameRate) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw optimized cloud trail with better blending
+        // Draw nature background effects first (for all performance levels)
+        if (showParticles && drawNatureBackground) {
+          drawNatureBackground(ctx);
+        }
+
+        // Draw optimized trail with adaptive quality
         if (showTrail && trail.length > 1) {
           ctx.save();
           ctx.globalCompositeOperation = 'screen';
           
-          // Render every point for smoother trail
-          for (let i = 0; i < trail.length; i++) {
+          // Skip points based on performance
+          const skipPoints = performanceLevel === 'high' ? 1 : 
+                           performanceLevel === 'medium' ? 2 : 3;
+          
+          for (let i = 0; i < trail.length; i += skipPoints) {
             const point = trail[i];
             const age = Date.now() - point.timestamp;
-            const maxAge = 800; // 800ms max age for longer trail
+            const maxAge = 800;
             const alpha = Math.max(0.1, (1 - age / maxAge) * 0.9);
-            const size = Math.max(6, 20 * alpha); // Bigger trail points
+            const size = Math.max(6, 20 * alpha);
             
-            // Create radial gradient for cloud effect
             const gradient = ctx.createRadialGradient(
               point.x, point.y, 0,
               point.x, point.y, size * 1.5
@@ -97,12 +107,17 @@ const CanvasRenderer = React.memo(({
           ctx.restore();
         }
 
-        // Draw enhanced liquid background ripples
+        // Draw optimized ripples with adaptive count
         if (showParticles && ripples.length > 0) {
           ctx.save();
           ctx.globalCompositeOperation = 'overlay';
           
-          ripples.forEach(ripple => {
+          // Limit ripple rendering based on performance
+          const maxRipplesToRender = performanceLevel === 'high' ? ripples.length : 
+                                    performanceLevel === 'medium' ? Math.floor(ripples.length * 0.7) : 
+                                    Math.floor(ripples.length * 0.5);
+          
+          ripples.slice(0, maxRipplesToRender).forEach(ripple => {
             const alpha = ripple.life * ripple.intensity;
             const gradient = ctx.createRadialGradient(
               ripple.x, ripple.y, 0,
@@ -123,60 +138,63 @@ const CanvasRenderer = React.memo(({
           ctx.restore();
         }
 
-        // Draw enhanced particles with better glow
+        // Draw optimized particles with adaptive rendering
         if (showParticles) {
-          particles.forEach(particle => {
+          // Limit particle rendering based on performance
+          const maxParticlesToRender = performanceLevel === 'high' ? particles.length : 
+                                      performanceLevel === 'medium' ? Math.floor(particles.length * 0.8) : 
+                                      Math.floor(particles.length * 0.6);
+          
+          particles.slice(0, maxParticlesToRender).forEach(particle => {
             ctx.save();
             ctx.globalCompositeOperation = 'screen';
             ctx.globalAlpha = particle.life * 0.9;
             
-            // Draw outer glow
-            const glowGradient = ctx.createRadialGradient(
-              particle.x, particle.y, 0,
-              particle.x, particle.y, particle.size * 4
-            );
-            glowGradient.addColorStop(0, particle.color);
-            glowGradient.addColorStop(0.3, particle.color.replace('0.9', '0.6'));
-            glowGradient.addColorStop(0.7, particle.color.replace('0.9', '0.3'));
-            glowGradient.addColorStop(1, 'transparent');
-            
-            ctx.fillStyle = glowGradient;
-            ctx.beginPath();
-            ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw core particle
-            ctx.fillStyle = particle.color.replace('0.9', '1');
-            ctx.beginPath();
-            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-            ctx.fill();
+            // Simplified rendering for low performance
+            if (performanceLevel === 'low') {
+              ctx.fillStyle = particle.color;
+              ctx.beginPath();
+              ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              // Full glow effect for medium/high performance
+              const glowGradient = ctx.createRadialGradient(
+                particle.x, particle.y, 0,
+                particle.x, particle.y, particle.size * 4
+              );
+              glowGradient.addColorStop(0, particle.color);
+              glowGradient.addColorStop(0.3, particle.color.replace('0.9', '0.6'));
+              glowGradient.addColorStop(0.7, particle.color.replace('0.9', '0.3'));
+              glowGradient.addColorStop(1, 'transparent');
+              
+              ctx.fillStyle = glowGradient;
+              ctx.beginPath();
+              ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
+              ctx.fill();
+              
+              ctx.fillStyle = particle.color.replace('0.9', '1');
+              ctx.beginPath();
+              ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+              ctx.fill();
+            }
             
             ctx.restore();
           });
         }
 
-        // Draw nature ambient background effects
-        if (showParticles) {
+        // Draw nature background gradient (only for high performance)
+        if (showParticles && performanceLevel === 'high') {
           ctx.save();
           ctx.globalCompositeOperation = 'overlay';
           
-          // Create smooth background gradient based on mouse position
-          const xNormalized = cursorPosition.x / window.innerWidth;
-          const yNormalized = cursorPosition.y / window.innerHeight;
+          // const xNormalized = cursorPosition.x / window.innerWidth;
+          // const yNormalized = cursorPosition.y / window.innerHeight;
           
-          // Calculate smooth color blending
-          const seaColor = `rgba(0, 150, 255, ${natureVisuals.sea.intensity * 0.2})`;
-          const rainColor = `rgba(100, 100, 255, ${natureVisuals.rain.intensity * 0.3})`;
-          const riverColor = `rgba(0, 200, 150, ${natureVisuals.river.intensity * 0.2})`;
-          const waterfallColor = `rgba(0, 255, 200, ${natureVisuals.waterfall.intensity * 0.25})`;
-          
-          // Create radial gradient from mouse position
           const gradient = ctx.createRadialGradient(
             cursorPosition.x, cursorPosition.y, 0,
             cursorPosition.x, cursorPosition.y, Math.max(window.innerWidth, window.innerHeight) * 0.8
           );
           
-          // Blend colors based on nature intensities
           const centerColor = `rgba(${
             Math.floor((natureVisuals.sea.intensity * 0 + natureVisuals.rain.intensity * 100 + natureVisuals.river.intensity * 0 + natureVisuals.waterfall.intensity * 0) / 4)
           }, ${
@@ -192,74 +210,7 @@ const CanvasRenderer = React.memo(({
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
           
-          // Rain effect - falling streaks across entire screen
-          if (natureVisuals.rain.intensity > 0.1) {
-            const rainAlpha = natureVisuals.rain.intensity * 0.4;
-            ctx.strokeStyle = `rgba(100, 100, 255, ${rainAlpha})`;
-            ctx.lineWidth = 1;
-            for (let i = 0; i < 30; i++) {
-              const x = Math.random() * window.innerWidth;
-              const y = Math.random() * window.innerHeight;
-              ctx.beginPath();
-              ctx.moveTo(x, y);
-              ctx.lineTo(x + (Math.random() - 0.5) * 10, y + 30);
-              ctx.stroke();
-            }
-          }
-          
-          // Sea waves - gentle horizontal waves
-          if (natureVisuals.sea.intensity > 0.1) {
-            const seaAlpha = natureVisuals.sea.intensity * 0.2;
-            ctx.strokeStyle = `rgba(0, 150, 255, ${seaAlpha})`;
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 2; i++) {
-              const y = window.innerHeight * (0.3 + i * 0.4);
-              ctx.beginPath();
-              ctx.moveTo(0, y);
-              for (let x = 0; x < window.innerWidth; x += 20) {
-                const waveY = y + Math.sin(x * 0.01 + Date.now() * 0.001) * 8;
-                ctx.lineTo(x, waveY);
-              }
-              ctx.stroke();
-            }
-          }
-          
-          // River flow - horizontal flowing lines
-          if (natureVisuals.river.intensity > 0.1) {
-            const riverAlpha = natureVisuals.river.intensity * 0.2;
-            ctx.strokeStyle = `rgba(0, 200, 150, ${riverAlpha})`;
-            ctx.lineWidth = 3;
-            for (let i = 0; i < 2; i++) {
-              const y = window.innerHeight * (0.4 + i * 0.2);
-              ctx.beginPath();
-              ctx.moveTo(0, y);
-              for (let x = 0; x < window.innerWidth; x += 15) {
-                const flowY = y + Math.sin(x * 0.02 + Date.now() * 0.002) * 5;
-                ctx.lineTo(x, flowY);
-              }
-              ctx.stroke();
-            }
-          }
-          
-          // Waterfall mist - rising particles
-          if (natureVisuals.waterfall.intensity > 0.1) {
-            const waterfallAlpha = natureVisuals.waterfall.intensity * 0.3;
-            ctx.fillStyle = `rgba(0, 255, 200, ${waterfallAlpha})`;
-            for (let i = 0; i < 10; i++) {
-              const x = window.innerWidth * 0.7 + Math.random() * window.innerWidth * 0.3;
-              const y = window.innerHeight * 0.5 + Math.random() * window.innerHeight * 0.5;
-              ctx.beginPath();
-              ctx.arc(x, y, 2 + Math.random() * 2, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          
           ctx.restore();
-        }
-
-        // Draw subtle nature background effects (rain, lightning, mist)
-        if (showParticles && drawNatureBackground) {
-          drawNatureBackground(ctx);
         }
 
         lastRenderTime = currentTime;
@@ -276,7 +227,7 @@ const CanvasRenderer = React.memo(({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [showTrail, showParticles, trail, particles, ripples, natureVisuals, cursorPosition, drawNatureBackground]);
+  }, [showTrail, showParticles, trail, particles, ripples, natureVisuals, cursorPosition, performanceLevel, drawNatureBackground]);
 
   return null;
 });
@@ -289,7 +240,6 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   natureEnabled = true,
   melodyEnabled = true,
   drumEnabled = true,
-  ambientEnabled = true,
   onMouseMove
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -301,15 +251,15 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     addParticles, 
     updateTrail, 
     natureVisuals, 
-    updateNatureVisuals, 
-    addNatureParticles,
+    updateNatureVisuals,
     addNatureBackground,
-    drawNatureBackground
+    drawNatureBackground,
+    performanceLevel
   } = useVisualEffects({
     enabled: showParticles || showTrail 
   });
 
-  // Initialize audio systems with proper error handling
+  // Initialize audio systems
   const natureSystem = useNatureAmbient({ 
     enabled: natureEnabled && audioEnabled 
   });
@@ -322,95 +272,45 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     enabled: drumEnabled && audioEnabled 
   });
 
-  // Safely destructure audio system functions with fallbacks
-  const { 
-    startNature, 
-    updateNatureFromMouse, 
-    isPlaying: isNaturePlaying, 
-    stopNature 
-  } = natureSystem || {};
-  
-  const { 
-    startMelody, 
-    updateMelodyFromMouse, 
-    isPlaying: isMelodyPlaying, 
-    stopMelody 
-  } = melodySystem || {};
-  
-  const { 
-    startRhythm, 
-    updateRhythmFromMouse, 
-    isPlaying: isRhythmPlaying, 
-    stopRhythm 
-  } = rhythmSystem || {};
-
-  // Memoized audio systems status for debugging
-  const audioSystemsStatus = useMemo(() => ({
-    natureEnabled,
-    isNaturePlaying,
-    melodyEnabled,
-    isMelodyPlaying,
-    drumEnabled,
-    isRhythmPlaying
-  }), [natureEnabled, isNaturePlaying, melodyEnabled, isMelodyPlaying, drumEnabled, isRhythmPlaying]);
-
-  // Handle cursor movement with throttling - optimized with useCallback
+  // Optimized cursor update handler with adaptive throttling
   const handleCursorUpdate = useCallback(() => {
     if (!enabled) return;
 
     updateTrail(cursorPosition.x, cursorPosition.y);
     
+    // Adaptive particle generation based on performance
     if (isMoving && showParticles) {
-      // Add particles more frequently for smoother effect
-      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, 2);
+      const particleCount = performanceLevel === 'high' ? 2 : 
+                           performanceLevel === 'medium' ? 1 : 1;
+      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, particleCount);
     }
 
-    // Update nature visuals based on mouse position
-    if (showParticles && updateNatureVisuals) {
+    // Update nature visuals (only for high performance)
+    if (showParticles && updateNatureVisuals && performanceLevel === 'high') {
       updateNatureVisuals(cursorPosition.x, cursorPosition.y);
     }
 
-    // Add nature background effects based on audio intensity
+    // Add nature background effects (rain, lightning, mist)
     if (showParticles && addNatureBackground) {
       addNatureBackground();
     }
 
-    // Update audio systems based on mouse movement with enhanced error handling
+    // Update audio systems
     if (audioEnabled) {
-      // Update nature ambient based on mouse movement
-      if (natureEnabled && updateNatureFromMouse) {
-        try {
-          updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        } catch (error) {
-          console.error('Error updating nature audio:', error);
-        }
+      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
+        natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
       
-      // Update melody ambient based on mouse movement
-      if (melodyEnabled && updateMelodyFromMouse) {
-        try {
-          updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        } catch (error) {
-          console.error('Error updating melody audio:', error);
-        }
+      if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
+        melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
       
-      // Update rhythm ambient based on mouse movement
-      if (drumEnabled && updateRhythmFromMouse) {
-        try {
-          updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        } catch (error) {
-          console.error('Error updating rhythm audio:', error);
-        }
+      if (drumEnabled && rhythmSystem?.updateRhythmFromMouse) {
+        rhythmSystem.updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
 
-      // Call parent mouse move handler
       if (onMouseMove) {
-        try {
-          onMouseMove(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        } catch (error) {
-          console.error('Error in parent mouse move handler:', error);
-        }
+        onMouseMove(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
     }
   }, [
@@ -427,34 +327,27 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     updateTrail,
     addParticles,
     updateNatureVisuals,
-    addNatureParticles,
+    addNatureBackground,
     natureSystem,
     melodySystem,
     rhythmSystem,
-    updateNatureFromMouse,
-    updateMelodyFromMouse,
-    updateRhythmFromMouse,
-    onMouseMove
+    onMouseMove,
+    performanceLevel
   ]);
 
   useEffect(() => {
     handleCursorUpdate();
   }, [handleCursorUpdate]);
 
-  // Debug logging for audio systems
-  useEffect(() => {
-    console.log('Beautiful Audio Systems Status:', audioSystemsStatus);
-  }, [audioSystemsStatus]);
-
   if (!enabled) return null;
 
   return (
     <>
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-30"
-      style={{ mixBlendMode: 'screen' }}
-    />
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 pointer-events-none z-30"
+        style={{ mixBlendMode: 'screen' }}
+      />
       <CanvasRenderer
         canvasRef={canvasRef}
         showTrail={showTrail}
@@ -464,6 +357,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
         ripples={ripples}
         natureVisuals={natureVisuals}
         cursorPosition={cursorPosition}
+        performanceLevel={performanceLevel}
         drawNatureBackground={drawNatureBackground}
       />
     </>

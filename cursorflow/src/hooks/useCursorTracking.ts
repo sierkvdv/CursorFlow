@@ -30,7 +30,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const rafRef = useRef<number | null>(null);
   const throttleTimeoutRef = useRef<number | null>(null);
   
-  // Performance optimization: reuse objects to reduce garbage collection
+  // Reuse objects to reduce garbage collection
   const positionObjectRef = useRef<CursorPosition>({
     x: 0,
     y: 0,
@@ -38,7 +38,6 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     direction: 'none'
   });
 
-  // Memoized calculation functions
   const calculateVelocity = useCallback((currentX: number, currentY: number, lastX: number, lastY: number, timeDiff: number) => {
     const distance = Math.sqrt(Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2));
     return distance / timeDiff * sensitivity;
@@ -55,11 +54,10 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     }
   }, []);
 
-  // Optimized mouse move handler with throttling
+  // Optimized mouse move handler
   const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!enabled) return;
 
-    // Throttle mouse events for better performance
     if (throttleTimeoutRef.current) {
       return;
     }
@@ -79,21 +77,20 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state immediately for more responsive feedback
-    const shouldBeMoving = velocity > 0.003; // Even lower threshold for smoother response
+    // Update moving state
+    const shouldBeMoving = velocity > 0.003;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
     }
 
-    // Cancel previous RAF to prevent multiple updates
+    // Cancel previous RAF
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
 
-    // Use requestAnimationFrame for smoother updates and reuse object
+    // Use requestAnimationFrame for smooth updates
     rafRef.current = requestAnimationFrame(() => {
-      // Reuse the same object to reduce garbage collection
       positionObjectRef.current.x = newPosition.x;
       positionObjectRef.current.y = newPosition.y;
       positionObjectRef.current.velocity = velocity;
@@ -106,12 +103,86 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     lastTimeRef.current = currentTime;
   }, [enabled, calculateVelocity, calculateDirection, throttleMs]);
 
+  // Touch event handlers for mobile support
+  const handleTouchStart = useCallback((event: TouchEvent) => {
+    if (!enabled) return;
+    
+    const touch = event.touches[0];
+    if (touch) {
+      const newPosition = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+      
+      lastPositionRef.current = newPosition;
+      lastTimeRef.current = performance.now();
+      setIsMoving(true);
+      isMovingRef.current = true;
+    }
+  }, [enabled]);
+
+  const handleTouchMove = useCallback((event: TouchEvent) => {
+    if (!enabled) return;
+
+    if (throttleTimeoutRef.current) {
+      return;
+    }
+
+    throttleTimeoutRef.current = window.setTimeout(() => {
+      throttleTimeoutRef.current = null;
+    }, throttleMs);
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    const currentTime = performance.now();
+    const timeDiff = Math.max(1, currentTime - lastTimeRef.current);
+    
+    const newPosition = {
+      x: touch.clientX,
+      y: touch.clientY
+    };
+
+    const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
+    const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
+
+    // Update moving state
+    const shouldBeMoving = velocity > 0.003;
+    if (shouldBeMoving !== isMovingRef.current) {
+      isMovingRef.current = shouldBeMoving;
+      setIsMoving(shouldBeMoving);
+    }
+
+    // Cancel previous RAF
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    // Use requestAnimationFrame for smooth updates
+    rafRef.current = requestAnimationFrame(() => {
+      positionObjectRef.current.x = newPosition.x;
+      positionObjectRef.current.y = newPosition.y;
+      positionObjectRef.current.velocity = velocity;
+      positionObjectRef.current.direction = direction;
+      
+      setCursorPosition({ ...positionObjectRef.current });
+    });
+
+    lastPositionRef.current = newPosition;
+    lastTimeRef.current = currentTime;
+  }, [enabled, calculateVelocity, calculateDirection, throttleMs]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsMoving(false);
+    isMovingRef.current = false;
+  }, []);
+
   const handleMouseLeave = useCallback(() => {
     setIsMoving(false);
     isMovingRef.current = false;
   }, []);
 
-  // Memoized return value to prevent unnecessary re-renders
+  // Memoized return value
   const returnValue = useMemo(() => ({
     cursorPosition,
     isMoving,
@@ -123,10 +194,16 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
@@ -134,7 +211,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
         clearTimeout(throttleTimeoutRef.current);
       }
     };
-  }, [enabled, handleMouseMove, handleMouseLeave]);
+  }, [enabled, handleMouseMove, handleMouseLeave, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   return returnValue;
 }; 

@@ -40,8 +40,8 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   }, []);
 
   return (
-    <div className="fixed top-8 right-8 z-30 flex flex-col gap-4">
-      {/* Audio Button */}
+    <div className="fixed top-8 right-8 z-30 flex flex-col gap-6">
+      {/* Audio Button - MUCH LARGER */}
       <motion.button
         variants={buttonVariants}
         initial="initial"
@@ -51,17 +51,17 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleAudio}
         onMouseEnter={() => handleMouseEnter('audio')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-12 h-12 bg-gradient-to-br from-secondary/20 to-secondary/10 backdrop-blur-md border border-secondary/30 rounded-2xl hover:border-secondary/50 hover:from-secondary/30 hover:to-secondary/20 transition-all duration-500 shadow-lg hover:shadow-secondary/25"
+        className="relative group w-16 h-16 bg-gradient-to-br from-blue-500/30 to-blue-600/20 backdrop-blur-md border-2 border-blue-400/50 rounded-2xl hover:border-blue-300/70 hover:from-blue-400/40 hover:to-blue-500/30 transition-all duration-500 shadow-xl hover:shadow-blue-500/30 hover:scale-110"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           {audioEnabled ? (
-            <Volume2 className="w-5 h-5 text-secondary group-hover:text-secondary/80 transition-colors" />
+            <Volume2 className="w-8 h-8 text-blue-200 group-hover:text-blue-100 transition-colors" />
           ) : (
-            <VolumeX className="w-5 h-5 text-gray-400 group-hover:text-gray-300 transition-colors" />
+            <VolumeX className="w-8 h-8 text-gray-400 group-hover:text-gray-300 transition-colors" />
           )}
         </div>
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-secondary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-blue-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Tooltip */}
         <AnimatePresence>
@@ -70,11 +70,11 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-black/80 backdrop-blur-md border border-secondary/30 rounded-xl px-3 py-2 text-sm whitespace-nowrap shadow-xl"
+              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-blue-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
-              <div className="text-secondary font-medium">{audioEnabled ? 'Audio ON' : 'Audio OFF'}</div>
+              <div className="text-blue-200 font-bold text-lg">{audioEnabled ? '🔊 Audio ON' : '🔇 Audio OFF'}</div>
               {audioDebug && (
-                <div className="mt-2 text-xs text-gray-300 space-y-1">
+                <div className="mt-2 text-sm text-gray-300 space-y-1">
                   <div>Supported: {audioDebug.isAudioSupported ? '✅' : '❌'}</div>
                   <div>Interacted: {audioDebug.hasUserInteracted ? '✅' : '❌'}</div>
                   <div>Muted: {audioDebug.isMuted ? '🔇' : '🔊'}</div>
@@ -85,7 +85,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         </AnimatePresence>
       </motion.button>
 
-      {/* Effects Button */}
+      {/* Effects Button - MUCH LARGER */}
       <motion.button
         variants={buttonVariants}
         initial="initial"
@@ -95,17 +95,17 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleEffects}
         onMouseEnter={() => handleMouseEnter('effects')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-md border border-primary/30 rounded-2xl hover:border-primary/50 hover:from-primary/30 hover:to-primary/20 transition-all duration-500 shadow-lg hover:shadow-primary/25"
+        className="relative group w-16 h-16 bg-gradient-to-br from-purple-500/30 to-purple-600/20 backdrop-blur-md border-2 border-purple-400/50 rounded-2xl hover:border-purple-300/70 hover:from-purple-400/40 hover:to-purple-500/30 transition-all duration-500 shadow-xl hover:shadow-purple-500/30 hover:scale-110"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           {effectsEnabled ? (
-            <Eye className="w-5 h-5 text-primary group-hover:text-primary/80 transition-colors" />
+            <Eye className="w-8 h-8 text-purple-200 group-hover:text-purple-100 transition-colors" />
           ) : (
-            <EyeOff className="w-5 h-5 text-gray-400 group-hover:text-gray-300 transition-colors" />
+            <EyeOff className="w-8 h-8 text-gray-400 group-hover:text-gray-300 transition-colors" />
           )}
         </div>
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-purple-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Tooltip */}
         <AnimatePresence>
@@ -114,15 +114,15 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-black/80 backdrop-blur-md border border-primary/30 rounded-xl px-3 py-2 text-sm whitespace-nowrap shadow-xl"
+              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-purple-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
-              <div className="text-primary font-medium">{effectsEnabled ? 'Effects ON' : 'Effects OFF'}</div>
+              <div className="text-purple-200 font-bold text-lg">{effectsEnabled ? '👁️ Effects ON' : '🙈 Effects OFF'}</div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.button>
 
-      {/* Settings Button */}
+      {/* Settings Button - MUCH LARGER */}
       <motion.button
         variants={buttonVariants}
         initial="initial"
@@ -132,13 +132,13 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         onClick={onToggleSettings}
         onMouseEnter={() => handleMouseEnter('settings')}
         onMouseLeave={handleMouseLeave}
-        className="relative group w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/10 backdrop-blur-md border border-accent/30 rounded-2xl hover:border-accent/50 hover:from-accent/30 hover:to-accent/20 transition-all duration-500 shadow-lg hover:shadow-accent/25"
+        className="relative group w-16 h-16 bg-gradient-to-br from-orange-500/30 to-orange-600/20 backdrop-blur-md border-2 border-orange-400/50 rounded-2xl hover:border-orange-300/70 hover:from-orange-400/40 hover:to-orange-500/30 transition-all duration-500 shadow-xl hover:shadow-orange-500/30 hover:scale-110"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
-          <Settings className="w-5 h-5 text-accent group-hover:text-accent/80 transition-colors" />
+          <Settings className="w-8 h-8 text-orange-200 group-hover:text-orange-100 transition-colors" />
         </div>
         {/* Glow Effect */}
-        <div className="absolute inset-0 bg-accent/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-orange-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Tooltip */}
         <AnimatePresence>
@@ -147,9 +147,9 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-black/80 backdrop-blur-md border border-accent/30 rounded-xl px-3 py-2 text-sm whitespace-nowrap shadow-xl"
+              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-orange-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
-              <div className="text-accent font-medium">Settings</div>
+              <div className="text-orange-200 font-bold text-lg">⚙️ Settings</div>
             </motion.div>
           )}
         </AnimatePresence>

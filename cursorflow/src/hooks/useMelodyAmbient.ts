@@ -9,68 +9,59 @@ export const useMelodyAmbient = ({
   enabled = false,
   baseVolume = 0.15
 }: MelodyAmbientOptions = {}) => {
-  console.log('🎵 useMelodyAmbient hook called with enabled:', enabled);
-  
   const audioContextRef = useRef<AudioContext | null>(null);
   const isPlayingRef = useRef(false);
   const lastUpdateRef = useRef(0);
   const lastNoteTimeRef = useRef(0);
   
-  // Multiple oscillators for rich melody
+  // Oscillators
   const melodyOsc1Ref = useRef<OscillatorNode | null>(null);
   const melodyOsc2Ref = useRef<OscillatorNode | null>(null);
   const harmonyOsc1Ref = useRef<OscillatorNode | null>(null);
   const harmonyOsc2Ref = useRef<OscillatorNode | null>(null);
   
-  // Gain nodes for each oscillator
+  // Gain nodes
   const melodyGain1Ref = useRef<GainNode | null>(null);
   const melodyGain2Ref = useRef<GainNode | null>(null);
   const harmonyGain1Ref = useRef<GainNode | null>(null);
   const harmonyGain2Ref = useRef<GainNode | null>(null);
   
-  // Filter nodes for tone shaping
+  // Filters
   const melodyFilterRef = useRef<BiquadFilterNode | null>(null);
   const harmonyFilterRef = useRef<BiquadFilterNode | null>(null);
   
-  // LFO for modulation
+  // LFO
   const lfoRef = useRef<OscillatorNode | null>(null);
   const lfoGainRef = useRef<GainNode | null>(null);
   
-  // Delay for echo effect
+  // Delay
   const delayRef = useRef<DelayNode | null>(null);
   const delayGainRef = useRef<GainNode | null>(null);
 
-  // Musical scales and patterns
-  const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00]; // C, D, E, G, A
-  const minorScale = [261.63, 293.66, 311.13, 349.23, 392.00, 415.30, 466.16]; // C minor
-  const majorScale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88]; // C major
+  // Musical scales
+  const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00];
+  const minorScale = [261.63, 293.66, 311.13, 349.23, 392.00, 415.30, 466.16];
+  const majorScale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
 
-  // Initialize audio context and melody system
+  // Initialize audio context
   const initAudio = useCallback(async () => {
     if (!enabled) return;
 
     try {
-      console.log('🎵 Initializing responsive melody system...');
-      
-      // Close existing context if it exists
+      // Close existing context
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        console.log('🎵 Closing existing audio context...');
         await audioContextRef.current.close();
       }
       
       // Create new audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Resume audio context if suspended
+      // Resume if suspended
       if (audioContextRef.current.state === 'suspended') {
-        console.log('🎵 Audio context suspended, attempting to resume...');
         await audioContextRef.current.resume();
-        console.log('🎵 Audio context resumed');
       }
       
-      console.log('🎵 Audio context state:', audioContextRef.current.state);
-      
-      // Create LFO for modulation
+      // Create LFO
       lfoRef.current = audioContextRef.current.createOscillator();
       lfoRef.current.type = 'sine';
       lfoRef.current.frequency.setValueAtTime(0.2, audioContextRef.current.currentTime);
@@ -83,7 +74,7 @@ export const useMelodyAmbient = ({
       harmonyGain1Ref.current = audioContextRef.current.createGain();
       harmonyGain2Ref.current = audioContextRef.current.createGain();
       
-      // Create filter nodes
+      // Create filters
       melodyFilterRef.current = audioContextRef.current.createBiquadFilter();
       melodyFilterRef.current.type = 'lowpass';
       melodyFilterRef.current.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
@@ -94,7 +85,7 @@ export const useMelodyAmbient = ({
       harmonyFilterRef.current.frequency.setValueAtTime(600, audioContextRef.current.currentTime);
       harmonyFilterRef.current.Q.setValueAtTime(0.8, audioContextRef.current.currentTime);
       
-      // Create delay effect
+      // Create delay
       delayRef.current = audioContextRef.current.createDelay();
       delayRef.current.delayTime.setValueAtTime(0.3, audioContextRef.current.currentTime);
       
@@ -139,48 +130,45 @@ export const useMelodyAmbient = ({
       delayRef.current.connect(delayGainRef.current);
       delayGainRef.current.connect(audioContextRef.current.destination);
       
-      // Start all oscillators
+      // Start oscillators
       melodyOsc1Ref.current.start();
       melodyOsc2Ref.current.start();
       harmonyOsc1Ref.current.start();
       harmonyOsc2Ref.current.start();
       lfoRef.current.start();
       
-             // Set initial volumes to 0 - oscillators will be controlled by gain envelopes
-       melodyGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       melodyGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       harmonyGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-       harmonyGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      // Set initial volumes to 0
+      melodyGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      melodyGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      harmonyGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      harmonyGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
       
       isPlayingRef.current = true;
-      console.log('🎵 Responsive melody system initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize melody system:', error);
+      console.error('Failed to initialize melody system:', error);
     }
   }, [enabled, baseVolume]);
 
-  // Update melody based on mouse movement
+  // Update melody from mouse movement
   const updateMelodyFromMouse = useCallback((x: number, y: number, velocity: number) => {
     if (!enabled || !audioContextRef.current || !isPlayingRef.current) {
       return;
     }
 
-    // Throttle updates for performance
+    // Throttle updates
     const now = Date.now();
-    if (now - lastUpdateRef.current < 20) return; // Very fast updates for responsive melody
+    if (now - lastUpdateRef.current < 20) return;
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
     const audioTime = ctx.currentTime;
     
-    // Calculate normalized mouse position (0-1)
     const xNormalized = x / window.innerWidth;
     const yNormalized = y / window.innerHeight;
     
-    // Velocity-based intensity
     const velocityMultiplier = 1 + (velocity * 2.0);
     
-    // Determine which scale to use based on mouse position
+    // Determine scale
     let currentScale = pentatonicScale;
     if (xNormalized < 0.33) {
       currentScale = pentatonicScale;
@@ -190,20 +178,18 @@ export const useMelodyAmbient = ({
       currentScale = majorScale;
     }
     
-    // Calculate base frequency based on Y position
+    // Calculate frequencies
     const baseFreqIndex = Math.floor(yNormalized * currentScale.length);
     const baseFreq = currentScale[Math.min(baseFreqIndex, currentScale.length - 1)];
     
-    // Add octave variation based on velocity
     const octaveMultiplier = 1 + Math.floor(velocity * 3);
     const melodyFreq1 = baseFreq * octaveMultiplier;
     const melodyFreq2 = baseFreq * (octaveMultiplier + 1);
     
-    // Harmony frequencies (3rds and 5ths)
-    const harmonyFreq1 = baseFreq * 1.25; // Major third
-    const harmonyFreq2 = baseFreq * 1.5;  // Perfect fifth
+    const harmonyFreq1 = baseFreq * 1.25;
+    const harmonyFreq2 = baseFreq * 1.5;
     
-    // Update melody frequencies with smooth transitions
+    // Update frequencies
     if (melodyOsc1Ref.current && melodyOsc2Ref.current) {
       melodyOsc1Ref.current.frequency.setTargetAtTime(melodyFreq1, audioTime, 0.1);
       melodyOsc2Ref.current.frequency.setTargetAtTime(melodyFreq2, audioTime, 0.1);
@@ -214,14 +200,11 @@ export const useMelodyAmbient = ({
       harmonyOsc2Ref.current.frequency.setTargetAtTime(harmonyFreq2, audioTime, 0.15);
     }
     
-    // Dynamic volume based on mouse movement
+    // Calculate volumes
     const melodyVolume = Math.max(0.1, baseVolume * velocityMultiplier * 2.0);
     const harmonyVolume = Math.max(0.05, baseVolume * velocityMultiplier * 1.5);
     
-         // Note: Gain nodes are now controlled by velocity threshold - only play when moving
-     // Volumes are set to 0 by default and only increased when velocity > 0.1
-    
-    // Update filters based on mouse position
+    // Update filters
     if (melodyFilterRef.current) {
       const cutoff = 800 - (yNormalized * 400) + Math.sin(audioTime * 0.5) * 100;
       melodyFilterRef.current.frequency.setTargetAtTime(Math.max(200, cutoff), audioTime, 0.3);
@@ -232,35 +215,33 @@ export const useMelodyAmbient = ({
       harmonyFilterRef.current.frequency.setTargetAtTime(Math.max(150, cutoff), audioTime, 0.35);
     }
     
-    // Update LFO rate based on velocity
+    // Update LFO
     if (lfoRef.current) {
       const lfoRate = 0.2 + (velocity * 0.5) + Math.sin(audioTime * 0.3) * 0.2;
       lfoRef.current.frequency.setTargetAtTime(lfoRate, audioTime, 0.4);
     }
     
-    // Update delay time based on mouse position
+    // Update delay
     if (delayRef.current) {
       const delayTime = 0.1 + (xNormalized * 0.4) + Math.sin(audioTime * 0.2) * 0.1;
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.5);
     }
     
-         // Trigger new notes based on velocity threshold
-     if (velocity > 0.1 && audioTime - lastNoteTimeRef.current > 0.1) {
-       lastNoteTimeRef.current = audioTime;
-       
-       // Play melody with envelope
-       playMelodyNote(melodyFreq1, melodyFreq2, harmonyFreq1, harmonyFreq2, melodyVolume, harmonyVolume, velocity);
-       
-       // Sometimes create a quick melodic flourish
-       if (velocity > 0.3 && Math.random() > 0.7) {
-         const flourishFreq = currentScale[Math.floor(Math.random() * currentScale.length)];
-         playMelodicFlourish(flourishFreq, velocity);
-       }
-     }
+    // Trigger notes
+    if (velocity > 0.1 && audioTime - lastNoteTimeRef.current > 0.1) {
+      lastNoteTimeRef.current = audioTime;
+      
+      playMelodyNote(melodyFreq1, melodyFreq2, harmonyFreq1, harmonyFreq2, melodyVolume, harmonyVolume, velocity);
+      
+      if (velocity > 0.3 && Math.random() > 0.7) {
+        const flourishFreq = currentScale[Math.floor(Math.random() * currentScale.length)];
+        playMelodicFlourish(flourishFreq, velocity);
+      }
+    }
     
   }, [enabled, baseVolume]);
 
-  // Play a melody note with envelope
+  // Play melody note
   const playMelodyNote = useCallback((melodyFreq1: number, melodyFreq2: number, harmonyFreq1: number, harmonyFreq2: number, melodyVolume: number, harmonyVolume: number, velocity: number) => {
     if (!audioContextRef.current) return;
     
@@ -279,7 +260,7 @@ export const useMelodyAmbient = ({
       harmonyOsc2Ref.current.frequency.setValueAtTime(harmonyFreq2, audioTime);
     }
     
-    // Apply envelope to gain nodes
+    // Apply envelope
     if (melodyGain1Ref.current && melodyGain2Ref.current) {
       melodyGain1Ref.current.gain.setValueAtTime(0, audioTime);
       melodyGain1Ref.current.gain.linearRampToValueAtTime(melodyVolume * 0.8, audioTime + 0.01);
@@ -301,7 +282,7 @@ export const useMelodyAmbient = ({
     }
   }, []);
 
-  // Play a quick melodic flourish
+  // Play melodic flourish
   const playMelodicFlourish = useCallback((frequency: number, velocity: number) => {
     if (!audioContextRef.current) return;
     
@@ -309,7 +290,6 @@ export const useMelodyAmbient = ({
     const audioTime = ctx.currentTime;
     const duration = 0.2 + (velocity * 0.3);
     
-    // Create oscillator for flourish
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -319,7 +299,6 @@ export const useMelodyAmbient = ({
     osc.connect(gain);
     gain.connect(ctx.destination);
     
-    // Create envelope
     const volume = baseVolume * velocity * 1.5;
     gain.gain.setValueAtTime(0, audioTime);
     gain.gain.linearRampToValueAtTime(volume, audioTime + 0.01);
@@ -328,7 +307,6 @@ export const useMelodyAmbient = ({
     osc.start(audioTime);
     osc.stop(audioTime + duration + 0.1);
     
-    // Cleanup
     setTimeout(() => {
       try {
         osc.disconnect();
@@ -339,20 +317,17 @@ export const useMelodyAmbient = ({
     }, (duration + 0.2) * 1000);
   }, [baseVolume]);
 
-  // Start melody system
+  // Start melody
   const startMelody = useCallback(async () => {
     if (!enabled || isPlayingRef.current) return;
-    console.log('🎵 Starting responsive melody system...');
     isPlayingRef.current = true;
     await initAudio();
   }, [enabled, initAudio]);
 
-  // Stop melody system
+  // Stop melody
   const stopMelody = useCallback(() => {
-    console.log('🛑 Stopping melody system...');
     isPlayingRef.current = false;
     
-    // Stop all oscillators
     try {
       if (melodyOsc1Ref.current) {
         melodyOsc1Ref.current.stop();
@@ -380,7 +355,6 @@ export const useMelodyAmbient = ({
         lfoRef.current = null;
       }
       
-      // Disconnect gain nodes
       if (melodyGain1Ref.current) {
         melodyGain1Ref.current.disconnect();
         melodyGain1Ref.current = null;
@@ -402,7 +376,6 @@ export const useMelodyAmbient = ({
         lfoGainRef.current = null;
       }
       
-      // Disconnect filters
       if (melodyFilterRef.current) {
         melodyFilterRef.current.disconnect();
         melodyFilterRef.current = null;
@@ -412,7 +385,6 @@ export const useMelodyAmbient = ({
         harmonyFilterRef.current = null;
       }
       
-      // Disconnect delay
       if (delayRef.current) {
         delayRef.current.disconnect();
         delayRef.current = null;
@@ -421,39 +393,32 @@ export const useMelodyAmbient = ({
         delayGainRef.current.disconnect();
         delayGainRef.current = null;
       }
-      
-      console.log('🛑 All melody oscillators and nodes stopped and disconnected');
     } catch (error) {
-      console.error('❌ Error stopping melody system:', error);
+      console.error('Error stopping melody system:', error);
     }
   }, []);
 
   // Auto-start when enabled changes
   useEffect(() => {
     if (enabled && !isPlayingRef.current) {
-      console.log('🎵 Melody: Auto-starting...');
       startMelody();
     } else if (!enabled && isPlayingRef.current) {
-      console.log('🎵 Melody: Auto-stopping...');
       stopMelody();
     }
   }, [enabled, startMelody, stopMelody]);
 
-  // Handle user interaction to start audio context
+  // Handle user interaction
   useEffect(() => {
     const handleUserInteraction = async () => {
       if (enabled && audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        console.log('🎵 User interaction detected, resuming audio context...');
         try {
           await audioContextRef.current.resume();
-          console.log('🎵 Audio context resumed after user interaction');
         } catch (error) {
-          console.error('❌ Failed to resume audio context:', error);
+          console.error('Failed to resume audio context:', error);
         }
       }
     };
 
-    // Listen for any user interaction
     document.addEventListener('click', handleUserInteraction, { once: true });
     document.addEventListener('keydown', handleUserInteraction, { once: true });
     document.addEventListener('mousemove', handleUserInteraction, { once: true });
@@ -469,7 +434,6 @@ export const useMelodyAmbient = ({
   useEffect(() => {
     return () => {
       if (isPlayingRef.current) {
-        console.log('🎵 Component unmounting, cleaning up melody system...');
         stopMelody();
       }
     };
