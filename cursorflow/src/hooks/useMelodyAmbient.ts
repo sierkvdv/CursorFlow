@@ -56,16 +56,9 @@ export const useMelodyAmbient = ({
       // Create new audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Resume if suspended (important for iOS)
+      // Resume if suspended
       if (audioContextRef.current.state === 'suspended') {
-        try {
-          await audioContextRef.current.resume();
-          console.log('Melody audio context resumed successfully');
-        } catch (error) {
-          console.error('Failed to resume melody audio context:', error);
-          // For iOS, we might need to wait for user interaction
-          return;
-        }
+        await audioContextRef.current.resume();
       }
       
       // Create LFO
@@ -234,13 +227,20 @@ export const useMelodyAmbient = ({
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.5);
     }
     
-    // Trigger notes
-    if (velocity > 0.1 && audioTime - lastNoteTimeRef.current > 0.1) {
+    // Trigger notes - MORE RESPONSIVE FOR MOBILE
+    const isMobile = window.innerWidth <= 768;
+    const velocityThreshold = isMobile ? 0.05 : 0.1; // Lower threshold on mobile
+    const timeThreshold = isMobile ? 0.05 : 0.1; // Faster response on mobile
+    
+    if (velocity > velocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
       lastNoteTimeRef.current = audioTime;
       
       playMelodyNote(melodyFreq1, melodyFreq2, harmonyFreq1, harmonyFreq2, melodyVolume, harmonyVolume, velocity);
       
-      if (velocity > 0.3 && Math.random() > 0.7) {
+      // More frequent flourishes on mobile
+      const flourishThreshold = isMobile ? 0.2 : 0.3;
+      const flourishChance = isMobile ? 0.5 : 0.7;
+      if (velocity > flourishThreshold && Math.random() > flourishChance) {
         const flourishFreq = currentScale[Math.floor(Math.random() * currentScale.length)];
         playMelodicFlourish(flourishFreq, velocity);
       }

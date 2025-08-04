@@ -139,10 +139,13 @@ export const createFrequencyShifter = (audioContext: AudioContext) => {
 };
 
 export const createGlitchClickSound = (audioContext: AudioContext) => {
-  const { oscillator, gainNode } = createOscillator(audioContext, 400, 'square');
-  const filter = createFilter(audioContext, 2000, 'lowpass');
+  const isMobile = window.innerWidth <= 768;
+  const baseFreq = isMobile ? 600 : 400; // Higher frequency on mobile for better audibility
+  
+  const { oscillator, gainNode } = createOscillator(audioContext, baseFreq, 'square');
+  const filter = createFilter(audioContext, isMobile ? 3000 : 2000, 'lowpass'); // Higher cutoff on mobile
   const distortion = createGlitchDistortion(audioContext);
-  const bitCrusher = createBitCrusher(audioContext, 3);
+  const bitCrusher = createBitCrusher(audioContext, isMobile ? 2 : 3); // Less bit crushing on mobile
   const { oscillator: shifterOsc, gainNode: shifterGain } = createFrequencyShifter(audioContext);
   
   // Random glitch effects
@@ -163,9 +166,13 @@ export const createGlitchClickSound = (audioContext: AudioContext) => {
   shifterOsc.start(audioContext.currentTime);
   shifterOsc.stop(audioContext.currentTime + 0.3);
   
-  // Random volume spikes
+  // Random volume spikes - LOUDER ON MOBILE
+  const isMobile = window.innerWidth <= 768;
+  const baseVolume = isMobile ? 0.5 : 0.3; // 67% louder on mobile
+  const volumeVariation = isMobile ? 0.3 : 0.2; // More variation on mobile
+  
   gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-  gainNode.gain.linearRampToValueAtTime(0.3 + Math.random() * 0.2, audioContext.currentTime + 0.01);
+  gainNode.gain.linearRampToValueAtTime(baseVolume + Math.random() * volumeVariation, audioContext.currentTime + 0.01);
   gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2 + Math.random() * 0.1);
   
   oscillator.start(audioContext.currentTime);
