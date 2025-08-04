@@ -255,15 +255,13 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
   /* Ensure rain drops are completely hidden by default */
   display: none;
-  /* Prevent any animation until explicitly enabled */
-  animation: none !important;
 }
 
 .rain-drop.visible {
   opacity: 1;
   visibility: visible;
   display: block;
-  animation: rain-fall linear infinite !important;
+  animation: rain-fall linear infinite;
 }
 
 /* Rain drop timing now handled by inline styles for better variation */
