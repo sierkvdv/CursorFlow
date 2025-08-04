@@ -27,6 +27,7 @@ interface VisualEffectOptions {
   enabled?: boolean;
   particleCount?: number;
   trailLength?: number;
+  rainVisible?: boolean;
 }
 
 // Simplified nature visuals
@@ -46,7 +47,16 @@ interface NatureBackground {
 }
 
 export const useVisualEffects = (options: VisualEffectOptions = {}) => {
-  const { enabled = true, particleCount = 50, trailLength = 30 } = options;
+  const { enabled = true, particleCount = 20, trailLength = 20, rainVisible = false } = options;
+  
+  // Detect Firefox for specific optimizations
+  const isFirefox = useMemo(() => {
+    return navigator.userAgent.includes('Firefox');
+  }, []);
+  
+  // Reduce particle count for Firefox
+  const actualParticleCount = isFirefox ? Math.floor(particleCount * 0.5) : particleCount;
+  const actualTrailLength = isFirefox ? Math.floor(trailLength * 0.7) : trailLength;
   
   // Detect mobile device for performance optimization
   const isMobile = useMemo(() => {
@@ -57,6 +67,10 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [trail, setTrail] = useState<Array<{ x: number; y: number; timestamp: number }>>([]);
   const [ripples, setRipples] = useState<Ripple[]>([]);
+  
+  // Use reduced counts for Firefox
+  const maxParticles = actualParticleCount;
+  const maxTrailLength = actualTrailLength;
   const [natureVisuals, setNatureVisuals] = useState<NatureVisuals>({
     sea: { intensity: 0, color: 'rgba(0, 150, 255, 0.3)' },
     rain: { intensity: 0, color: 'rgba(100, 100, 255, 0.4)' },
@@ -149,7 +163,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     if (currentTime - lastParticleTimeRef.current < 50) return; // Throttle particle generation
     
     const newParticles: Particle[] = [];
-    const maxParticles = isMobile ? 10 : particleCount;
+    const maxParticles = isMobile ? 10 : actualParticleCount;
     
     for (let i = 0; i < Math.min(adjustedCount, maxParticles - particles.length); i++) {
       newParticles.push(createParticle(x, y, velocity));
@@ -159,7 +173,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       setParticles(prev => [...prev, ...newParticles].slice(-maxParticles));
       lastParticleTimeRef.current = currentTime;
     }
-  }, [enabled, createParticle, particles.length, particleCount, isMobile]);
+  }, [enabled, createParticle, particles.length, actualParticleCount, isMobile]);
 
   const updateTrail = useCallback((x: number, y: number) => {
     if (!enabled) return;
@@ -170,13 +184,13 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       const newTrail = [...filteredTrail, { x, y, timestamp: currentTime }];
       
       // Limit trail length based on performance
-      const maxTrailLength = performanceLevelRef.current === 'high' ? trailLength : 
-                            performanceLevelRef.current === 'medium' ? Math.floor(trailLength * 0.8) : 
-                            Math.floor(trailLength * 0.6);
+          const maxTrailLength = performanceLevelRef.current === 'high' ? actualTrailLength :
+                          performanceLevelRef.current === 'medium' ? Math.floor(actualTrailLength * 0.8) :
+                          Math.floor(actualTrailLength * 0.6);
       
       return newTrail.slice(-maxTrailLength);
     });
-  }, [enabled, trailLength]);
+  }, [enabled, actualTrailLength]);
 
   const clearTrail = useCallback(() => {
     setTrail([]);
@@ -193,23 +207,25 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     // Only add effects for medium/high performance
     if (performanceLevelRef.current === 'low') return;
 
-    // CONSTANT RAIN - Always add some rain drops
-    const newDrops: Array<{ x: number; y: number; speed: number; life: number }> = [];
-    const baseDropCount = performanceLevelRef.current === 'high' ? 1 : 1; // Reduced back to subtle
-    
-    for (let i = 0; i < baseDropCount; i++) {
-      newDrops.push({
-        x: Math.random() * window.innerWidth,
-        y: -10,
-        speed: 2 + Math.random() * 3,
-        life: 1
-      });
+    // CONSTANT RAIN - Only add rain drops if rainVisible is true
+    if (rainVisible) {
+      const newDrops: Array<{ x: number; y: number; speed: number; life: number }> = [];
+      const baseDropCount = performanceLevelRef.current === 'high' ? 1 : 1; // Reduced back to subtle
+      
+      for (let i = 0; i < baseDropCount; i++) {
+        newDrops.push({
+          x: Math.random() * window.innerWidth,
+          y: -10,
+          speed: 2 + Math.random() * 3,
+          life: 1
+        });
+      }
+      
+      setNatureBackground(prev => ({
+        ...prev,
+        rainDrops: [...prev.rainDrops, ...newDrops].slice(-30) // Back to original limit
+      }));
     }
-    
-    setNatureBackground(prev => ({
-      ...prev,
-      rainDrops: [...prev.rainDrops, ...newDrops].slice(-30) // Back to original limit
-    }));
 
     // Add extra rain drops based on audio intensity
     const audioIntensity = Math.random();
@@ -252,7 +268,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
           ...prev,
           lightning: { ...prev.lightning, active: false }
         }));
-      }, 100 + Math.random() * 200);
+      }, 300 + Math.random() * 500); // Much longer lightning duration
     }
 
     // Add mist particles (only for high performance)
@@ -280,7 +296,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       ...prev,
       wind: Math.sin(Date.now() * 0.001) * 0.5 + Math.random() * 0.5
     }));
-  }, [enabled]);
+  }, [enabled, rainVisible]);
 
   // Update nature background animation
   useEffect(() => {
@@ -328,7 +344,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       
       const gradient = ctx.createRadialGradient(
         natureBackground.lightning.x, natureBackground.lightning.y, 0,
-        natureBackground.lightning.x, natureBackground.lightning.y, window.innerWidth * 0.8
+        natureBackground.lightning.x, natureBackground.lightning.y, window.innerWidth * 1.2
       );
       gradient.addColorStop(0, `rgba(255, 255, 255, ${natureBackground.lightning.intensity * intensity})`);
       gradient.addColorStop(0.3, `rgba(200, 220, 255, ${natureBackground.lightning.intensity * secondaryIntensity})`);
@@ -338,17 +354,18 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     }
 
-    // Draw rain drops (much more subtle)
-    if (natureBackground.rainDrops.length > 0) {
-      ctx.strokeStyle = 'rgba(100, 150, 255, 0.1)'; // Much more subtle
-      ctx.lineWidth = 0.5; // Very thin
-      natureBackground.rainDrops.forEach(drop => {
-        ctx.beginPath();
-        ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x + natureBackground.wind * 2, drop.y + 8);
-        ctx.stroke();
-      });
-    }
+    // Draw rain drops (much more subtle) - only if rainVisible is true
+    // TEMPORARILY DISABLED TO FIX STARTUP STREAKS
+    // if (rainVisible && natureBackground.rainDrops.length > 0) {
+    //   ctx.strokeStyle = 'rgba(100, 150, 255, 0.1)'; // Much more subtle
+    //   ctx.lineWidth = 0.5; // Very thin
+    //   natureBackground.rainDrops.forEach(drop => {
+    //     ctx.beginPath();
+    //     ctx.moveTo(drop.x, drop.y);
+    //     ctx.lineTo(drop.x + natureBackground.wind * 2, drop.y + 8);
+    //     ctx.stroke();
+    //   });
+    // }
 
     // Draw mist particles (only for high performance)
     if (natureBackground.mist.length > 0 && performanceLevelRef.current === 'high') {
@@ -361,7 +378,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     }
 
     ctx.restore();
-  }, [enabled, natureBackground]);
+  }, [enabled, natureBackground, rainVisible]);
 
   // Performance monitoring and adaptive scaling
   const updatePerformanceLevel = useCallback(() => {
@@ -382,14 +399,17 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     }
   }, []);
 
-  // Optimized animation loop
+  // Optimized animation loop - IMPROVED FOR SMOOTHNESS AND FIREFOX
   useEffect(() => {
     if (!enabled) return;
 
     const animate = (currentTime: number) => {
       updatePerformanceLevel();
       
-      if (currentTime - lastUpdateTimeRef.current >= 16) {
+      // Firefox needs slower updates for better performance
+      const updateInterval = isFirefox ? 16 : 8; // 60fps for Firefox, 120fps for others
+      
+      if (currentTime - lastUpdateTimeRef.current >= updateInterval) {
         updateParticles();
         updateRipples();
         lastUpdateTimeRef.current = currentTime;
@@ -405,7 +425,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [enabled, updateParticles, updateRipples, updatePerformanceLevel]);
+  }, [enabled, updateParticles, updateRipples, updatePerformanceLevel, isFirefox]);
 
   // Simplified nature visuals update
   const updateNatureVisuals = useCallback((x: number, y: number) => {

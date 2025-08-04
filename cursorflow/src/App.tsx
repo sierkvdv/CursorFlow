@@ -25,8 +25,8 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true);
-      // Show rain after a short delay to prevent early appearance
-      setTimeout(() => setRainVisible(true), 500);
+      // Show rain after a longer delay to prevent early appearance
+      setTimeout(() => setRainVisible(true), 1500);
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -234,18 +234,20 @@ function App() {
         </div>
         
         {/* Background Rain Effect */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
-        </div>
+        {rainVisible && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+          </div>
+        )}
       </div>
 
       {/* Cursor Tracker */}
@@ -258,6 +260,7 @@ function App() {
         drumEnabled={drumEnabled}
         natureEnabled={natureEnabled}
         glitchEnabled={glitchEnabled}
+        rainVisible={rainVisible}
       />
 
       {/* Interactive Elements */}

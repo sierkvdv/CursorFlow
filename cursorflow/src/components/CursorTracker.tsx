@@ -14,6 +14,7 @@ interface CursorTrackerProps {
   melodyEnabled?: boolean;
   drumEnabled?: boolean;
   glitchEnabled?: boolean;
+  rainVisible?: boolean;
   onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
 
@@ -250,6 +251,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   natureEnabled = true,
   melodyEnabled = true,
   drumEnabled = true,
+  rainVisible = false,
   onMouseMove
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -266,7 +268,8 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     drawNatureBackground,
     performanceLevel
   } = useVisualEffects({
-    enabled: showParticles || showTrail 
+    enabled: showParticles || showTrail,
+    rainVisible: rainVisible || false
   });
 
   // Initialize audio systems
@@ -288,22 +291,21 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 
     updateTrail(cursorPosition.x, cursorPosition.y);
     
-    // Adaptive particle generation based on performance
-    if (isMoving && showParticles) {
-      const particleCount = performanceLevel === 'high' ? 2 : 
-                           performanceLevel === 'medium' ? 1 : 1;
+    // Adaptive particle generation based on performance - REDUCED FOR SMOOTHNESS
+    if (isMoving && showParticles && performanceLevel === 'high') {
+      const particleCount = 1; // Always just 1 particle for smoothness
       addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, particleCount);
     }
 
-    // Update nature visuals (only for high performance)
-    if (showParticles && updateNatureVisuals && performanceLevel === 'high') {
-      updateNatureVisuals(cursorPosition.x, cursorPosition.y);
-    }
+    // Update nature visuals (only for high performance) - DISABLED FOR SMOOTHNESS
+    // if (showParticles && updateNatureVisuals && performanceLevel === 'high') {
+    //   updateNatureVisuals(cursorPosition.x, cursorPosition.y);
+    // }
 
-    // Add nature background effects (rain, lightning, mist)
-    if (showParticles && addNatureBackground) {
-      addNatureBackground();
-    }
+    // Add nature background effects (rain, lightning, mist) - DISABLED FOR SMOOTHNESS
+    // if (showParticles && addNatureBackground) {
+    //   addNatureBackground();
+    // }
 
     // Update audio systems
     if (audioEnabled) {

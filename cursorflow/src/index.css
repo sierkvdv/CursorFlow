@@ -241,11 +241,13 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   z-index: 5;
   box-shadow: 0 0 4px rgba(100, 150, 255, 0.6);
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
 .rain-drop.visible {
   opacity: 1;
+  visibility: visible;
   animation: rain-fall linear infinite;
 }
 
