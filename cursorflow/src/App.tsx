@@ -308,8 +308,8 @@ function App() {
                       <motion.h1 
                         className="text-9xl md:text-[12rem] font-black text-yellow-300 leading-none"
                       >
-                        <span className="font-black text-8xl md:text-[10rem]">CURSOR</span>
-                        <span className="font-bold text-7xl md:text-[9rem]">FLOW</span>
+                        <span className="font-black text-8xl md:text-[10rem] text-red-400">CURSOR</span>
+                        <span className="font-bold text-7xl md:text-[9rem] text-blue-400">FLOW</span>
                       </motion.h1>
                     </motion.div>
                   )}
