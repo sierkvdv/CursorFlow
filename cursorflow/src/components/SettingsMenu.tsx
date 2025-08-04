@@ -45,6 +45,34 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   onToggleGlitch,
   onVolumeChange
 }) => {
+  // Helper function to create touch-friendly button props
+  const createTouchButtonProps = (onClickHandler: () => void) => ({
+    onClick: (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        onClickHandler();
+      } catch (error) {
+        console.error('Error in button click:', error);
+      }
+    },
+    onTouchEnd: (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        onClickHandler();
+      } catch (error) {
+        console.error('Error in button touch:', error);
+      }
+    },
+    style: {
+      touchAction: 'manipulation' as const,
+      userSelect: 'none' as const,
+      WebkitUserSelect: 'none' as const,
+      MozUserSelect: 'none' as const,
+      msUserSelect: 'none' as const
+    }
+  });
   if (!isOpen) return null;
 
   return (
@@ -55,8 +83,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         left: 0, 
         right: 0, 
         bottom: 0, 
-        zIndex: 10000,
-        touchAction: 'manipulation'
+        zIndex: 99999,
+        touchAction: 'manipulation',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
       }}
     >
       {/* Backdrop */}
@@ -68,8 +100,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          zIndex: 10001,
-          touchAction: 'manipulation'
+          zIndex: 100000,
+          touchAction: 'manipulation',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none'
         }}
         onClick={(e) => {
           e.preventDefault();
@@ -103,9 +139,13 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           borderRadius: '1rem',
           padding: '1.5rem',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          zIndex: 10002,
+          zIndex: 100001,
           color: 'white',
-          touchAction: 'manipulation'
+          touchAction: 'manipulation',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none'
         }}
         onClick={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
@@ -123,6 +163,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                 console.error('Error closing settings:', error);
               }
             }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                onClose();
+              } catch (error) {
+                console.error('Error closing settings touch:', error);
+              }
+            }}
             className="interactive-element"
             style={{
               padding: '0.5rem',
@@ -130,7 +179,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              color: '#9ca3af'
+              color: '#9ca3af',
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none'
             }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -152,15 +206,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
               <span style={{ color: 'white' }}>Master Audio</span>
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  try {
-                    onToggleAudio();
-                  } catch (error) {
-                    console.error('Error toggling audio:', error);
-                  }
-                }}
+                {...createTouchButtonProps(onToggleAudio)}
                 className="interactive-element"
                 style={{
                   position: 'relative',
@@ -170,7 +216,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                   border: 'none',
                   cursor: 'pointer',
                   backgroundColor: audioEnabled ? '#3b82f6' : '#6b7280',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
+                  ...createTouchButtonProps(onToggleAudio).style
                 }}
               >
                 <div
@@ -198,15 +245,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                       Melody
                     </span>
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        try {
-                          onToggleMelody();
-                        } catch (error) {
-                          console.error('Error toggling melody:', error);
-                        }
-                      }}
+                      {...createTouchButtonProps(onToggleMelody)}
                       style={{
                         position: 'relative',
                         width: '2.5rem',
@@ -215,7 +254,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: melodyEnabled ? '#10b981' : '#6b7280',
-                        transition: 'background-color 0.2s'
+                        transition: 'background-color 0.2s',
+                        ...createTouchButtonProps(onToggleMelody).style
                       }}
                     >
                       <div

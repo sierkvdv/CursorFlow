@@ -275,35 +275,54 @@ const CanvasRenderer = React.memo(({
 
   // Initialize iOS audio context on first touch
   useEffect(() => {
-    const initializeAudioContext = () => {
-      // Create a silent audio context to unlock iOS audio
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+    let audioContextInitialized = false;
+    
+    const initializeAudioContext = async () => {
+      if (audioContextInitialized) return;
+      audioContextInitialized = true;
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Set volume to 0 (silent)
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      
-      // Start and immediately stop to unlock audio
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.001);
-      
-      // Resume audio context if suspended
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
+      try {
+        // Create a silent audio context to unlock iOS audio
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        // Resume audio context if suspended
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
+        // Create a silent oscillator to unlock audio
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Set volume to 0 (silent)
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        
+        // Start and immediately stop to unlock audio
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.001);
+        
+        console.log('iOS Audio Context initialized successfully');
+        
+        // Remove event listeners after initialization
+        document.removeEventListener('touchstart', initializeAudioContext);
+        document.removeEventListener('mousedown', initializeAudioContext);
+        document.removeEventListener('click', initializeAudioContext);
+      } catch (error) {
+        console.error('Failed to initialize audio context:', error);
+        audioContextInitialized = false;
       }
-      
-      // Remove event listeners after initialization
-      document.removeEventListener('touchstart', initializeAudioContext);
-      document.removeEventListener('mousedown', initializeAudioContext);
     };
 
-    // Add event listeners for iOS audio unlock
-    document.addEventListener('touchstart', initializeAudioContext, { once: true });
+    // Add multiple event listeners for iOS audio unlock
+    document.addEventListener('touchstart', initializeAudioContext, { once: true, passive: false });
     document.addEventListener('mousedown', initializeAudioContext, { once: true });
+    document.addEventListener('click', initializeAudioContext, { once: true });
+    
+    // Also try to initialize on component mount
+    setTimeout(initializeAudioContext, 100);
   }, []);
 
   // Handle resize
@@ -326,7 +345,11 @@ const CanvasRenderer = React.memo(({
         height: '100%',
         pointerEvents: 'none',
         zIndex: 1000,
-        touchAction: 'none'
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
       }}
     />
   );
