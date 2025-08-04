@@ -6,6 +6,7 @@ import { SettingsMenu } from './components/SettingsMenu';
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
+  // Rain effects temporarily disabled
   const [rainVisible, setRainVisible] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
@@ -31,8 +32,8 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true);
-          // Show rain after a much longer delay to ensure no conflicts
-    setTimeout(() => setRainVisible(true), 6000);
+          // Rain effects temporarily disabled
+    // setTimeout(() => setRainVisible(true), 6000);
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -308,26 +309,7 @@ function App() {
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
         
-        {/* Background Rain Effect - Only when explicitly enabled */}
-        {rainVisible && (
-          <div className="absolute inset-0 pointer-events-none" style={{ display: 'block' }}>
-            {/* Reduced rain drops for subtler effect */}
-            <div className="rain-drop visible" style={{ left: '10%', animationDelay: '0s', animationDuration: '2.2s' }}></div>
-            <div className="rain-drop visible" style={{ left: '25%', animationDelay: '0.4s', animationDuration: '2.8s' }}></div>
-            <div className="rain-drop visible" style={{ left: '40%', animationDelay: '0.8s', animationDuration: '1.9s' }}></div>
-            <div className="rain-drop visible" style={{ left: '55%', animationDelay: '1.2s', animationDuration: '2.5s' }}></div>
-            <div className="rain-drop visible" style={{ left: '70%', animationDelay: '1.6s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop visible" style={{ left: '85%', animationDelay: '2.0s', animationDuration: '2.3s' }}></div>
-            
-            {/* Second row with different timing */}
-            <div className="rain-drop visible" style={{ left: '15%', animationDelay: '0.2s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop visible" style={{ left: '30%', animationDelay: '0.6s', animationDuration: '2.7s' }}></div>
-            <div className="rain-drop visible" style={{ left: '45%', animationDelay: '1.0s', animationDuration: '1.8s' }}></div>
-            <div className="rain-drop visible" style={{ left: '60%', animationDelay: '1.4s', animationDuration: '2.4s' }}></div>
-            <div className="rain-drop visible" style={{ left: '75%', animationDelay: '1.8s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop visible" style={{ left: '90%', animationDelay: '2.2s', animationDuration: '2.2s' }}></div>
-          </div>
-        )}
+        {/* Rain effects temporarily disabled */}
       </div>
 
       {/* Cursor Tracker */}
