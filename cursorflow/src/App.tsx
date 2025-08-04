@@ -133,13 +133,16 @@ function App() {
   // Prevent iOS Safari scroll issues and black screen
   useEffect(() => {
     const preventScrollIssues = (e: TouchEvent) => {
-      // Prevent all scrolling to avoid black screen
-      e.preventDefault();
+      // Only prevent default for specific gestures that might cause issues
+      if (e.touches.length > 1) {
+        e.preventDefault(); // Prevent pinch zoom
+      }
+      // Allow normal touch events to prevent crashes
     };
     
     // Prevent pull-to-refresh and overscroll
-    document.addEventListener('touchmove', preventScrollIssues, { passive: false });
-    document.addEventListener('touchstart', preventScrollIssues, { passive: false });
+          document.addEventListener('touchmove', preventScrollIssues, { passive: true });
+      document.addEventListener('touchstart', preventScrollIssues, { passive: true });
     
     return () => {
       document.removeEventListener('touchmove', preventScrollIssues);
