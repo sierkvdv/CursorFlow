@@ -125,17 +125,34 @@ function App() {
         unlockAudioForIOS();
         audioUnlocked = true;
         
-        // Force audio context resume on first touch - MORE AGGRESSIVE
-        setTimeout(() => {
+        // Force audio context resume on first touch - MORE AGGRESSIVE FOR iOS
+        setTimeout(async () => {
           try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+              sampleRate: 44100, // Standard for iOS
+              latencyHint: 'interactive' // Better for iOS
+            });
+            
             if (audioContext.state === 'suspended') {
-              audioContext.resume();
+              await audioContext.resume();
             }
-            // Also try to start audio immediately
+            
+            // Force audio to start on iOS
             if (audioEnabled) {
-              handleToggleAudio(); // Toggle off and on to force start
-              setTimeout(() => handleToggleAudio(), 100);
+              // Create a silent oscillator to unlock audio
+              const silentOsc = audioContext.createOscillator();
+              const silentGain = audioContext.createGain();
+              silentGain.gain.setValueAtTime(0, audioContext.currentTime);
+              silentOsc.connect(silentGain);
+              silentGain.connect(audioContext.destination);
+              silentOsc.start(audioContext.currentTime);
+              silentOsc.stop(audioContext.currentTime + 0.1);
+              
+              // Then toggle audio to ensure it works
+              setTimeout(() => {
+                handleToggleAudio(); // Toggle off and on to force start
+                setTimeout(() => handleToggleAudio(), 100);
+              }, 50);
             }
           } catch (error) {
             // Silent fail

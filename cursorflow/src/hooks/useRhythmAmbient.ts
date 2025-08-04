@@ -55,11 +55,23 @@ export const useRhythmAmbient = ({
     slow: ['kick', 'snare', 'kick', 'tom']
   };
 
-  // Initialize audio context
+  // Initialize audio context with iOS compatibility
   const initAudio = useCallback(async () => {
     if (!enabled) return;
 
     try {
+      // iOS Safari compatibility - force audio context resume
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      // Create audio context with iOS-optimized settings
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
+          sampleRate: 44100, // Standard sample rate for iOS
+          latencyHint: 'interactive' // Better for iOS
+        });
+      }
       // Cleanup existing oscillators
       if (isPlayingRef.current) {
         try {

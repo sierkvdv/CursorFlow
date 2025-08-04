@@ -87,19 +87,42 @@ export const createGlitchDistortion = (audioContext: AudioContext) => {
 };
 
 export const createBitCrusher = (audioContext: AudioContext, bits: number = 4) => {
-  const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
-  
-  scriptNode.onaudioprocess = (event) => {
-    const input = event.inputBuffer.getChannelData(0);
-    const output = event.outputBuffer.getChannelData(0);
-    
-    for (let i = 0; i < input.length; i++) {
-      const step = Math.pow(2, bits);
-      output[i] = Math.round(input[i] * step) / step;
+  // iOS-compatible bit crusher using AudioWorklet or fallback
+  try {
+    // Try to use AudioWorklet if available (modern browsers)
+    if (audioContext.audioWorklet) {
+      // Simple bit crushing using waveshaper for iOS compatibility
+      const waveshaper = audioContext.createWaveShaper();
+      const curve = new Float32Array(44100);
+      
+      for (let i = 0; i < 44100; i++) {
+        const x = (i * 2) / 44100 - 1;
+        // Bit crushing effect using quantization
+        const step = Math.pow(2, bits);
+        curve[i] = Math.round(x * step) / step * 0.8;
+      }
+      
+      waveshaper.curve = curve;
+      return waveshaper;
+    } else {
+      // Fallback for older browsers
+      const waveshaper = audioContext.createWaveShaper();
+      const curve = new Float32Array(44100);
+      
+      for (let i = 0; i < 44100; i++) {
+        const x = (i * 2) / 44100 - 1;
+        curve[i] = Math.sign(x) * Math.pow(Math.abs(x), 0.3) * 0.8;
+      }
+      
+      waveshaper.curve = curve;
+      return waveshaper;
     }
-  };
-  
-  return scriptNode;
+  } catch (error) {
+    // Ultimate fallback - just return a simple gain node
+    const gainNode = audioContext.createGain();
+    gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
+    return gainNode;
+  }
 };
 
 export const createFrequencyShifter = (audioContext: AudioContext) => {
