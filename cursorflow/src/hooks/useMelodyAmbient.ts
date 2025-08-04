@@ -230,17 +230,29 @@ export const useMelodyAmbient = ({
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.5);
     }
     
-    // Trigger notes - MUCH SLOWER AND AMBIENT
+    // Trigger notes - MUCH SLOWER AND AMBIENT WITH VARIATION
     const isMobile = window.innerWidth <= 768;
     const velocityThreshold = isMobile ? 0.01 : 0.1; // 10x lower threshold for iPhone
-    const timeThreshold = isMobile ? 1.5 : 2.0; // Much slower response (1.5-2s between melodies)
     
-    if (velocity > velocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
+    // Add random variation to timing and velocity threshold
+    const baseTimeThreshold = isMobile ? 1.5 : 2.0;
+    const randomVariation = (Math.random() - 0.5) * 2.0; // ±1 second variation
+    const timeThreshold = baseTimeThreshold + randomVariation;
+    
+    // Add random variation to velocity threshold
+    const baseVelocityThreshold = isMobile ? 0.01 : 0.1;
+    const velocityVariation = (Math.random() - 0.5) * 0.005; // ±0.0025 variation
+    const actualVelocityThreshold = Math.max(0.005, baseVelocityThreshold + velocityVariation);
+    
+    if (velocity > actualVelocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
       lastNoteTimeRef.current = audioTime;
       
-      // Create a real melody sequence instead of just one note
-      const melodySequence = createMelodySequence(currentScale, velocity);
-      playMelodySequence(melodySequence, melodyVolume, harmonyVolume, velocity);
+      // Add random delay to spread notes across the measure
+      const randomDelay = Math.random() * 3.0; // 0-3 seconds random delay
+      setTimeout(() => {
+        const melodySequence = createMelodySequence(currentScale, velocity);
+        playMelodySequence(melodySequence, melodyVolume, harmonyVolume, velocity);
+      }, randomDelay * 1000);
       
       // More frequent flourishes on mobile
       const flourishThreshold = isMobile ? 0.2 : 0.3;
@@ -296,7 +308,10 @@ export const useMelodyAmbient = ({
 
   // Create melody sequence - SLOWER AND MORE MELODIC
   const createMelodySequence = useCallback((scale: number[], velocity: number) => {
-    const sequenceLength = Math.max(1, Math.floor(velocity * 2)); // 1-3 notes (much shorter for ambient)
+    // Add random variation to sequence length
+    const baseLength = Math.max(1, Math.floor(velocity * 2)); // 1-3 base length
+    const lengthVariation = Math.random() > 0.7 ? 1 : 0; // 30% chance to add one note
+    const sequenceLength = Math.min(4, baseLength + lengthVariation); // 1-4 notes with variation
     const sequence: number[] = [];
     
     // Start with a base note
@@ -322,12 +337,19 @@ export const useMelodyAmbient = ({
     if (!audioContextRef.current || !isPlayingRef.current) return; // Don't play if stopped
     
     const ctx = audioContextRef.current;
-    const noteDuration = 1.2 + (velocity * 0.8); // 1.2-2.0s per note (much longer for ambient)
+    // Add random variation to note duration
+    const baseDuration = 1.2 + (velocity * 0.8); // 1.2-2.0s base duration
+    const durationVariation = (Math.random() - 0.5) * 0.6; // ±0.3s variation
+    const noteDuration = Math.max(0.8, baseDuration + durationVariation); // Variable duration (0.8-2.3s)
     
     sequence.forEach((frequency, index) => {
       if (!isPlayingRef.current) return; // Stop if disabled during playback
       
-      const startTime = ctx.currentTime + (index * noteDuration * 2.5); // Much longer pause between notes for ambient
+      // Add random variation to note spacing
+      const baseSpacing = 2.5;
+      const spacingVariation = (Math.random() - 0.5) * 1.0; // ±0.5 variation
+      const noteSpacing = baseSpacing + spacingVariation;
+      const startTime = ctx.currentTime + (index * noteDuration * noteSpacing); // Variable spacing between notes
       
       // Create new oscillators for each note
       const osc1 = ctx.createOscillator();
