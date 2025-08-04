@@ -15,6 +15,7 @@ function App() {
   const [natureEnabled, setNatureEnabled] = useState(true);
   const [glitchEnabled, setGlitchEnabled] = useState(false);
   const [currentTitle, setCurrentTitle] = useState(0);
+  // Test update for Vercel deployment
 
   // Simple audio state
   const [isAudioSupported] = useState(true);
