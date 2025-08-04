@@ -500,6 +500,26 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     }
   }, [natureEnabled, audioEnabled, natureSystem]);
 
+  // Force restart nature sound after iOS audio unlock
+  useEffect(() => {
+    if (natureEnabled && audioEnabled && natureSystem) {
+      // Small delay to ensure audio context is ready
+      const timer = setTimeout(() => {
+        if (natureEnabled && natureSystem?.stopNature && natureSystem?.startNature) {
+          natureSystem.stopNature();
+          setTimeout(() => {
+            if (natureEnabled && natureSystem?.startNature) {
+              natureSystem.startNature();
+              console.log('Nature sound force restarted for iOS compatibility');
+            }
+          }, 50);
+        }
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [natureEnabled, audioEnabled, natureSystem]);
+
 
 
   // Force stop melody when disabled - immediate effect
