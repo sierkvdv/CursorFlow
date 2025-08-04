@@ -15,7 +15,6 @@ function App() {
   const [natureEnabled, setNatureEnabled] = useState(true);
   const [glitchEnabled, setGlitchEnabled] = useState(false);
   const [currentTitle, setCurrentTitle] = useState(0);
-  // Test update for Vercel deployment
 
   // Simple audio state
   const [isAudioSupported] = useState(true);
@@ -133,16 +132,13 @@ function App() {
   // Prevent iOS Safari scroll issues and black screen
   useEffect(() => {
     const preventScrollIssues = (e: TouchEvent) => {
-      // Only prevent default for specific gestures that might cause issues
-      if (e.touches.length > 1) {
-        e.preventDefault(); // Prevent pinch zoom
-      }
-      // Allow normal touch events to prevent crashes
+      // Prevent all scrolling to avoid black screen
+      e.preventDefault();
     };
     
     // Prevent pull-to-refresh and overscroll
-          document.addEventListener('touchmove', preventScrollIssues, { passive: true });
-      document.addEventListener('touchstart', preventScrollIssues, { passive: true });
+    document.addEventListener('touchmove', preventScrollIssues, { passive: false });
+    document.addEventListener('touchstart', preventScrollIssues, { passive: false });
     
     return () => {
       document.removeEventListener('touchmove', preventScrollIssues);
@@ -306,10 +302,10 @@ function App() {
                       transition={{ duration: 0.8 }}
                     >
                       <motion.h1 
-                        className="text-9xl md:text-[12rem] font-black text-yellow-300 leading-none"
+                        className="text-9xl md:text-[12rem] font-black text-white leading-none"
                       >
-                        <span className="font-black text-8xl md:text-[10rem] text-red-400">CURSOR</span>
-                        <span className="font-bold text-7xl md:text-[9rem] text-blue-400">FLOW</span>
+                        <span className="font-black text-8xl md:text-[10rem] text-white" style={{ fontWeight: '900', textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>CURSOR</span>
+                        <span className="font-bold text-7xl md:text-[9rem] text-white">FLOW</span>
                       </motion.h1>
                     </motion.div>
                   )}
