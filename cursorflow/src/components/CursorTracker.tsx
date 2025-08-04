@@ -418,7 +418,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 
     const currentTime = performance.now();
     const timeSinceLastAudioUpdate = currentTime - (lastAudioUpdateRef.current || 0);
-    const audioUpdateInterval = 32; // Fixed interval for smooth audio
+    const audioUpdateInterval = 16; // Faster interval for better touch reactivity
     
     if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
       lastAudioUpdateRef.current = currentTime;
@@ -459,7 +459,12 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   // Update audio on cursor movement AND constantly for melody/rhythm
   useEffect(() => {
     handleAudioUpdate();
-  }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
+    
+    // Direct nature sound update for immediate touch reactivity
+    if (audioEnabled && natureEnabled && natureSystem?.updateNatureFromMouse && cursorPosition.velocity > 0) {
+      natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+    }
+  }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate, audioEnabled, natureEnabled, natureSystem]);
 
   // Additional effect to ensure melody and beep play constantly (nature only reacts to mouse)
   useEffect(() => {

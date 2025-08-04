@@ -144,26 +144,26 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       y: touch.clientY
     };
 
-    // More conservative velocity calculation for iPhone stability
+    // Enhanced velocity calculation for iPhone touch reactivity
     let velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
-    velocity = Math.min(velocity * 1.5, 6); // Reduced boost for stability
+    velocity = Math.min(velocity * 2.0, 8); // Increased boost for better reactivity
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Higher threshold to prevent excessive updates
-    const shouldBeMoving = velocity > 0.001;
+    // Lower threshold for better touch detection
+    const shouldBeMoving = velocity > 0.0001;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
     }
 
-    // Use throttling for iPhone stability
+    // Minimal throttling for iPhone touch reactivity
     if (throttleTimeoutRef.current) {
       return; // Skip this update if throttled
     }
 
     throttleTimeoutRef.current = setTimeout(() => {
       throttleTimeoutRef.current = null;
-    }, 16); // ~60fps throttling
+    }, 8); // ~120fps for better touch reactivity
 
     // Cancel previous RAF
     if (rafRef.current) {
