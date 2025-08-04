@@ -126,15 +126,14 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     scroll-behavior: smooth;
   }
 
-  /* Better focus styles */
+  /* Better focus styles - removed green outline */
   *:focus {
-    outline: 2px solid #00ff88;
-    outline-offset: 2px;
+    outline: none;
   }
 
   /* Custom selection */
   ::selection {
-    background-color: rgba(0, 255, 136, 0.3);
+    background-color: rgba(59, 130, 246, 0.3);
     color: #ffffff;
   }
 }
@@ -159,12 +158,12 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00ff88;
+  background: #3b82f6;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00cc6a;
+  background: #2563eb;
 }
 
 
