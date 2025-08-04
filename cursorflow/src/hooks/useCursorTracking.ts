@@ -62,13 +62,10 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const currentTime = performance.now();
     const timeDiff = Math.max(1, currentTime - lastTimeRef.current);
     
-    // Get the target element to calculate correct coordinates
-    const target = event.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    
+    // Use viewport coordinates since canvas covers entire screen
     const newPosition = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: event.clientX,
+      y: event.clientY
     };
 
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
@@ -109,15 +106,11 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     
     const touch = event.touches[0];
     if (touch) {
-      // Get the target element to calculate correct coordinates
-      const target = event.target as HTMLElement;
-      const rect = target.getBoundingClientRect();
-      
-      // Calculate position relative to the target element
-      const newPosition = {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
+          // Use viewport coordinates since canvas covers entire screen
+    const newPosition = {
+      x: touch.clientX,
+      y: touch.clientY
+    };
       
       lastPositionRef.current = newPosition;
       lastTimeRef.current = performance.now();
@@ -145,13 +138,10 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const currentTime = performance.now();
     const timeDiff = Math.max(1, currentTime - lastTimeRef.current);
     
-    // Get the target element to calculate correct coordinates
-    const target = event.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    
+    // Use viewport coordinates since canvas covers entire screen
     const newPosition = {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top
+      x: touch.clientX,
+      y: touch.clientY
     };
 
     // More conservative velocity calculation for iPhone stability

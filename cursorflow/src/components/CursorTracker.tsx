@@ -52,11 +52,23 @@ const CanvasRenderer = React.memo(({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    // Use viewport dimensions for full-screen coverage
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const devicePixelRatio = window.devicePixelRatio || 1;
+
+    // Set canvas size to match viewport
+    canvas.width = viewportWidth * devicePixelRatio;
+    canvas.height = viewportHeight * devicePixelRatio;
+    canvas.style.width = viewportWidth + 'px';
+    canvas.style.height = viewportHeight + 'px';
+
+    // Position canvas to cover entire viewport
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '1000';
   }, []);
 
   // Add trail point
@@ -133,11 +145,14 @@ const CanvasRenderer = React.memo(({
   const addLightning = useCallback(() => {
     // Random chance for lightning (independent of cursor)
     if (Math.random() > 0.995) { // 0.5% chance per frame
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
       lightningRef.current = {
         active: true,
         intensity: 0.8 + Math.random() * 0.2,
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight * 0.3,
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.3,
         life: 1
       };
     }
