@@ -128,13 +128,14 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (!enabled) return;
 
-    if (throttleTimeoutRef.current) {
-      return;
-    }
+    // Remove throttling for iPhone - immediate response
+    // if (throttleTimeoutRef.current) {
+    //   return;
+    // }
 
-    throttleTimeoutRef.current = window.setTimeout(() => {
-      throttleTimeoutRef.current = null;
-    }, throttleMs);
+    // throttleTimeoutRef.current = window.setTimeout(() => {
+    //   throttleTimeoutRef.current = null;
+    // }, throttleMs);
 
     const touch = event.touches[0];
     if (!touch) return;
@@ -147,7 +148,9 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       y: touch.clientY
     };
 
-    const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
+    // Boost velocity for touch events on iPhone
+    let velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
+    velocity = velocity * 3; // Triple the velocity for touch events
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
     // Update moving state - LOWER THRESHOLD FOR IPHONE

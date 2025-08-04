@@ -7,7 +7,7 @@ interface MelodyAmbientOptions {
 
 export const useMelodyAmbient = ({
   enabled = false,
-  baseVolume = 0.08 // Much softer for ambient feel
+  baseVolume = 0.04 // Much softer for ambient feel
 }: MelodyAmbientOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const isPlayingRef = useRef(false);
@@ -230,10 +230,10 @@ export const useMelodyAmbient = ({
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.5);
     }
     
-    // Trigger notes - SLOWER AND MORE MELODIC
+    // Trigger notes - MUCH SLOWER AND AMBIENT
     const isMobile = window.innerWidth <= 768;
-    const velocityThreshold = isMobile ? 0.02 : 0.1; // 2.5x lower threshold for iPhone
-    const timeThreshold = isMobile ? 0.2 : 0.5; // Faster response for iPhone (0.2s between melodies)
+    const velocityThreshold = isMobile ? 0.01 : 0.1; // 10x lower threshold for iPhone
+    const timeThreshold = isMobile ? 1.5 : 2.0; // Much slower response (1.5-2s between melodies)
     
     if (velocity > velocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
       lastNoteTimeRef.current = audioTime;
@@ -296,7 +296,7 @@ export const useMelodyAmbient = ({
 
   // Create melody sequence - SLOWER AND MORE MELODIC
   const createMelodySequence = useCallback((scale: number[], velocity: number) => {
-    const sequenceLength = Math.max(2, Math.floor(velocity * 4)); // 2-6 notes (shorter sequences)
+    const sequenceLength = Math.max(1, Math.floor(velocity * 2)); // 1-3 notes (much shorter for ambient)
     const sequence: number[] = [];
     
     // Start with a base note
@@ -322,12 +322,12 @@ export const useMelodyAmbient = ({
     if (!audioContextRef.current || !isPlayingRef.current) return; // Don't play if stopped
     
     const ctx = audioContextRef.current;
-    const noteDuration = 0.4 + (velocity * 0.3); // 0.4-0.7s per note (much slower)
+    const noteDuration = 1.2 + (velocity * 0.8); // 1.2-2.0s per note (much longer for ambient)
     
     sequence.forEach((frequency, index) => {
       if (!isPlayingRef.current) return; // Stop if disabled during playback
       
-      const startTime = ctx.currentTime + (index * noteDuration * 1.2); // No overlap, slight pause between notes
+      const startTime = ctx.currentTime + (index * noteDuration * 2.5); // Much longer pause between notes for ambient
       
       // Create new oscillators for each note
       const osc1 = ctx.createOscillator();
@@ -346,11 +346,11 @@ export const useMelodyAmbient = ({
       
       // Apply envelope - MUCH SOFTER AND AMBIENT
       gain1.gain.setValueAtTime(0, startTime);
-      gain1.gain.linearRampToValueAtTime(melodyVolume * 0.15, startTime + 0.01); // 75% softer
+      gain1.gain.linearRampToValueAtTime(melodyVolume * 0.08, startTime + 0.01); // 90% softer for ambient
       gain1.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
       
       gain2.gain.setValueAtTime(0, startTime);
-      gain2.gain.linearRampToValueAtTime(harmonyVolume * 0.08, startTime + 0.01); // 80% softer
+      gain2.gain.linearRampToValueAtTime(harmonyVolume * 0.04, startTime + 0.01); // 95% softer for ambient
       gain2.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
       
       osc1.connect(gain1);
