@@ -311,34 +311,34 @@ function App() {
         {/* Realistic Rain Effect */}
         {rainVisible && (
           <div className="absolute inset-0 pointer-events-none">
-            {/* Rain drops with random positions and speeds */}
-            <div className="rain-drop" style={{ left: '5%', animationDelay: '0s', animationDuration: '1.8s' }}></div>
-            <div className="rain-drop" style={{ left: '12%', animationDelay: '0.3s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop" style={{ left: '18%', animationDelay: '0.7s', animationDuration: '1.9s' }}></div>
-            <div className="rain-drop" style={{ left: '25%', animationDelay: '0.1s', animationDuration: '2.3s' }}></div>
-            <div className="rain-drop" style={{ left: '32%', animationDelay: '0.5s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop" style={{ left: '38%', animationDelay: '0.9s', animationDuration: '1.7s' }}></div>
-            <div className="rain-drop" style={{ left: '45%', animationDelay: '0.2s', animationDuration: '2.2s' }}></div>
-            <div className="rain-drop" style={{ left: '52%', animationDelay: '0.6s', animationDuration: '1.8s' }}></div>
-            <div className="rain-drop" style={{ left: '58%', animationDelay: '0.4s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop" style={{ left: '65%', animationDelay: '0.8s', animationDuration: '1.9s' }}></div>
-            <div className="rain-drop" style={{ left: '72%', animationDelay: '0.1s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop" style={{ left: '78%', animationDelay: '0.5s', animationDuration: '2.3s' }}></div>
-            <div className="rain-drop" style={{ left: '85%', animationDelay: '0.3s', animationDuration: '1.7s' }}></div>
-            <div className="rain-drop" style={{ left: '92%', animationDelay: '0.7s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop" style={{ left: '8%', animationDelay: '0.4s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop" style={{ left: '15%', animationDelay: '0.8s', animationDuration: '1.8s' }}></div>
-            <div className="rain-drop" style={{ left: '22%', animationDelay: '0.2s', animationDuration: '2.2s' }}></div>
-            <div className="rain-drop" style={{ left: '29%', animationDelay: '0.6s', animationDuration: '1.9s' }}></div>
-            <div className="rain-drop" style={{ left: '36%', animationDelay: '0.1s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop" style={{ left: '43%', animationDelay: '0.5s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop" style={{ left: '50%', animationDelay: '0.9s', animationDuration: '1.7s' }}></div>
-            <div className="rain-drop" style={{ left: '57%', animationDelay: '0.3s', animationDuration: '2.3s' }}></div>
-            <div className="rain-drop" style={{ left: '64%', animationDelay: '0.7s', animationDuration: '1.8s' }}></div>
-            <div className="rain-drop" style={{ left: '71%', animationDelay: '0.2s', animationDuration: '2.1s' }}></div>
-            <div className="rain-drop" style={{ left: '78%', animationDelay: '0.6s', animationDuration: '1.9s' }}></div>
-            <div className="rain-drop" style={{ left: '85%', animationDelay: '0.4s', animationDuration: '2.0s' }}></div>
-            <div className="rain-drop" style={{ left: '92%', animationDelay: '0.8s', animationDuration: '2.2s' }}></div>
+            {/* Rain drops with different speeds but no delays */}
+            <div className="rain-drop" style={{ left: '5%', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop" style={{ left: '12%', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop" style={{ left: '18%', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop" style={{ left: '25%', animationDuration: '2.3s' }}></div>
+            <div className="rain-drop" style={{ left: '32%', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop" style={{ left: '38%', animationDuration: '1.7s' }}></div>
+            <div className="rain-drop" style={{ left: '45%', animationDuration: '2.2s' }}></div>
+            <div className="rain-drop" style={{ left: '52%', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop" style={{ left: '58%', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop" style={{ left: '65%', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop" style={{ left: '72%', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop" style={{ left: '78%', animationDuration: '2.3s' }}></div>
+            <div className="rain-drop" style={{ left: '85%', animationDuration: '1.7s' }}></div>
+            <div className="rain-drop" style={{ left: '92%', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop" style={{ left: '8%', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop" style={{ left: '15%', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop" style={{ left: '22%', animationDuration: '2.2s' }}></div>
+            <div className="rain-drop" style={{ left: '29%', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop" style={{ left: '36%', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop" style={{ left: '43%', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop" style={{ left: '50%', animationDuration: '1.7s' }}></div>
+            <div className="rain-drop" style={{ left: '57%', animationDuration: '2.3s' }}></div>
+            <div className="rain-drop" style={{ left: '64%', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop" style={{ left: '71%', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop" style={{ left: '78%', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop" style={{ left: '85%', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop" style={{ left: '92%', animationDuration: '2.2s' }}></div>
           </div>
         )}
       </div>
