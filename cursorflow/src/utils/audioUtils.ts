@@ -140,77 +140,122 @@ export const createFrequencyShifter = (audioContext: AudioContext) => {
 
 export const createGlitchClickSound = (audioContext: AudioContext) => {
   const isMobile = window.innerWidth <= 768;
-  const baseFreq = isMobile ? 600 : 400; // Higher frequency on mobile for better audibility
+  const baseFreq = isMobile ? 800 : 600; // Much higher frequency for better audibility
   
-  // Limit concurrent audio nodes to prevent overload
-  const maxConcurrentNodes = 10;
-  const activeNodes = (audioContext as any)._activeNodes || 0;
+  // Create multiple oscillators for more complex glitch effect
+  const { oscillator: osc1, gainNode: gain1 } = createOscillator(audioContext, baseFreq, 'square');
+  const { oscillator: osc2, gainNode: gain2 } = createOscillator(audioContext, baseFreq * 1.5, 'sawtooth');
+  const { oscillator: osc3, gainNode: gain3 } = createOscillator(audioContext, baseFreq * 0.7, 'triangle');
   
-  if (activeNodes > maxConcurrentNodes) {
-    return; // Skip creating new nodes if too many are active
-  }
-  
-  const { oscillator, gainNode } = createOscillator(audioContext, baseFreq, 'square');
-  const filter = createFilter(audioContext, isMobile ? 3000 : 2000, 'lowpass'); // Higher cutoff on mobile
+  const filter = createFilter(audioContext, isMobile ? 4000 : 3000, 'lowpass'); // Higher cutoff
   const distortion = createGlitchDistortion(audioContext);
-  const bitCrusher = createBitCrusher(audioContext, isMobile ? 2 : 3); // Less bit crushing on mobile
-  const { oscillator: shifterOsc, gainNode: shifterGain } = createFrequencyShifter(audioContext);
+  const bitCrusher = createBitCrusher(audioContext, isMobile ? 1 : 2); // More bit crushing for effect
   
-  // Random glitch effects
-  const randomFreq = 200 + Math.random() * 800;
-  const randomType = ['sawtooth', 'square', 'triangle'][Math.floor(Math.random() * 3)] as OscillatorType;
+  // Random glitch effects with multiple frequencies
+  const randomFreq1 = 300 + Math.random() * 1000;
+  const randomFreq2 = 200 + Math.random() * 800;
+  const randomFreq3 = 400 + Math.random() * 1200;
   
-  oscillator.frequency.setValueAtTime(randomFreq, audioContext.currentTime);
-  oscillator.type = randomType;
+  osc1.frequency.setValueAtTime(randomFreq1, audioContext.currentTime);
+  osc2.frequency.setValueAtTime(randomFreq2, audioContext.currentTime);
+  osc3.frequency.setValueAtTime(randomFreq3, audioContext.currentTime);
   
-  // Connect with glitch effects
-  oscillator.connect(gainNode);
-  gainNode.connect(distortion);
+  // Connect all oscillators with glitch effects
+  osc1.connect(gain1);
+  osc2.connect(gain2);
+  osc3.connect(gain3);
+  
+  gain1.connect(distortion);
+  gain2.connect(distortion);
+  gain3.connect(distortion);
+  
   distortion.connect(bitCrusher);
   bitCrusher.connect(filter);
   filter.connect(audioContext.destination);
   
-  // Add frequency shifting
-  shifterOsc.start(audioContext.currentTime);
-  shifterOsc.stop(audioContext.currentTime + 0.3);
+  // MUCH LOUDER VOLUME - ESPECIALLY ON MOBILE
+  const baseVolume = isMobile ? 0.8 : 0.6; // Much louder
+  const volumeVariation = isMobile ? 0.4 : 0.3; // More variation
   
-  // Random volume spikes - LOUDER ON MOBILE
-  const baseVolume = isMobile ? 0.5 : 0.3; // 67% louder on mobile
-  const volumeVariation = isMobile ? 0.3 : 0.2; // More variation on mobile
+  // Create volume spikes for dramatic effect
+  gain1.gain.setValueAtTime(0, audioContext.currentTime);
+  gain1.gain.linearRampToValueAtTime(baseVolume + Math.random() * volumeVariation, audioContext.currentTime + 0.005);
+  gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
   
-  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-  gainNode.gain.linearRampToValueAtTime(baseVolume + Math.random() * volumeVariation, audioContext.currentTime + 0.01);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2 + Math.random() * 0.1);
+  gain2.gain.setValueAtTime(0, audioContext.currentTime);
+  gain2.gain.linearRampToValueAtTime(baseVolume * 0.7 + Math.random() * volumeVariation, audioContext.currentTime + 0.01);
+  gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
   
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.2);
+  gain3.gain.setValueAtTime(0, audioContext.currentTime);
+  gain3.gain.linearRampToValueAtTime(baseVolume * 0.5 + Math.random() * volumeVariation, audioContext.currentTime + 0.015);
+  gain3.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+  
+  // Start all oscillators
+  osc1.start(audioContext.currentTime);
+  osc2.start(audioContext.currentTime);
+  osc3.start(audioContext.currentTime);
+  
+  // Stop with slight variations
+  osc1.stop(audioContext.currentTime + 0.15 + Math.random() * 0.05);
+  osc2.stop(audioContext.currentTime + 0.12 + Math.random() * 0.03);
+  osc3.stop(audioContext.currentTime + 0.1 + Math.random() * 0.02);
 };
 
 export const createGlitchHoverSound = (audioContext: AudioContext) => {
-  const { oscillator, gainNode } = createOscillator(audioContext, 600, 'sawtooth');
+  const isMobile = window.innerWidth <= 768;
+  const baseFreq = isMobile ? 700 : 500;
+  
+  // Create multiple oscillators for complex glitch effect
+  const { oscillator: osc1, gainNode: gain1 } = createOscillator(audioContext, baseFreq, 'sawtooth');
+  const { oscillator: osc2, gainNode: gain2 } = createOscillator(audioContext, baseFreq * 1.3, 'square');
+  
   const distortion = createGlitchDistortion(audioContext);
-  const bitCrusher = createBitCrusher(audioContext, 5);
+  const bitCrusher = createBitCrusher(audioContext, isMobile ? 2 : 4);
   
-  // Random frequency modulation
-  const baseFreq = 400 + Math.random() * 400;
-  oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+  // Random frequency modulation with multiple oscillators
+  const randomFreq1 = 300 + Math.random() * 600;
+  const randomFreq2 = 400 + Math.random() * 800;
   
-  // Add random frequency jumps
+  osc1.frequency.setValueAtTime(randomFreq1, audioContext.currentTime);
+  osc2.frequency.setValueAtTime(randomFreq2, audioContext.currentTime);
+  
+  // Add random frequency jumps for glitch effect
   setTimeout(() => {
-    if (oscillator.frequency) {
-      oscillator.frequency.setValueAtTime(baseFreq + Math.random() * 200, audioContext.currentTime);
+    if (osc1.frequency) {
+      osc1.frequency.setValueAtTime(randomFreq1 + Math.random() * 300, audioContext.currentTime);
     }
-  }, Math.random() * 50);
+  }, Math.random() * 30);
   
-  oscillator.connect(gainNode);
-  gainNode.connect(distortion);
+  setTimeout(() => {
+    if (osc2.frequency) {
+      osc2.frequency.setValueAtTime(randomFreq2 + Math.random() * 400, audioContext.currentTime);
+    }
+  }, Math.random() * 40);
+  
+  // Connect oscillators with glitch effects
+  osc1.connect(gain1);
+  osc2.connect(gain2);
+  
+  gain1.connect(distortion);
+  gain2.connect(distortion);
   distortion.connect(bitCrusher);
   bitCrusher.connect(audioContext.destination);
   
-  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-  gainNode.gain.linearRampToValueAtTime(0.15 + Math.random() * 0.1, audioContext.currentTime + 0.01);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+  // LOUDER VOLUME FOR BETTER AUDIBILITY
+  const baseVolume = isMobile ? 0.6 : 0.4;
+  const volumeVariation = isMobile ? 0.3 : 0.2;
   
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.1);
+  gain1.gain.setValueAtTime(0, audioContext.currentTime);
+  gain1.gain.linearRampToValueAtTime(baseVolume + Math.random() * volumeVariation, audioContext.currentTime + 0.005);
+  gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+  
+  gain2.gain.setValueAtTime(0, audioContext.currentTime);
+  gain2.gain.linearRampToValueAtTime(baseVolume * 0.8 + Math.random() * volumeVariation, audioContext.currentTime + 0.01);
+  gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.06);
+  
+  osc1.start(audioContext.currentTime);
+  osc2.start(audioContext.currentTime);
+  
+  osc1.stop(audioContext.currentTime + 0.08 + Math.random() * 0.02);
+  osc2.stop(audioContext.currentTime + 0.06 + Math.random() * 0.01);
 }; 

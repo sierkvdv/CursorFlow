@@ -28,6 +28,7 @@ interface VisualEffectOptions {
   particleCount?: number;
   trailLength?: number;
   rainVisible?: boolean;
+  glitchEnabled?: boolean; // Add glitch mode option
 }
 
 // Simplified nature visuals
@@ -48,7 +49,7 @@ interface NatureBackground {
 }
 
 export const useVisualEffects = (options: VisualEffectOptions = {}) => {
-  const { enabled = true, particleCount = 25, trailLength = 22, rainVisible = false } = options; // Slightly reduced for performance
+  const { enabled = true, particleCount = 25, trailLength = 22, rainVisible = false, glitchEnabled = false } = options; // Slightly reduced for performance
   
   // Detect Firefox for specific optimizations
   const isFirefox = useMemo(() => {

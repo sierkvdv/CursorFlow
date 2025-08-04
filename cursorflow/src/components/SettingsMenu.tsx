@@ -452,8 +452,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     border: 'none',
                     cursor: 'pointer',
                     backgroundColor: glitchEnabled ? '#ef4444' : '#6b7280',
-                    transition: 'background-color 0.2s',
-                    ...createTouchButtonProps(() => onToggleGlitch?.()).style
+                    transition: 'background-color 0.2s'
                   }}
                 >
                   <div
@@ -480,12 +479,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     step="0.01"
                     value={glitchVolume}
                     onChange={(e) => onVolumeChange('glitch', parseFloat(e.target.value))}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchMove={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onTouchMove={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
                     style={{
                       flex: 1,
-                      height: '0.5rem',
+                      height: '0.75rem',
                       borderRadius: '0.25rem',
                       background: '#4b5563',
                       outline: 'none',
@@ -494,7 +502,9 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                       userSelect: 'none',
                       WebkitUserSelect: 'none',
                       MozUserSelect: 'none',
-                      msUserSelect: 'none'
+                      msUserSelect: 'none',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
                     }}
                   />
                   <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
