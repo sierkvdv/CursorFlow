@@ -273,6 +273,39 @@ const CanvasRenderer = React.memo(({
     };
   }, [enabled, animate]);
 
+  // Initialize iOS audio context on first touch
+  useEffect(() => {
+    const initializeAudioContext = () => {
+      // Create a silent audio context to unlock iOS audio
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Set volume to 0 (silent)
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      
+      // Start and immediately stop to unlock audio
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.001);
+      
+      // Resume audio context if suspended
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      // Remove event listeners after initialization
+      document.removeEventListener('touchstart', initializeAudioContext);
+      document.removeEventListener('mousedown', initializeAudioContext);
+    };
+
+    // Add event listeners for iOS audio unlock
+    document.addEventListener('touchstart', initializeAudioContext, { once: true });
+    document.addEventListener('mousedown', initializeAudioContext, { once: true });
+  }, []);
+
   // Handle resize
   useEffect(() => {
     resizeCanvas();
@@ -292,7 +325,8 @@ const CanvasRenderer = React.memo(({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 1000
+        zIndex: 1000,
+        touchAction: 'none'
       }}
     />
   );

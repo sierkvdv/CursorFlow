@@ -48,7 +48,17 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10000 }}>
+    <div 
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        zIndex: 10000,
+        touchAction: 'manipulation'
+      }}
+    >
       {/* Backdrop */}
       <div 
         style={{
@@ -58,7 +68,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          zIndex: 10001
+          zIndex: 10001,
+          touchAction: 'manipulation'
         }}
         onClick={(e) => {
           e.preventDefault();
@@ -67,6 +78,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             onClose();
           } catch (error) {
             console.error('Error closing settings from backdrop:', error);
+          }
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            onClose();
+          } catch (error) {
+            console.error('Error closing settings from backdrop touch:', error);
           }
         }}
       />
@@ -84,8 +104,11 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           padding: '1.5rem',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           zIndex: 10002,
-          color: 'white'
+          color: 'white',
+          touchAction: 'manipulation'
         }}
+        onClick={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
