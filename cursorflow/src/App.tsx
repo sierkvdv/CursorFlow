@@ -311,19 +311,19 @@ function App() {
         {/* Clean Rain Effect */}
         {rainVisible && (
           <div className="absolute inset-0 pointer-events-none">
-            {/* Simple rain drops */}
-            <div className="rain-drop" style={{ left: '10%', animationDelay: '0s' }}></div>
-            <div className="rain-drop" style={{ left: '25%', animationDelay: '0.3s' }}></div>
-            <div className="rain-drop" style={{ left: '40%', animationDelay: '0.6s' }}></div>
-            <div className="rain-drop" style={{ left: '55%', animationDelay: '0.9s' }}></div>
-            <div className="rain-drop" style={{ left: '70%', animationDelay: '1.2s' }}></div>
-            <div className="rain-drop" style={{ left: '85%', animationDelay: '1.5s' }}></div>
-            <div className="rain-drop" style={{ left: '15%', animationDelay: '0.2s' }}></div>
-            <div className="rain-drop" style={{ left: '30%', animationDelay: '0.5s' }}></div>
-            <div className="rain-drop" style={{ left: '45%', animationDelay: '0.8s' }}></div>
-            <div className="rain-drop" style={{ left: '60%', animationDelay: '1.1s' }}></div>
-            <div className="rain-drop" style={{ left: '75%', animationDelay: '1.4s' }}></div>
-            <div className="rain-drop" style={{ left: '90%', animationDelay: '1.7s' }}></div>
+            {/* Simple rain drops - all start immediately */}
+            <div className="rain-drop" style={{ left: '10%' }}></div>
+            <div className="rain-drop" style={{ left: '25%' }}></div>
+            <div className="rain-drop" style={{ left: '40%' }}></div>
+            <div className="rain-drop" style={{ left: '55%' }}></div>
+            <div className="rain-drop" style={{ left: '70%' }}></div>
+            <div className="rain-drop" style={{ left: '85%' }}></div>
+            <div className="rain-drop" style={{ left: '15%' }}></div>
+            <div className="rain-drop" style={{ left: '30%' }}></div>
+            <div className="rain-drop" style={{ left: '45%' }}></div>
+            <div className="rain-drop" style={{ left: '60%' }}></div>
+            <div className="rain-drop" style={{ left: '75%' }}></div>
+            <div className="rain-drop" style={{ left: '90%' }}></div>
           </div>
         )}
       </div>

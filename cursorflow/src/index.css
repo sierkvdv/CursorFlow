@@ -194,10 +194,10 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     transform: translateY(-100vh);
     opacity: 0;
   }
-  10% {
+  5% {
     opacity: 1;
   }
-  90% {
+  95% {
     opacity: 1;
   }
   100% {
