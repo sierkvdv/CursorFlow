@@ -83,8 +83,8 @@ const CanvasRenderer = React.memo(({
       if (currentTime - lastRenderTime >= targetFrameRate) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw nature background effects first (for all performance levels) - ALWAYS RENDER ON MOBILE
-        if (showParticles && drawNatureBackground) {
+        // Draw nature background effects first (for all performance levels) - ALWAYS RENDER
+        if (drawNatureBackground) {
           drawNatureBackground(ctx);
         }
 
@@ -197,8 +197,8 @@ const CanvasRenderer = React.memo(({
           });
         }
 
-        // Draw nature background gradient (only for high performance)
-        if (showParticles && performanceLevel === 'high') {
+        // Draw nature background gradient (always for better visuals)
+        if (performanceLevel === 'high') {
           ctx.save();
           ctx.globalCompositeOperation = 'overlay';
           
@@ -281,9 +281,9 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     rainVisible: rainVisible || false
   });
 
-  // Initialize audio systems with volume controls
+  // Initialize audio systems with volume controls - ALWAYS ENABLE NATURE
   const natureSystem = useNatureAmbient({ 
-    enabled: natureEnabled && audioEnabled,
+    enabled: true, // Always enabled for better experience
     baseVolume: natureVolume * 0.3 // Scale volume
   });
   
@@ -305,35 +305,39 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 
     updateTrail(cursorPosition.x, cursorPosition.y);
     
-    // Adaptive particle generation based on performance - RESTORED FOR CURSOR EFFECTS
+    // Adaptive particle generation based on performance - MORE PARTICLES
     if (isMoving && showParticles) {
-      const particleCount = performanceLevel === 'high' ? 2 : 1;
+      const particleCount = performanceLevel === 'high' ? 6 : performanceLevel === 'medium' ? 4 : 2;
       addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, particleCount);
     }
 
-    // Update nature visuals (only for high performance) - DISABLED FOR SMOOTHNESS
-    // if (showParticles && updateNatureVisuals && performanceLevel === 'high') {
-    //   updateNatureVisuals(cursorPosition.x, cursorPosition.y);
-    // }
+    // Update nature visuals - ALWAYS ACTIVE
+    if (updateNatureVisuals) {
+      updateNatureVisuals(cursorPosition.x, cursorPosition.y);
+    }
 
-    // Add nature background effects (rain, lightning, mist) - DISABLED FOR SMOOTHNESS
-    // if (showParticles && addNatureBackground) {
-    //   addNatureBackground();
-    // }
+    // Add nature background effects (rain, lightning, mist) - LIMITED TO PREVENT LOOPS
+    if (addNatureBackground) {
+      // Only add nature background effects occasionally to prevent infinite loops
+      const shouldAdd = Math.random() > 0.8; // 20% chance
+      if (shouldAdd) {
+        addNatureBackground();
+      }
+    }
 
     // Update audio systems with performance-based throttling
     if (audioEnabled) {
       const currentTime = performance.now();
       const timeSinceLastAudioUpdate = currentTime - (lastAudioUpdateRef.current || 0);
       
-      // Throttle audio updates based on performance level
-      const audioUpdateInterval = performanceLevel === 'high' ? 16 : performanceLevel === 'medium' ? 32 : 64; // 60fps, 30fps, 15fps
+      // Throttle audio updates based on performance level - IMPROVED RESPONSIVENESS
+      const audioUpdateInterval = performanceLevel === 'high' ? 8 : performanceLevel === 'medium' ? 16 : 32; // 120fps, 60fps, 30fps
       
       if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
         lastAudioUpdateRef.current = currentTime;
         
-        // Update audio systems with reduced frequency
-        if (natureEnabled && natureSystem?.updateNatureFromMouse) {
+        // Update audio systems with reduced frequency - ALWAYS UPDATE NATURE
+        if (natureSystem?.updateNatureFromMouse) {
           natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
         }
         

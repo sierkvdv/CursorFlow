@@ -6,7 +6,7 @@ interface NatureAmbientOptions {
 }
 
 export const useNatureAmbient = ({
-  enabled = false, // Changed to false - should be controlled by parent
+  enabled = true, // Start enabled for better experience
   baseVolume = 0.3 // Balanced volume for bassline
 }: NatureAmbientOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);

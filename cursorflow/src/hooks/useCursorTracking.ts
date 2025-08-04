@@ -14,7 +14,7 @@ interface CursorTrackingOptions {
 }
 
 export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
-  const { enabled = true, sensitivity = 3, throttleMs = 16 } = options; // 3x higher sensitivity for iPhone
+  const { enabled = true, sensitivity = 3, throttleMs = 16 } = options; // Back to original smooth timing
   
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
     x: 0,
@@ -129,13 +129,13 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     if (!enabled) return;
 
     // Remove throttling for iPhone - immediate response
-    // if (throttleTimeoutRef.current) {
-    //   return;
-    // }
+    if (throttleTimeoutRef.current) {
+      return;
+    }
 
-    // throttleTimeoutRef.current = window.setTimeout(() => {
-    //   throttleTimeoutRef.current = null;
-    // }, throttleMs);
+    throttleTimeoutRef.current = window.setTimeout(() => {
+      throttleTimeoutRef.current = null;
+    }, throttleMs);
 
     const touch = event.touches[0];
     if (!touch) return;

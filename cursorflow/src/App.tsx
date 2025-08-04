@@ -13,7 +13,7 @@ function App() {
   const [melodyEnabled, setMelodyEnabled] = useState(false);
   const [drumEnabled, setDrumEnabled] = useState(false);
 
-  const [natureEnabled, setNatureEnabled] = useState(false); // Start disabled
+  const [natureEnabled, setNatureEnabled] = useState(true); // Start enabled
   const [glitchEnabled, setGlitchEnabled] = useState(false);
   
   // Volume controls
@@ -311,6 +311,16 @@ function App() {
         {/* Background Rain Effect */}
         {rainVisible && (
           <div className="absolute inset-0 pointer-events-none">
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
+            <div className="rain-drop visible"></div>
             <div className="rain-drop visible"></div>
             <div className="rain-drop visible"></div>
             <div className="rain-drop visible"></div>

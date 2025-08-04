@@ -43,6 +43,7 @@ interface NatureBackground {
   rainDrops: Array<{ x: number; y: number; speed: number; life: number }>;
   lightning: { active: boolean; intensity: number; x: number; y: number };
   mist: Array<{ x: number; y: number; opacity: number; size: number }>;
+  splashes: Array<{ x: number; y: number; life: number; size: number; particles: Array<{ x: number; y: number; vx: number; vy: number; life: number }> }>;
   wind: number;
 }
 
@@ -83,6 +84,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     rainDrops: [],
     lightning: { active: false, intensity: 0, x: 0, y: 0 },
     mist: [],
+    splashes: [],
     wind: 0
   });
   
@@ -102,9 +104,11 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     const speed = Math.random() * 3 + velocity * 0.2;
     
     const colors = [
-      'rgba(0, 255, 136, 0.9)',
-      'rgba(255, 0, 128, 0.9)',
-      'rgba(0, 128, 255, 0.9)',
+      'rgba(0, 255, 136, 1.0)', // Brighter green
+      'rgba(255, 0, 128, 1.0)', // Brighter pink
+      'rgba(0, 128, 255, 1.0)', // Brighter blue
+      'rgba(255, 255, 0, 1.0)', // Bright yellow
+      'rgba(255, 128, 0, 1.0)', // Bright orange
     ];
     
     return {
@@ -115,7 +119,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       vy: Math.sin(angle) * speed,
       life: 1,
       maxLife: Math.random() * 0.8 + 0.6,
-      size: Math.random() * 8 + 6,
+      size: Math.random() * 12 + 8, // Larger particles
       color: colors[Math.floor(Math.random() * colors.length)]
     };
   }, []);
@@ -129,7 +133,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
           y: particle.y + particle.vy,
           vx: particle.vx * 0.92,
           vy: particle.vy * 0.92,
-          life: particle.life - 0.02
+          life: particle.life - 0.015 // Slower decay
         }))
         .filter(particle => particle.life > 0)
     );
@@ -210,20 +214,20 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     // CONSTANT RAIN - Only add rain drops if rainVisible is true
     if (rainVisible) {
       const newDrops: Array<{ x: number; y: number; speed: number; life: number }> = [];
-      const baseDropCount = performanceLevelRef.current === 'high' ? 1 : 1; // Reduced back to subtle
+      const baseDropCount = performanceLevelRef.current === 'high' ? 5 : 3; // More rain drops for splashes
       
       for (let i = 0; i < baseDropCount; i++) {
         newDrops.push({
           x: Math.random() * window.innerWidth,
           y: -10,
-          speed: 2 + Math.random() * 3,
+          speed: 3 + Math.random() * 4, // Faster drops
           life: 1
         });
       }
       
       setNatureBackground(prev => ({
         ...prev,
-        rainDrops: [...prev.rainDrops, ...newDrops].slice(-30) // Back to original limit
+        rainDrops: [...prev.rainDrops, ...newDrops].slice(-50) // More drops for more splashes
       }));
     }
 
@@ -250,10 +254,10 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       }));
     }
 
-    // Add lightning based on audio intensity (more frequent on mobile)
-    const lightningThreshold = isMobile ? 0.6 : 0.8; // Lower threshold on mobile
-    const lightningChance = isMobile ? 0.98 : 0.95; // Higher chance on mobile
-    if (audioIntensity > lightningThreshold && Math.random() > lightningChance && performanceLevelRef.current === 'high') {
+    // Add lightning based on audio intensity (subtle and rare)
+    const lightningThreshold = isMobile ? 0.7 : 0.8; // Higher threshold - less frequent
+    const lightningChance = isMobile ? 0.98 : 0.97; // Much lower chance - very rare
+    if (audioIntensity > lightningThreshold && Math.random() > lightningChance) {
       setNatureBackground(prev => ({
         ...prev,
         lightning: {
@@ -270,7 +274,7 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
           ...prev,
           lightning: { ...prev.lightning, active: false }
         }));
-      }, 300 + Math.random() * 500); // Much longer lightning duration
+      }, 100 + Math.random() * 200); // Short lightning duration
     }
 
     // Add mist particles (only for high performance)
@@ -306,12 +310,40 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
 
     const animateNature = () => {
       setNatureBackground(prev => {
-        // Update rain drops
+        // Update rain drops and create splashes
+        const newSplashes: Array<{ x: number; y: number; life: number; size: number; particles: Array<{ x: number; y: number; vx: number; vy: number; life: number }> }> = [];
+        
         const updatedDrops = prev.rainDrops.map(drop => ({
           ...drop,
           y: drop.y + drop.speed + prev.wind,
           life: drop.life - 0.02
-        })).filter(drop => drop.y < window.innerHeight + 10 && drop.life > 0);
+        })).filter(drop => {
+          // Check if drop hits the bottom - very sensitive detection
+          if (drop.y >= window.innerHeight - 20 && drop.life > 0.1) {
+            // Create splash effect
+            const splashParticles = [];
+            for (let i = 0; i < 12; i++) {
+              const angle = (Math.PI * 2 * i) / 12;
+              const speed = 3 + Math.random() * 4;
+              splashParticles.push({
+                x: drop.x + (Math.random() - 0.5) * 10,
+                y: window.innerHeight - 5,
+                vx: Math.cos(angle) * speed,
+                vy: -Math.abs(Math.sin(angle) * speed) - 2,
+                life: 1
+              });
+            }
+            newSplashes.push({
+              x: drop.x,
+              y: window.innerHeight - 5,
+              life: 1,
+              size: 25 + Math.random() * 35,
+              particles: splashParticles
+            });
+            return false; // Remove the drop
+          }
+          return drop.y < window.innerHeight + 10 && drop.life > 0;
+        });
 
         // Update mist particles
         const updatedMist = prev.mist.map(mist => ({
@@ -320,10 +352,24 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
           opacity: mist.opacity - 0.005
         })).filter(mist => mist.y > -50 && mist.opacity > 0);
 
+        // Update existing splashes
+        const updatedSplashes = prev.splashes.map(splash => ({
+          ...splash,
+          life: splash.life - 0.015, // Slower decay
+          particles: splash.particles.map(particle => ({
+            ...particle,
+            x: particle.x + particle.vx,
+            y: particle.y + particle.vy,
+            vy: particle.vy + 0.2, // Less gravity
+            life: particle.life - 0.02 // Slower decay
+          })).filter(particle => particle.life > 0)
+        })).filter(splash => splash.life > 0);
+
         return {
           ...prev,
           rainDrops: updatedDrops,
-          mist: updatedMist
+          mist: updatedMist,
+          splashes: [...updatedSplashes, ...newSplashes].slice(-20) // Limit to 20 splashes
         };
       });
     };
@@ -338,11 +384,11 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
 
     ctx.save();
     
-    // Draw lightning flash (brighter on mobile for better visibility)
+    // Draw lightning flash (subtle and gentle)
     if (natureBackground.lightning.active) {
       const isMobile = window.innerWidth <= 768;
-      const intensity = isMobile ? 0.6 : 0.1; // Brighter on mobile
-      const secondaryIntensity = isMobile ? 0.4 : 0.05; // Brighter on mobile
+      const intensity = isMobile ? 0.3 : 0.15; // Much more subtle
+      const secondaryIntensity = isMobile ? 0.2 : 0.08; // Much more subtle
       
       const gradient = ctx.createRadialGradient(
         natureBackground.lightning.x, natureBackground.lightning.y, 0,
@@ -356,18 +402,17 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     }
 
-    // Draw rain drops (much more subtle) - only if rainVisible is true
-    // TEMPORARILY DISABLED TO FIX STARTUP STREAKS
-    // if (rainVisible && natureBackground.rainDrops.length > 0) {
-    //   ctx.strokeStyle = 'rgba(100, 150, 255, 0.1)'; // Much more subtle
-    //   ctx.lineWidth = 0.5; // Very thin
-    //   natureBackground.rainDrops.forEach(drop => {
-    //     ctx.beginPath();
-    //     ctx.moveTo(drop.x, drop.y);
-    //     ctx.lineTo(drop.x + natureBackground.wind * 2, drop.y + 8);
-    //     ctx.stroke();
-    //   });
-    // }
+    // Draw rain drops - only if rainVisible is true
+    if (rainVisible && natureBackground.rainDrops.length > 0) {
+      ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)'; // More visible
+      ctx.lineWidth = 1; // Thicker lines
+      natureBackground.rainDrops.forEach(drop => {
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x + natureBackground.wind * 2, drop.y + 8);
+        ctx.stroke();
+      });
+    }
 
     // Draw mist particles (only for high performance)
     if (natureBackground.mist.length > 0 && performanceLevelRef.current === 'high') {
@@ -378,6 +423,41 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
         ctx.fill();
       });
     }
+
+            // Draw splash effects
+        if (natureBackground.splashes.length > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          
+          natureBackground.splashes.forEach(splash => {
+            const alpha = splash.life * 1.0;
+            
+            // Draw splash particles
+            splash.particles.forEach(particle => {
+              const particleAlpha = particle.life * alpha;
+              ctx.fillStyle = `rgba(255, 255, 255, ${particleAlpha})`; // White particles
+              ctx.beginPath();
+              ctx.arc(particle.x, particle.y, 5, 0, Math.PI * 2);
+              ctx.fill();
+              
+              // Add blue glow effect
+              ctx.fillStyle = `rgba(100, 150, 255, ${particleAlpha * 0.5})`;
+              ctx.beginPath();
+              ctx.arc(particle.x, particle.y, 10, 0, Math.PI * 2);
+              ctx.fill();
+            });
+            
+            // Draw splash ring
+            const ringAlpha = splash.life * 0.8;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha})`; // White ring
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(splash.x, splash.y, splash.size * splash.life, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+          
+          ctx.restore();
+        }
 
     ctx.restore();
   }, [enabled, natureBackground, rainVisible]);

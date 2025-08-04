@@ -234,12 +234,12 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 .rain-drop {
   position: fixed;
   top: 0;
-  width: 2px;
-  height: 25px;
-  background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.8), transparent);
+  width: 3px;
+  height: 30px;
+  background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
   pointer-events: none;
   z-index: 5;
-  box-shadow: 0 0 4px rgba(100, 150, 255, 0.6);
+  box-shadow: 0 0 8px rgba(100, 150, 255, 0.8);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
@@ -251,16 +251,26 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   animation: rain-fall linear infinite;
 }
 
-.rain-drop:nth-child(1) { left: 8%; animation-duration: 3.2s; animation-delay: 0s; }
-.rain-drop:nth-child(2) { left: 18%; animation-duration: 3.8s; animation-delay: 0.3s; }
-.rain-drop:nth-child(3) { left: 28%; animation-duration: 2.9s; animation-delay: 0.6s; }
-.rain-drop:nth-child(4) { left: 38%; animation-duration: 3.5s; animation-delay: 0.9s; }
-.rain-drop:nth-child(5) { left: 48%; animation-duration: 3.1s; animation-delay: 1.2s; }
-.rain-drop:nth-child(6) { left: 58%; animation-duration: 3.3s; animation-delay: 1.5s; }
-.rain-drop:nth-child(7) { left: 68%; animation-duration: 2.8s; animation-delay: 1.8s; }
-.rain-drop:nth-child(8) { left: 78%; animation-duration: 3.6s; animation-delay: 2.1s; }
-.rain-drop:nth-child(9) { left: 88%; animation-duration: 2.7s; animation-delay: 2.4s; }
-.rain-drop:nth-child(10) { left: 98%; animation-duration: 3.4s; animation-delay: 2.7s; }
+.rain-drop:nth-child(1) { left: 5%; animation-duration: 2.2s; animation-delay: 0s; }
+.rain-drop:nth-child(2) { left: 15%; animation-duration: 2.8s; animation-delay: 0.3s; }
+.rain-drop:nth-child(3) { left: 25%; animation-duration: 1.9s; animation-delay: 0.6s; }
+.rain-drop:nth-child(4) { left: 35%; animation-duration: 2.5s; animation-delay: 0.9s; }
+.rain-drop:nth-child(5) { left: 45%; animation-duration: 2.1s; animation-delay: 1.2s; }
+.rain-drop:nth-child(6) { left: 55%; animation-duration: 2.3s; animation-delay: 1.5s; }
+.rain-drop:nth-child(7) { left: 65%; animation-duration: 1.8s; animation-delay: 1.8s; }
+.rain-drop:nth-child(8) { left: 75%; animation-duration: 2.6s; animation-delay: 2.1s; }
+.rain-drop:nth-child(9) { left: 85%; animation-duration: 1.7s; animation-delay: 2.4s; }
+.rain-drop:nth-child(10) { left: 95%; animation-duration: 2.4s; animation-delay: 2.7s; }
+.rain-drop:nth-child(11) { left: 10%; animation-duration: 2.0s; animation-delay: 0.1s; }
+.rain-drop:nth-child(12) { left: 20%; animation-duration: 2.7s; animation-delay: 0.4s; }
+.rain-drop:nth-child(13) { left: 30%; animation-duration: 1.8s; animation-delay: 0.7s; }
+.rain-drop:nth-child(14) { left: 40%; animation-duration: 2.4s; animation-delay: 1.0s; }
+.rain-drop:nth-child(15) { left: 50%; animation-duration: 2.0s; animation-delay: 1.3s; }
+.rain-drop:nth-child(16) { left: 60%; animation-duration: 2.2s; animation-delay: 1.6s; }
+.rain-drop:nth-child(17) { left: 70%; animation-duration: 1.7s; animation-delay: 1.9s; }
+.rain-drop:nth-child(18) { left: 80%; animation-duration: 2.5s; animation-delay: 2.2s; }
+.rain-drop:nth-child(19) { left: 90%; animation-duration: 1.6s; animation-delay: 2.5s; }
+.rain-drop:nth-child(20) { left: 100%; animation-duration: 2.3s; animation-delay: 2.8s; }
 
 /* Remove iOS focus indicators and tap highlights */
 * {
