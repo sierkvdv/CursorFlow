@@ -388,13 +388,13 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     const frameTime = currentTime - lastFrameTimeRef.current;
     lastFrameTimeRef.current = currentTime;
     
-    // Calculate average frame time
-    frameTimeRef.current = frameTimeRef.current * 0.9 + frameTime * 0.1;
+    // Calculate average frame time with faster response
+    frameTimeRef.current = frameTimeRef.current * 0.8 + frameTime * 0.2; // Faster response to changes
     
-    // Adjust performance level based on frame time
-    if (frameTimeRef.current > 25) { // Below 40fps
+    // Adjust performance level based on frame time - MORE RESPONSIVE
+    if (frameTimeRef.current > 20) { // Below 50fps - more aggressive
       performanceLevelRef.current = 'low';
-    } else if (frameTimeRef.current > 18) { // Below 55fps
+    } else if (frameTimeRef.current > 12) { // Below 83fps - more aggressive
       performanceLevelRef.current = 'medium';
     } else {
       performanceLevelRef.current = 'high';
@@ -408,8 +408,18 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
     const animate = (currentTime: number) => {
       updatePerformanceLevel();
       
-      // Firefox needs slower updates for better performance
-      const updateInterval = isFirefox ? 16 : 8; // 60fps for Firefox, 120fps for others
+      // Adaptive update intervals based on performance and audio load
+      let updateInterval: number;
+      
+      if (isFirefox) {
+        // Firefox needs slower updates for better performance
+        updateInterval = performanceLevelRef.current === 'high' ? 16 : 
+                        performanceLevelRef.current === 'medium' ? 24 : 32;
+      } else {
+        // Other browsers can handle faster updates
+        updateInterval = performanceLevelRef.current === 'high' ? 8 : 
+                        performanceLevelRef.current === 'medium' ? 12 : 16;
+      }
       
       if (currentTime - lastUpdateTimeRef.current >= updateInterval) {
         updateParticles();

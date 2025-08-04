@@ -297,6 +297,8 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     baseVolume: drumVolume * 0.2 // Scale volume
   });
 
+  const lastAudioUpdateRef = useRef(0);
+
   // Optimized cursor update handler with adaptive throttling
   const handleCursorUpdate = useCallback(() => {
     if (!enabled) return;
@@ -319,38 +321,67 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     //   addNatureBackground();
     // }
 
-    // Update audio systems
+    // Update audio systems with performance-based throttling
     if (audioEnabled) {
-      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
-        natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      }
+      const currentTime = performance.now();
+      const timeSinceLastAudioUpdate = currentTime - (lastAudioUpdateRef.current || 0);
       
-      if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
-        melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      }
+      // Throttle audio updates based on performance level
+      const audioUpdateInterval = performanceLevel === 'high' ? 16 : performanceLevel === 'medium' ? 32 : 64; // 60fps, 30fps, 15fps
       
-      if (drumEnabled && rhythmSystem?.updateRhythmFromMouse) {
-        rhythmSystem.updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      }
+      if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
+        lastAudioUpdateRef.current = currentTime;
+        
+        // Update audio systems with reduced frequency
+        if (natureEnabled && natureSystem?.updateNatureFromMouse) {
+          natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        }
+        
+        if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
+          melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        }
+        
+        if (drumEnabled && rhythmSystem?.updateRhythmFromMouse) {
+          rhythmSystem.updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+        }
 
-      // GLITCH EFFECTS ON CURSOR MOVEMENT - FOR IPHONE
-      if (glitchEnabled && cursorPosition.velocity > 0.05) {
-        // Trigger glitch effects based on velocity
-        const glitchChance = Math.min(0.3, cursorPosition.velocity * 0.5);
-        if (Math.random() < glitchChance) {
-          // Import and use glitch effects
-          import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
-            // Create audio context for glitch effects
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            if (audioContext.state === 'suspended') {
-              audioContext.resume();
+        // GLITCH EFFECTS ON CURSOR MOVEMENT - OPTIMIZED FOR PERFORMANCE
+        if (glitchEnabled && cursorPosition.velocity > 0.05) {
+          // Trigger glitch effects based on velocity with performance throttling
+          const glitchChance = Math.min(0.15, cursorPosition.velocity * 0.3); // Reduced chance
+          if (Math.random() < glitchChance) {
+            // Use requestIdleCallback for non-critical glitch effects
+            if ('requestIdleCallback' in window) {
+              (window as any).requestIdleCallback(() => {
+                import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
+                  // Create audio context for glitch effects
+                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                  }
+                  // Apply volume scaling to glitch effects
+                  const originalVolume = (window as any).glitchVolume || 1;
+                  (window as any).glitchVolume = glitchVolume;
+                  createGlitchClickSound(audioContext);
+                  (window as any).glitchVolume = originalVolume;
+                });
+              }, { timeout: 100 });
+            } else {
+              // Fallback for browsers without requestIdleCallback
+              setTimeout(() => {
+                import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
+                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                  }
+                  const originalVolume = (window as any).glitchVolume || 1;
+                  (window as any).glitchVolume = glitchVolume;
+                  createGlitchClickSound(audioContext);
+                  (window as any).glitchVolume = originalVolume;
+                });
+              }, 0);
             }
-            // Apply volume scaling to glitch effects
-            const originalVolume = (window as any).glitchVolume || 1;
-            (window as any).glitchVolume = glitchVolume;
-            createGlitchClickSound(audioContext);
-            (window as any).glitchVolume = originalVolume;
-          });
+          }
         }
       }
 
@@ -378,7 +409,8 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     melodySystem,
     rhythmSystem,
     onMouseMove,
-    performanceLevel
+    performanceLevel,
+    glitchVolume
   ]);
 
   useEffect(() => {
