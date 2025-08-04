@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CursorTracker } from './components/CursorTracker';
 import { InteractiveElements } from './components/InteractiveElements';
@@ -56,12 +56,10 @@ function App() {
   };
 
   const handleToggleMelody = () => {
-    console.log('🎵 Toggle melody clicked, current state:', melodyEnabled);
     setMelodyEnabled(prev => !prev);
   };
 
   const handleToggleDrum = () => {
-    console.log('🥁 Toggle drum clicked, current state:', drumEnabled);
     setDrumEnabled(prev => !prev);
   };
 
@@ -87,7 +85,6 @@ function App() {
         silentSource.start();
         
         await audioContext.resume();
-        console.log('🎵 iOS Audio unlocked successfully!');
         
         // Test audio immediately after unlock
         setTimeout(() => {
@@ -100,21 +97,18 @@ function App() {
             testGain.connect(audioContext.destination);
             testOsc.start();
             testOsc.stop(audioContext.currentTime + 0.2);
-            console.log('🎵 iOS Audio test after unlock!');
           } catch (error) {
-            console.error('iOS Audio test failed:', error);
+            // iOS Audio test failed silently
           }
         }, 100);
       }
     } catch (error) {
-      console.error('Failed to unlock iOS audio:', error);
+      // Failed to unlock iOS audio silently
     }
   }, []);
 
   const handleToggleGlitch = () => {
-    console.log('⚠️ Toggle glitch mode clicked, current state:', glitchEnabled);
     setGlitchEnabled(prev => !prev);
-    console.log('🚀 Vercel deployment triggered!');
   };
 
   // iOS Audio unlock on any touch
@@ -135,14 +129,34 @@ function App() {
     };
   }, [unlockAudioForIOS]);
 
+  // Prevent iOS Safari scroll issues and black screen
+  useEffect(() => {
+    const preventScrollIssues = (e: TouchEvent) => {
+      // Prevent all scrolling to avoid black screen
+      e.preventDefault();
+    };
+    
+    // Prevent pull-to-refresh and overscroll
+    document.addEventListener('touchmove', preventScrollIssues, { passive: false });
+    document.addEventListener('touchstart', preventScrollIssues, { passive: false });
+    
+    return () => {
+      document.removeEventListener('touchmove', preventScrollIssues);
+      document.removeEventListener('touchstart', preventScrollIssues);
+    };
+  }, []);
+
   const audioDebug = {
     isAudioSupported,
     hasUserInteracted,
     isMuted
   };
 
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 text-white overflow-hidden relative" style={{ cursor: 'none' }}>
+
       {/* Background */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />

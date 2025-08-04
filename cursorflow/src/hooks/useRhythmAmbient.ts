@@ -303,7 +303,7 @@ export const useRhythmAmbient = ({
       delayRef.current.connect(delayGainRef.current);
       delayGainRef.current.connect(audioContextRef.current.destination);
       
-      // Set initial volumes to 0
+      // Set initial volumes to 0 and ensure they stay silent
       kickGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
       kickGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
       snareGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
@@ -312,6 +312,16 @@ export const useRhythmAmbient = ({
       hihatGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
       tomGain1Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
       tomGain2Ref.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      
+      // Ensure gains stay at 0 when not playing
+      kickGain1Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      kickGain2Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      snareGain1Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      snareGain2Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      hihatGain1Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      hihatGain2Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      tomGain1Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
+      tomGain2Ref.current.gain.setTargetAtTime(0, audioContextRef.current.currentTime, 0.1);
       
       // Start oscillators
       kickOsc1Ref.current.start();
@@ -453,10 +463,12 @@ export const useRhythmAmbient = ({
           kickGain1Ref.current.gain.setValueAtTime(0, audioTime);
           kickGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.8, audioTime + 0.001);
           kickGain1Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          kickGain1Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
           
           kickGain2Ref.current.gain.setValueAtTime(0, audioTime);
           kickGain2Ref.current.gain.linearRampToValueAtTime(volume * 0.4, audioTime + 0.001);
           kickGain2Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          kickGain2Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
         }
         break;
       case 'snare':
@@ -466,10 +478,12 @@ export const useRhythmAmbient = ({
           snareGain1Ref.current.gain.setValueAtTime(0, audioTime);
           snareGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.7, audioTime + 0.001);
           snareGain1Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          snareGain1Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
           
           snareGain2Ref.current.gain.setValueAtTime(0, audioTime);
           snareGain2Ref.current.gain.linearRampToValueAtTime(volume * 0.3, audioTime + 0.001);
           snareGain2Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          snareGain2Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
         }
         break;
       case 'hihat':
@@ -479,10 +493,12 @@ export const useRhythmAmbient = ({
           hihatGain1Ref.current.gain.setValueAtTime(0, audioTime);
           hihatGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.6, audioTime + 0.001);
           hihatGain1Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          hihatGain1Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
           
           hihatGain2Ref.current.gain.setValueAtTime(0, audioTime);
           hihatGain2Ref.current.gain.linearRampToValueAtTime(volume * 0.2, audioTime + 0.001);
           hihatGain2Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          hihatGain2Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
         }
         break;
       case 'tom':
@@ -492,10 +508,12 @@ export const useRhythmAmbient = ({
           tomGain1Ref.current.gain.setValueAtTime(0, audioTime);
           tomGain1Ref.current.gain.linearRampToValueAtTime(volume * 0.5, audioTime + 0.001);
           tomGain1Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          tomGain1Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
           
           tomGain2Ref.current.gain.setValueAtTime(0, audioTime);
           tomGain2Ref.current.gain.linearRampToValueAtTime(volume * 0.3, audioTime + 0.001);
           tomGain2Ref.current.gain.exponentialRampToValueAtTime(0.001, audioTime + duration);
+          tomGain2Ref.current.gain.setTargetAtTime(0, audioTime + duration, 0.05);
         }
         break;
     }

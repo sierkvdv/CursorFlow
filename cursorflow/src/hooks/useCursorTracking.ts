@@ -101,7 +101,9 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
     lastPositionRef.current = newPosition;
     lastTimeRef.current = currentTime;
-  }, [enabled, calculateVelocity, calculateDirection, throttleMs]);
+  }, [enabled, throttleMs, calculateVelocity, calculateDirection]);
+
+
 
   // Touch event handlers for mobile support
   const handleTouchStart = useCallback((event: TouchEvent) => {

@@ -31,6 +31,40 @@ div[style*="borderRadius"] {
   cursor: pointer !important;
 }
 
+/* Prevent iOS Safari pull-to-refresh and overscroll */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  touch-action: none;
+}
+
+/* Prevent any scrolling or overflow issues */
+#root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Prevent touch gestures from interfering */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Make settings menu items show cursor */
 div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent: space-between"] {
   cursor: pointer !important;
@@ -104,119 +138,6 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     color: #ffffff;
   }
 }
-
-@layer components {
-  .cursor-trail {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9997;
-    mix-blend-mode: screen;
-  }
-
-  .particle {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-    mix-blend-mode: screen;
-  }
-
-  .ripple {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-    animation: ripple-animation 1s ease-out forwards;
-  }
-
-  .glow-effect {
-    filter: drop-shadow(0 0 10px currentColor);
-  }
-
-  /* Modern card styling */
-  .modern-card {
-    background: rgba(10, 10, 10, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    transition: all 0.3s ease;
-  }
-
-  .modern-card:hover {
-    background: rgba(10, 10, 10, 0.8);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-  }
-
-  /* Button styling */
-  .btn-primary {
-    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-    border: none;
-    border-radius: 50px;
-    padding: 12px 24px;
-    font-weight: 600;
-    color: #000;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
-  }
-
-  /* Text glow effects */
-  .text-glow-primary {
-    text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
-  }
-
-  .text-glow-secondary {
-    text-shadow: 0 0 20px #ff0080, 0 0 40px #ff0080;
-  }
-
-  .text-glow-accent {
-    text-shadow: 0 0 20px #0080ff, 0 0 40px #0080ff;
-  }
-}
-
-@layer utilities {
-  .text-glow {
-    text-shadow: 0 0 10px currentColor;
-  }
-
-  .neon-border {
-    box-shadow: 
-      0 0 5px currentColor,
-      0 0 10px currentColor,
-      0 0 15px currentColor,
-      inset 0 0 5px currentColor;
-  }
-
-  /* Glass morphism effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, #00ff88, #ff0080, #0080ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Smooth animations */
-  .animate-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Hover lift effect */
-  .hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  }
-}
-
 @keyframes ripple-animation {
   0% {
     transform: scale(0);
@@ -246,30 +167,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   background: #00cc6a;
 }
 
-/* Loading animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Pulse animation */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
 
 /* Background Rain Effect */
 @keyframes rain-fall {
@@ -311,29 +209,4 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 .rain-drop:nth-child(9) { left: 88%; animation-duration: 1.4s; animation-delay: 2.4s; }
 .rain-drop:nth-child(10) { left: 98%; animation-duration: 1.6s; animation-delay: 2.7s; }
 
-/* Float animation */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Responsive typography */
-@media (max-width: 640px) {
-  .text-responsive {
-    font-size: clamp(1rem, 4vw, 1.5rem);
-  }
-}
-
-@media (min-width: 641px) {
-  .text-responsive {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-  }
-}

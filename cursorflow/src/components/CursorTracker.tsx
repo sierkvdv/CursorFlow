@@ -346,8 +346,35 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     <>
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-30"
+        className="fixed inset-0 pointer-events-auto z-30"
         style={{ mixBlendMode: 'screen' }}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          // Trigger cursor tracking
+          const touch = e.touches[0];
+          if (touch) {
+            const event = new MouseEvent('mousemove', {
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              bubbles: true
+            });
+            document.dispatchEvent(event);
+          }
+        }}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          // Trigger cursor tracking
+          const touch = e.touches[0];
+          if (touch) {
+            const event = new MouseEvent('mousemove', {
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              bubbles: true
+            });
+            document.dispatchEvent(event);
+          }
+        }}
+        onTouchEnd={(e) => e.preventDefault()}
       />
       <CanvasRenderer
         canvasRef={canvasRef}
