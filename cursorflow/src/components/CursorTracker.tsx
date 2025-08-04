@@ -349,32 +349,40 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
         className="fixed inset-0 pointer-events-auto z-30"
         style={{ mixBlendMode: 'screen' }}
         onTouchStart={(e) => {
-          e.preventDefault();
-          // Trigger cursor tracking
+          // Don't prevent default to allow normal touch handling
           const touch = e.touches[0];
           if (touch) {
-            const event = new MouseEvent('mousemove', {
-              clientX: touch.clientX,
-              clientY: touch.clientY,
-              bubbles: true
+            // Update cursor position directly
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            // Dispatch a custom event for cursor tracking
+            const customEvent = new CustomEvent('cursorUpdate', {
+              detail: { x, y, velocity: 0.1 }
             });
-            document.dispatchEvent(event);
+            document.dispatchEvent(customEvent);
           }
         }}
         onTouchMove={(e) => {
-          e.preventDefault();
-          // Trigger cursor tracking
+          // Don't prevent default to allow normal touch handling
           const touch = e.touches[0];
           if (touch) {
-            const event = new MouseEvent('mousemove', {
-              clientX: touch.clientX,
-              clientY: touch.clientY,
-              bubbles: true
+            // Update cursor position directly
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            // Dispatch a custom event for cursor tracking
+            const customEvent = new CustomEvent('cursorUpdate', {
+              detail: { x, y, velocity: 0.2 }
             });
-            document.dispatchEvent(event);
+            document.dispatchEvent(customEvent);
           }
         }}
-        onTouchEnd={(e) => e.preventDefault()}
+        onTouchEnd={(e) => {
+          // Don't prevent default
+        }}
       />
       <CanvasRenderer
         canvasRef={canvasRef}

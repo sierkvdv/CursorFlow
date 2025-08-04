@@ -184,6 +184,41 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     isMovingRef.current = false;
   }, []);
 
+  // Handle custom cursor update events from touch
+  const handleCursorUpdate = useCallback((event: CustomEvent) => {
+    if (!enabled) return;
+
+    const { x, y, velocity } = event.detail;
+    
+    const newPosition = { x, y };
+    const direction = calculateDirection(x, y, lastPositionRef.current.x, lastPositionRef.current.y);
+
+    // Update moving state
+    const shouldBeMoving = velocity > 0.003;
+    if (shouldBeMoving !== isMovingRef.current) {
+      isMovingRef.current = shouldBeMoving;
+      setIsMoving(shouldBeMoving);
+    }
+
+    // Cancel previous RAF
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    // Use requestAnimationFrame for smooth updates
+    rafRef.current = requestAnimationFrame(() => {
+      positionObjectRef.current.x = newPosition.x;
+      positionObjectRef.current.y = newPosition.y;
+      positionObjectRef.current.velocity = velocity;
+      positionObjectRef.current.direction = direction;
+      
+      setCursorPosition({ ...positionObjectRef.current });
+    });
+
+    lastPositionRef.current = newPosition;
+    lastTimeRef.current = performance.now();
+  }, [enabled, calculateDirection]);
+
   // Memoized return value
   const returnValue = useMemo(() => ({
     cursorPosition,
@@ -199,6 +234,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('cursorUpdate', handleCursorUpdate as EventListener);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -206,6 +242,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('cursorUpdate', handleCursorUpdate as EventListener);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
@@ -213,7 +250,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
         clearTimeout(throttleTimeoutRef.current);
       }
     };
-  }, [enabled, handleMouseMove, handleMouseLeave, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [enabled, handleMouseMove, handleMouseLeave, handleTouchStart, handleTouchMove, handleTouchEnd, handleCursorUpdate]);
 
   return returnValue;
 }; 
