@@ -471,9 +471,27 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   // Start nature audio system when enabled
   useEffect(() => {
     if (natureEnabled && audioEnabled && natureSystem?.startNature) {
-      natureSystem.startNature();
+      // Force reinitialize nature audio system
+      setTimeout(() => {
+        if (natureSystem?.startNature) {
+          natureSystem.startNature();
+        }
+      }, 100);
     }
-  }, [natureEnabled, audioEnabled, natureSystem]);
+  }, [natureEnabled, audioEnabled, natureSystem, audioKey]);
+
+  // Force nature audio system to reinitialize when audio context is ready
+  useEffect(() => {
+    if (natureEnabled && audioEnabled && natureSystem?.stopNature && natureSystem?.startNature) {
+      // Stop and restart nature audio to force reinitialization
+      natureSystem.stopNature();
+      setTimeout(() => {
+        if (natureSystem?.startNature) {
+          natureSystem.startNature();
+        }
+      }, 50);
+    }
+  }, [audioKey, natureEnabled, audioEnabled, natureSystem]);
 
   // Force stop melody when disabled - immediate effect
   useEffect(() => {
