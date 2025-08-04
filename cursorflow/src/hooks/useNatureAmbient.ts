@@ -331,17 +331,6 @@ export const useNatureAmbient = ({
   const startNature = useCallback(async () => {
     if (!enabled || isPlayingRef.current) return;
     console.log('Starting nature ambient...');
-    
-    // Ensure audio context is resumed for iOS
-    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-      try {
-        await audioContextRef.current.resume();
-        console.log('Audio context resumed for iOS');
-      } catch (error) {
-        console.error('Failed to resume audio context:', error);
-      }
-    }
-    
     isPlayingRef.current = true;
     await initAudio();
   }, [enabled, initAudio]);
@@ -378,11 +367,7 @@ export const useNatureAmbient = ({
   // Auto-start when enabled changes
   useEffect(() => {
     if (enabled && !isPlayingRef.current) {
-      // Small delay for iOS audio unlock
-      const timer = setTimeout(() => {
-        startNature();
-      }, 100);
-      return () => clearTimeout(timer);
+      startNature();
     } else if (!enabled && isPlayingRef.current) {
       stopNature();
     }
