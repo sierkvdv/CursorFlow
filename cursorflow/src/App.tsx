@@ -31,8 +31,8 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true);
-          // Show rain after a reasonable delay
-    setTimeout(() => setRainVisible(true), 2000);
+          // Show rain after a longer delay to ensure no conflicts
+    setTimeout(() => setRainVisible(true), 4000);
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -308,9 +308,9 @@ function App() {
           <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
         
-        {/* Background Rain Effect */}
+        {/* Background Rain Effect - Only when explicitly enabled */}
         {rainVisible && (
-          <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 pointer-events-none" style={{ display: rainVisible ? 'block' : 'none' }}>
             {/* Reduced rain drops for subtler effect */}
             <div className="rain-drop visible" style={{ left: '10%', animationDelay: '0s', animationDuration: '2.2s' }}></div>
             <div className="rain-drop visible" style={{ left: '25%', animationDelay: '0.4s', animationDuration: '2.8s' }}></div>

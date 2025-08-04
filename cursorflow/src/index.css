@@ -303,28 +303,7 @@ select:focus,
     -webkit-tap-highlight-color: transparent !important;
   }
   
-  /* Optimize rain for mobile - Enhanced visibility for iPhone */
-  .rain-drop {
-    width: 4px; /* Thicker on mobile for better visibility */
-    height: 32px; /* Slightly taller for better visibility */
-    background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
-    box-shadow: 0 0 12px rgba(100, 150, 255, 1.0); /* Stronger glow */
-  }
-  
-  /* Remove the 4s override to allow individual timing for more natural effect */
-  /* .rain-drop.visible {
-    animation-duration: 4s !important;
-  } */
-  
-  /* iPhone-specific optimizations */
-  @supports (-webkit-touch-callout: none) {
-    .rain-drop {
-      width: 5px; /* Even thicker on iPhone for maximum visibility */
-      height: 35px; /* Taller on iPhone */
-      background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
-      box-shadow: 0 0 15px rgba(100, 150, 255, 1.0); /* Maximum glow on iPhone */
-    }
-  }
+  /* Rain effects now handled by main CSS rules */
 }
 
 
