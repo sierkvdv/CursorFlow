@@ -321,14 +321,14 @@ select:focus,
   
   /* Optimize rain for mobile */
   .rain-drop {
-    width: 2px;
-    height: 25px;
-    background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.9), transparent);
-    box-shadow: 0 0 6px rgba(100, 150, 255, 0.8);
+    width: 3px;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
+    box-shadow: 0 0 10px rgba(100, 150, 255, 1.0);
   }
   
   .rain-drop.visible {
-    animation-duration: 6s !important; /* Realistic hang and fall on mobile */
+    animation-duration: 4s !important; /* Faster fall on mobile for better visibility */
   }
 }
 

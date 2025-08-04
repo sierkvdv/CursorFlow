@@ -144,20 +144,20 @@ const CanvasRenderer = React.memo(({
   // Add lightning effect
   const addLightning = useCallback(() => {
     // Random chance for lightning (independent of cursor)
-    if (Math.random() > 0.995) { // 0.5% chance per frame
+    // Higher chance on mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const lightningChance = isMobile ? 0.985 : 0.995; // 1.5% chance on mobile vs 0.5% on desktop
+    
+    if (Math.random() > lightningChance) {
       const canvas = canvasRef.current;
       if (!canvas) return;
       
-      // Scale coordinates for device pixel ratio
-      const devicePixelRatio = window.devicePixelRatio || 1;
-      const viewportWidth = window.innerWidth * devicePixelRatio;
-      const viewportHeight = window.innerHeight * devicePixelRatio;
-      
+      // Use canvas dimensions directly for lightning coordinates
       lightningRef.current = {
         active: true,
         intensity: 0.8 + Math.random() * 0.2,
-        x: Math.random() * viewportWidth,
-        y: Math.random() * viewportHeight * 0.3,
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.3,
         life: 1
       };
     }
@@ -184,12 +184,17 @@ const CanvasRenderer = React.memo(({
       
       if (lightning.life > 0) {
         const intensity = lightning.intensity * lightning.life;
+        
+        // Increase intensity for mobile devices
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const mobileMultiplier = isMobile ? 3 : 1;
+        
         const gradient = ctx.createRadialGradient(
           lightning.x, lightning.y, 0,
-          lightning.x, lightning.y, window.innerWidth * 1.2
+          lightning.x, lightning.y, canvas.width * 1.2
         );
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${intensity * 0.1})`);
-        gradient.addColorStop(0.3, `rgba(200, 220, 255, ${intensity * 0.05})`);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${intensity * 0.1 * mobileMultiplier})`);
+        gradient.addColorStop(0.3, `rgba(200, 220, 255, ${intensity * 0.05 * mobileMultiplier})`);
         gradient.addColorStop(1, 'transparent');
         
         ctx.fillStyle = gradient;
