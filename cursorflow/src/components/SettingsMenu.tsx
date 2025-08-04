@@ -48,30 +48,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   // Helper function to create touch-friendly button props
   const createTouchButtonProps = (onClickHandler: () => void) => ({
     onClick: (e: React.MouseEvent) => {
-      e.preventDefault();
       e.stopPropagation();
-      try {
-        onClickHandler();
-      } catch (error) {
-        console.error('Error in button click:', error);
-      }
-    },
-    onTouchStart: (e: React.TouchEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+      onClickHandler();
     },
     onTouchEnd: (e: React.TouchEvent) => {
-      e.preventDefault();
       e.stopPropagation();
-      try {
-        onClickHandler();
-      } catch (error) {
-        console.error('Error in button touch:', error);
-      }
-    },
-    onTouchMove: (e: React.TouchEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+      onClickHandler();
     },
     style: {
       touchAction: 'manipulation' as const,
@@ -102,8 +84,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         WebkitTapHighlightColor: 'transparent',
         WebkitTouchCallout: 'none'
       }}
-      onTouchStart={(e) => e.preventDefault()}
-      onTouchMove={(e) => e.preventDefault()}
+
     >
       {/* Backdrop */}
       <div 
@@ -122,22 +103,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           msUserSelect: 'none'
         }}
         onClick={(e) => {
-          e.preventDefault();
           e.stopPropagation();
-          try {
-            onClose();
-          } catch (error) {
-            console.error('Error closing settings from backdrop:', error);
-          }
+          onClose();
         }}
         onTouchEnd={(e) => {
-          e.preventDefault();
           e.stopPropagation();
-          try {
-            onClose();
-          } catch (error) {
-            console.error('Error closing settings from backdrop touch:', error);
-          }
+          onClose();
         }}
       />
       
@@ -169,13 +140,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white' }}>Settings</h2>
           <button
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
-              try {
-                onClose();
-              } catch (error) {
-                console.error('Error closing settings:', error);
-              }
+              onClose();
             }}
             onTouchEnd={(e) => {
               e.preventDefault();

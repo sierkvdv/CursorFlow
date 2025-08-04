@@ -314,9 +314,6 @@ const CanvasRenderer = React.memo(({
         
         console.log('iOS Audio Context initialized successfully');
         
-        // Trigger a custom event to notify audio systems
-        window.dispatchEvent(new CustomEvent('audioContextUnlocked'));
-        
         // Remove event listeners after initialization
         document.removeEventListener('touchstart', initializeAudioContext);
         document.removeEventListener('mousedown', initializeAudioContext);
@@ -492,7 +489,13 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   // Start nature audio system when enabled
   useEffect(() => {
     if (natureEnabled && audioEnabled && natureSystem?.startNature) {
-      natureSystem.startNature();
+      // Small delay for iOS audio unlock
+      const timer = setTimeout(() => {
+        if (natureEnabled && natureSystem?.startNature) {
+          natureSystem.startNature();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [natureEnabled, audioEnabled, natureSystem]);
 
@@ -503,23 +506,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     }
   }, [natureEnabled, audioEnabled, natureSystem]);
 
-  // Listen for audio context unlock event
-  useEffect(() => {
-    const handleAudioUnlock = () => {
-      if (natureEnabled && audioEnabled && natureSystem?.startNature) {
-        // Small delay to ensure everything is ready
-        setTimeout(() => {
-          if (natureEnabled && natureSystem?.startNature) {
-            natureSystem.startNature();
-            console.log('Nature sound started after audio unlock');
-          }
-        }, 50);
-      }
-    };
 
-    window.addEventListener('audioContextUnlocked', handleAudioUnlock);
-    return () => window.removeEventListener('audioContextUnlocked', handleAudioUnlock);
-  }, [natureEnabled, audioEnabled, natureSystem]);
 
 
 
