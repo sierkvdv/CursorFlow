@@ -189,7 +189,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 }
 
 /* Background Rain Effect */
-/* Rain animation - only active when rain is visible */
+/* Rain animation - disabled by default */
 @keyframes rain-fall {
   0% {
     transform: translateY(-100vh) translateX(0);
@@ -255,13 +255,15 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
   /* Ensure rain drops are completely hidden by default */
   display: none;
+  /* Prevent any animation until explicitly enabled */
+  animation: none !important;
 }
 
 .rain-drop.visible {
   opacity: 1;
   visibility: visible;
   display: block;
-  animation: rain-fall linear infinite;
+  animation: rain-fall linear infinite !important;
 }
 
 /* Rain drop timing now handled by inline styles for better variation */
