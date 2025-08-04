@@ -191,17 +191,31 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 /* Clean Rain Effect */
 @keyframes rain-fall {
   0% {
-    transform: translateY(-100vh);
+    transform: translateY(-100vh) scale(0.3);
     opacity: 0;
   }
-  5% {
+  10% {
+    transform: translateY(-90vh) scale(0.5);
+    opacity: 0.3;
+  }
+  20% {
+    transform: translateY(-80vh) scale(0.7);
+    opacity: 0.6;
+  }
+  30% {
+    transform: translateY(-70vh) scale(0.9);
+    opacity: 0.8;
+  }
+  40% {
+    transform: translateY(-60vh) scale(1.0);
     opacity: 1;
   }
-  95% {
+  90% {
+    transform: translateY(10vh) scale(1.0);
     opacity: 1;
   }
   100% {
-    transform: translateY(100vh);
+    transform: translateY(100vh) scale(1.0);
     opacity: 0;
   }
 }
@@ -209,13 +223,14 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 .rain-drop {
   position: fixed;
   top: 0;
-  width: 2px;
-  height: 20px;
-  background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.8), transparent);
+  width: 1px;
+  height: 15px;
+  background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.9), transparent);
   pointer-events: none;
   z-index: 5;
-  box-shadow: 0 0 4px rgba(100, 150, 255, 0.6);
-  animation: rain-fall 2s linear infinite;
+  box-shadow: 0 0 3px rgba(100, 150, 255, 0.5);
+  animation: rain-fall linear infinite;
+  transform-origin: center bottom;
 }
 
 /* Remove iOS focus indicators and tap highlights */
