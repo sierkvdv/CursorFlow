@@ -12,7 +12,7 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [melodyEnabled, setMelodyEnabled] = useState(false);
   const [drumEnabled, setDrumEnabled] = useState(false);
-  const [ambientEnabled, setAmbientEnabled] = useState(false); // Start disabled
+
   const [natureEnabled, setNatureEnabled] = useState(false); // Start disabled
   const [glitchEnabled, setGlitchEnabled] = useState(false);
   const [currentTitle, setCurrentTitle] = useState(0);
@@ -96,10 +96,7 @@ function App() {
     setDrumEnabled(prev => !prev);
   };
 
-  const handleToggleAmbient = () => {
-    cleanupAudioContext(); // Cleanup before toggle
-    setAmbientEnabled(prev => !prev);
-  };
+
 
   const handleToggleNature = () => {
     cleanupAudioContext(); // Cleanup before toggle
@@ -336,13 +333,11 @@ function App() {
         effectsEnabled={effectsEnabled}
         melodyEnabled={melodyEnabled}
         drumEnabled={drumEnabled}
-        ambientEnabled={ambientEnabled}
         natureEnabled={natureEnabled}
         onToggleAudio={handleToggleAudio}
         onToggleEffects={handleToggleEffects}
         onToggleMelody={handleToggleMelody}
         onToggleDrum={handleToggleDrum}
-        onToggleAmbient={handleToggleAmbient}
         onToggleNature={handleToggleNature}
         glitchEnabled={glitchEnabled}
         onToggleGlitch={handleToggleGlitch}
