@@ -79,7 +79,7 @@ const CanvasRenderer = React.memo(({
       if (currentTime - lastRenderTime >= targetFrameRate) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw nature background effects first (for all performance levels)
+        // Draw nature background effects first (for all performance levels) - ALWAYS RENDER ON MOBILE
         if (showParticles && drawNatureBackground) {
           drawNatureBackground(ctx);
         }
@@ -149,12 +149,12 @@ const CanvasRenderer = React.memo(({
           ctx.restore();
         }
 
-        // Draw optimized particles with adaptive rendering
+        // Draw optimized particles with adaptive rendering - IMPROVED FOR MOBILE
         if (showParticles) {
-          // Limit particle rendering based on performance
+          // Limit particle rendering based on performance - MORE PARTICLES ON MOBILE
           const maxParticlesToRender = performanceLevel === 'high' ? particles.length : 
-                                      performanceLevel === 'medium' ? Math.floor(particles.length * 0.8) : 
-                                      Math.floor(particles.length * 0.6);
+                                      performanceLevel === 'medium' ? Math.floor(particles.length * 0.9) : 
+                                      Math.floor(particles.length * 0.8);
           
           particles.slice(0, maxParticlesToRender).forEach(particle => {
             ctx.save();
@@ -291,9 +291,9 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 
     updateTrail(cursorPosition.x, cursorPosition.y);
     
-    // Adaptive particle generation based on performance - REDUCED FOR SMOOTHNESS
-    if (isMoving && showParticles && performanceLevel === 'high') {
-      const particleCount = 1; // Always just 1 particle for smoothness
+    // Adaptive particle generation based on performance - RESTORED FOR CURSOR EFFECTS
+    if (isMoving && showParticles) {
+      const particleCount = performanceLevel === 'high' ? 2 : 1;
       addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, particleCount);
     }
 

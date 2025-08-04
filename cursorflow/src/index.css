@@ -262,4 +262,42 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 .rain-drop:nth-child(9) { left: 88%; animation-duration: 2.7s; animation-delay: 2.4s; }
 .rain-drop:nth-child(10) { left: 98%; animation-duration: 3.4s; animation-delay: 2.7s; }
 
+/* Remove iOS focus indicators and tap highlights */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Remove focus outline on iOS */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+*:focus {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* iOS Safari specific focus removal */
+@media (max-width: 768px) {
+  *:focus {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+  }
+  
+  button:active,
+  input:active,
+  textarea:active,
+  select:active {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+}
+
 

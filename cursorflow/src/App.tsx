@@ -125,12 +125,17 @@ function App() {
         unlockAudioForIOS();
         audioUnlocked = true;
         
-        // Force audio context resume on first touch
+        // Force audio context resume on first touch - MORE AGGRESSIVE
         setTimeout(() => {
           try {
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             if (audioContext.state === 'suspended') {
               audioContext.resume();
+            }
+            // Also try to start audio immediately
+            if (audioEnabled) {
+              handleToggleAudio(); // Toggle off and on to force start
+              setTimeout(() => handleToggleAudio(), 100);
             }
           } catch (error) {
             // Silent fail
@@ -141,6 +146,7 @@ function App() {
         document.removeEventListener('touchstart', handleIOSAudioUnlock);
         document.removeEventListener('touchend', handleIOSAudioUnlock);
         document.removeEventListener('mousedown', handleIOSAudioUnlock);
+        document.removeEventListener('click', handleIOSAudioUnlock);
       }
     };
 
@@ -148,6 +154,7 @@ function App() {
     document.addEventListener('touchstart', handleIOSAudioUnlock, { passive: true });
     document.addEventListener('touchend', handleIOSAudioUnlock, { passive: true });
     document.addEventListener('mousedown', handleIOSAudioUnlock, { passive: true });
+    document.addEventListener('click', handleIOSAudioUnlock, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleIOSAudioUnlock);

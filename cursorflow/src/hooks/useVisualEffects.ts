@@ -47,16 +47,16 @@ interface NatureBackground {
 }
 
 export const useVisualEffects = (options: VisualEffectOptions = {}) => {
-  const { enabled = true, particleCount = 20, trailLength = 20, rainVisible = false } = options;
+  const { enabled = true, particleCount = 30, trailLength = 25, rainVisible = false } = options;
   
   // Detect Firefox for specific optimizations
   const isFirefox = useMemo(() => {
     return navigator.userAgent.includes('Firefox');
   }, []);
   
-  // Reduce particle count for Firefox
-  const actualParticleCount = isFirefox ? Math.floor(particleCount * 0.5) : particleCount;
-  const actualTrailLength = isFirefox ? Math.floor(trailLength * 0.7) : trailLength;
+  // Reduce particle count for Firefox - LESS AGGRESSIVE
+  const actualParticleCount = isFirefox ? Math.floor(particleCount * 0.7) : particleCount;
+  const actualTrailLength = isFirefox ? Math.floor(trailLength * 0.8) : trailLength;
   
   // Detect mobile device for performance optimization
   const isMobile = useMemo(() => {
@@ -250,8 +250,10 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
       }));
     }
 
-    // Add lightning based on audio intensity (only for high performance)
-    if (audioIntensity > 0.8 && Math.random() > 0.95 && performanceLevelRef.current === 'high') {
+    // Add lightning based on audio intensity (more frequent on mobile)
+    const lightningThreshold = isMobile ? 0.6 : 0.8; // Lower threshold on mobile
+    const lightningChance = isMobile ? 0.98 : 0.95; // Higher chance on mobile
+    if (audioIntensity > lightningThreshold && Math.random() > lightningChance && performanceLevelRef.current === 'high') {
       setNatureBackground(prev => ({
         ...prev,
         lightning: {
@@ -336,11 +338,11 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
 
     ctx.save();
     
-    // Draw lightning flash (less bright on desktop, same on mobile)
+    // Draw lightning flash (brighter on mobile for better visibility)
     if (natureBackground.lightning.active) {
       const isMobile = window.innerWidth <= 768;
-      const intensity = isMobile ? 0.3 : 0.1; // Less bright on desktop
-      const secondaryIntensity = isMobile ? 0.2 : 0.05; // Much less bright on desktop
+      const intensity = isMobile ? 0.6 : 0.1; // Brighter on mobile
+      const secondaryIntensity = isMobile ? 0.4 : 0.05; // Brighter on mobile
       
       const gradient = ctx.createRadialGradient(
         natureBackground.lightning.x, natureBackground.lightning.y, 0,
