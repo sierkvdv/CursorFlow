@@ -191,22 +191,22 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 /* Clean Rain Effect */
 @keyframes rain-fall {
   0% {
-    transform: translateY(-100vh) scale(0.3);
+    transform: translateY(-200vh) scale(0.3);
     opacity: 0;
   }
-  10% {
-    transform: translateY(-90vh) scale(0.5);
-    opacity: 0.3;
+  5% {
+    transform: translateY(-150vh) scale(0.4);
+    opacity: 0.1;
   }
-  20% {
-    transform: translateY(-80vh) scale(0.7);
-    opacity: 0.6;
+  15% {
+    transform: translateY(-100vh) scale(0.6);
+    opacity: 0.4;
   }
-  30% {
-    transform: translateY(-70vh) scale(0.9);
-    opacity: 0.8;
+  25% {
+    transform: translateY(-80vh) scale(0.8);
+    opacity: 0.7;
   }
-  40% {
+  35% {
     transform: translateY(-60vh) scale(1.0);
     opacity: 1;
   }
