@@ -237,7 +237,7 @@ export const useNatureAmbient = ({
 
     // Throttle updates for performance
     const now = Date.now();
-    if (now - lastUpdateRef.current < 30) return; // Fast updates for responsive bassline
+    if (now - lastUpdateRef.current < 50) return; // Slower updates to prevent interference
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
@@ -353,6 +353,36 @@ export const useNatureAmbient = ({
     isPlayingRef.current = true;
     await initAudio();
   }, [enabled, initAudio]);
+
+  // Update nature with constant base volume and mouse modulation
+  const updateNatureConstant = useCallback(() => {
+    if (!enabled || !audioContextRef.current || !isPlayingRef.current) {
+      return;
+    }
+
+    const ctx = audioContextRef.current;
+    const audioTime = ctx.currentTime;
+    
+    // Set constant base volumes for ambient presence
+    const baseVolume = 0.3;
+    
+    if (seaGain1Ref.current && seaGain2Ref.current) {
+      seaGain1Ref.current.gain.setTargetAtTime(baseVolume * 0.8, audioTime, 0.5);
+      seaGain2Ref.current.gain.setTargetAtTime(baseVolume * 0.4, audioTime, 0.5);
+    }
+    if (rainGain1Ref.current && rainGain2Ref.current) {
+      rainGain1Ref.current.gain.setTargetAtTime(baseVolume * 0.7, audioTime, 0.5);
+      rainGain2Ref.current.gain.setTargetAtTime(baseVolume * 0.3, audioTime, 0.5);
+    }
+    if (riverGain1Ref.current && riverGain2Ref.current) {
+      riverGain1Ref.current.gain.setTargetAtTime(baseVolume * 0.6, audioTime, 0.5);
+      riverGain2Ref.current.gain.setTargetAtTime(baseVolume * 0.4, audioTime, 0.5);
+    }
+    if (waterfallGain1Ref.current && waterfallGain2Ref.current) {
+      waterfallGain1Ref.current.gain.setTargetAtTime(baseVolume * 0.8, audioTime, 0.5);
+      waterfallGain2Ref.current.gain.setTargetAtTime(baseVolume * 0.5, audioTime, 0.5);
+    }
+  }, [enabled]);
 
   // Stop nature ambient audio
   const stopNature = useCallback(() => {
@@ -481,6 +511,7 @@ export const useNatureAmbient = ({
     startNature,
     stopNature,
     updateNatureFromMouse,
+    updateNatureConstant,
     isPlaying: isPlayingRef.current
   };
 }; 
