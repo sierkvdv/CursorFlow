@@ -235,7 +235,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     opacity: 0.6;
   }
   100% {
-    transform: translateY(100vh) translateX(20px);
+    transform: translateY(120vh) translateX(20px);
     opacity: 0;
   }
 }
@@ -260,27 +260,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   animation: rain-fall linear infinite;
 }
 
-/* Individual rain drop timing for natural effect */
-.rain-drop:nth-child(1) { left: 5%; animation-duration: 2.2s; animation-delay: 0s; }
-.rain-drop:nth-child(2) { left: 15%; animation-duration: 2.8s; animation-delay: 0.3s; }
-.rain-drop:nth-child(3) { left: 25%; animation-duration: 1.9s; animation-delay: 0.6s; }
-.rain-drop:nth-child(4) { left: 35%; animation-duration: 2.5s; animation-delay: 0.9s; }
-.rain-drop:nth-child(5) { left: 45%; animation-duration: 2.1s; animation-delay: 1.2s; }
-.rain-drop:nth-child(6) { left: 55%; animation-duration: 2.3s; animation-delay: 1.5s; }
-.rain-drop:nth-child(7) { left: 65%; animation-duration: 1.8s; animation-delay: 1.8s; }
-.rain-drop:nth-child(8) { left: 75%; animation-duration: 2.6s; animation-delay: 2.1s; }
-.rain-drop:nth-child(9) { left: 85%; animation-duration: 1.7s; animation-delay: 2.4s; }
-.rain-drop:nth-child(10) { left: 95%; animation-duration: 2.4s; animation-delay: 2.7s; }
-.rain-drop:nth-child(11) { left: 10%; animation-duration: 2.0s; animation-delay: 0.1s; }
-.rain-drop:nth-child(12) { left: 20%; animation-duration: 2.7s; animation-delay: 0.4s; }
-.rain-drop:nth-child(13) { left: 30%; animation-duration: 1.8s; animation-delay: 0.7s; }
-.rain-drop:nth-child(14) { left: 40%; animation-duration: 2.4s; animation-delay: 1.0s; }
-.rain-drop:nth-child(15) { left: 50%; animation-duration: 2.0s; animation-delay: 1.3s; }
-.rain-drop:nth-child(16) { left: 60%; animation-duration: 2.2s; animation-delay: 1.6s; }
-.rain-drop:nth-child(17) { left: 70%; animation-duration: 1.7s; animation-delay: 1.9s; }
-.rain-drop:nth-child(18) { left: 80%; animation-duration: 2.5s; animation-delay: 2.2s; }
-.rain-drop:nth-child(19) { left: 90%; animation-duration: 1.6s; animation-delay: 2.5s; }
-.rain-drop:nth-child(20) { left: 100%; animation-duration: 2.3s; animation-delay: 2.8s; }
+/* Rain drop timing now handled by inline styles for better variation */
 
 /* Remove iOS focus indicators and tap highlights */
 * {
@@ -319,16 +299,27 @@ select:focus,
     -webkit-tap-highlight-color: transparent !important;
   }
   
-  /* Optimize rain for mobile */
+  /* Optimize rain for mobile - Enhanced visibility for iPhone */
   .rain-drop {
-    width: 3px;
-    height: 30px;
+    width: 4px; /* Thicker on mobile for better visibility */
+    height: 32px; /* Slightly taller for better visibility */
     background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
-    box-shadow: 0 0 10px rgba(100, 150, 255, 1.0);
+    box-shadow: 0 0 12px rgba(100, 150, 255, 1.0); /* Stronger glow */
   }
   
-  .rain-drop.visible {
-    animation-duration: 4s !important; /* Faster fall on mobile for better visibility */
+  /* Remove the 4s override to allow individual timing for more natural effect */
+  /* .rain-drop.visible {
+    animation-duration: 4s !important;
+  } */
+  
+  /* iPhone-specific optimizations */
+  @supports (-webkit-touch-callout: none) {
+    .rain-drop {
+      width: 5px; /* Even thicker on iPhone for maximum visibility */
+      height: 35px; /* Taller on iPhone */
+      background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 1.0), transparent);
+      box-shadow: 0 0 15px rgba(100, 150, 255, 1.0); /* Maximum glow on iPhone */
+    }
   }
 }
 

@@ -311,26 +311,41 @@ function App() {
         {/* Background Rain Effect */}
         {rainVisible && (
           <div className="absolute inset-0 pointer-events-none">
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
-            <div className="rain-drop visible"></div>
+            {/* First row of rain drops */}
+            <div className="rain-drop visible" style={{ left: '5%', animationDelay: '0s', animationDuration: '2.2s' }}></div>
+            <div className="rain-drop visible" style={{ left: '15%', animationDelay: '0.3s', animationDuration: '2.8s' }}></div>
+            <div className="rain-drop visible" style={{ left: '25%', animationDelay: '0.6s', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop visible" style={{ left: '35%', animationDelay: '0.9s', animationDuration: '2.5s' }}></div>
+            <div className="rain-drop visible" style={{ left: '45%', animationDelay: '1.2s', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop visible" style={{ left: '55%', animationDelay: '1.5s', animationDuration: '2.3s' }}></div>
+            <div className="rain-drop visible" style={{ left: '65%', animationDelay: '1.8s', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop visible" style={{ left: '75%', animationDelay: '2.1s', animationDuration: '2.6s' }}></div>
+            <div className="rain-drop visible" style={{ left: '85%', animationDelay: '2.4s', animationDuration: '1.7s' }}></div>
+            <div className="rain-drop visible" style={{ left: '95%', animationDelay: '2.7s', animationDuration: '2.4s' }}></div>
+            
+            {/* Second row of rain drops with different timing */}
+            <div className="rain-drop visible" style={{ left: '10%', animationDelay: '0.1s', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop visible" style={{ left: '20%', animationDelay: '0.4s', animationDuration: '2.7s' }}></div>
+            <div className="rain-drop visible" style={{ left: '30%', animationDelay: '0.7s', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop visible" style={{ left: '40%', animationDelay: '1.0s', animationDuration: '2.4s' }}></div>
+            <div className="rain-drop visible" style={{ left: '50%', animationDelay: '1.3s', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop visible" style={{ left: '60%', animationDelay: '1.6s', animationDuration: '2.2s' }}></div>
+            <div className="rain-drop visible" style={{ left: '70%', animationDelay: '1.9s', animationDuration: '1.7s' }}></div>
+            <div className="rain-drop visible" style={{ left: '80%', animationDelay: '2.2s', animationDuration: '2.5s' }}></div>
+            <div className="rain-drop visible" style={{ left: '90%', animationDelay: '2.5s', animationDuration: '1.6s' }}></div>
+            <div className="rain-drop visible" style={{ left: '100%', animationDelay: '2.8s', animationDuration: '2.3s' }}></div>
+            
+            {/* Third row with random variations */}
+            <div className="rain-drop visible" style={{ left: '7%', animationDelay: '0.2s', animationDuration: '2.3s' }}></div>
+            <div className="rain-drop visible" style={{ left: '17%', animationDelay: '0.5s', animationDuration: '1.9s' }}></div>
+            <div className="rain-drop visible" style={{ left: '27%', animationDelay: '0.8s', animationDuration: '2.6s' }}></div>
+            <div className="rain-drop visible" style={{ left: '37%', animationDelay: '1.1s', animationDuration: '2.1s' }}></div>
+            <div className="rain-drop visible" style={{ left: '47%', animationDelay: '1.4s', animationDuration: '2.4s' }}></div>
+            <div className="rain-drop visible" style={{ left: '57%', animationDelay: '1.7s', animationDuration: '1.8s' }}></div>
+            <div className="rain-drop visible" style={{ left: '67%', animationDelay: '2.0s', animationDuration: '2.5s' }}></div>
+            <div className="rain-drop visible" style={{ left: '77%', animationDelay: '2.3s', animationDuration: '2.0s' }}></div>
+            <div className="rain-drop visible" style={{ left: '87%', animationDelay: '2.6s', animationDuration: '2.2s' }}></div>
+            <div className="rain-drop visible" style={{ left: '97%', animationDelay: '2.9s', animationDuration: '1.9s' }}></div>
           </div>
         )}
       </div>

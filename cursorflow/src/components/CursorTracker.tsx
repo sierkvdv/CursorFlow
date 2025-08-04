@@ -157,7 +157,7 @@ const CanvasRenderer = React.memo(({
         active: true,
         intensity: 0.8 + Math.random() * 0.2,
         x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height * 0.3,
+        y: Math.random() * canvas.height, // Full screen coverage
         life: 1
       };
     }
@@ -191,7 +191,7 @@ const CanvasRenderer = React.memo(({
         
         const gradient = ctx.createRadialGradient(
           lightning.x, lightning.y, 0,
-          lightning.x, lightning.y, canvas.width * 1.2
+          lightning.x, lightning.y, Math.max(canvas.width, canvas.height) * 1.5
         );
         gradient.addColorStop(0, `rgba(255, 255, 255, ${intensity * 0.1 * mobileMultiplier})`);
         gradient.addColorStop(0.3, `rgba(200, 220, 255, ${intensity * 0.05 * mobileMultiplier})`);
