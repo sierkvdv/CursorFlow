@@ -38,7 +38,7 @@ const CanvasRenderer = React.memo(({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const trailRef = useRef<Array<{ x: number; y: number; timestamp: number }>>([]);
   const particlesRef = useRef<Array<{ x: number; y: number; vx: number; vy: number; life: number; color: string }>>([]);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const lightningRef = useRef<{ active: boolean; intensity: number; x: number; y: number; life: number }>({
     active: false,
     intensity: 0,
