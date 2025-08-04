@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useCursorTracking } from '../hooks/useCursorTracking';
 import { useNatureAmbient } from '../hooks/useNatureAmbient';
 import { useMelodyAmbient } from '../hooks/useMelodyAmbient';
@@ -299,10 +299,17 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     baseVolume: melodyVolume * 0.8
   });
   
-    const beepSystem = useBeepAmbient({
+  const beepSystem = useBeepAmbient({
     enabled: drumEnabled && audioEnabled,
     baseVolume: drumVolume * 0.2
   });
+
+  // Force reinitialize audio systems when settings change
+  const [audioKey, setAudioKey] = useState<number>(0);
+  
+  useEffect(() => {
+    setAudioKey((prev: number) => prev + 1);
+  }, [melodyEnabled, drumEnabled, natureEnabled, audioEnabled]);
 
   const lastAudioUpdateRef = useRef(0);
 
@@ -354,12 +361,12 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     handleAudioUpdate();
   }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
 
-  // Additional effect to ensure melody and rhythm play constantly
+  // Additional effect to ensure melody and beep play constantly
   useEffect(() => {
     if (!audioEnabled) return;
 
     const interval = setInterval(() => {
-      // Ensure melody and beep systems are active even without mouse movement
+      // Only update if the specific system is enabled
       if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
         melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
@@ -371,6 +378,48 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 
     return () => clearInterval(interval);
   }, [audioEnabled, melodyEnabled, drumEnabled, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
+
+  // Force stop melody when disabled - immediate effect
+  useEffect(() => {
+    if (!melodyEnabled && melodySystem) {
+      // Clear any ongoing audio immediately
+      if (melodySystem?.stopMelody) {
+        melodySystem.stopMelody();
+      }
+    }
+  }, [melodyEnabled, melodySystem]);
+
+  // Stop audio systems immediately when disabled
+  useEffect(() => {
+    if (!melodyEnabled) {
+      if (melodySystem?.stopMelody) {
+        melodySystem.stopMelody();
+      }
+    }
+  }, [melodyEnabled, melodySystem]);
+
+  useEffect(() => {
+    if (!drumEnabled) {
+      if (beepSystem?.stopBeep) {
+        beepSystem.stopBeep();
+      }
+    }
+  }, [drumEnabled, beepSystem]);
+
+  // Stop all audio when audio is disabled
+  useEffect(() => {
+    if (!audioEnabled) {
+      if (melodySystem?.stopMelody) {
+        melodySystem.stopMelody();
+      }
+      if (beepSystem?.stopBeep) {
+        beepSystem.stopBeep();
+      }
+      if (natureSystem?.stopNature) {
+        natureSystem.stopNature();
+      }
+    }
+  }, [audioEnabled, melodySystem, beepSystem, natureSystem]);
 
   return (
     <CanvasRenderer
