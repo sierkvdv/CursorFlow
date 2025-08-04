@@ -446,12 +446,16 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     handleAudioUpdate();
   }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
 
-  // Additional effect to ensure melody and beep play constantly
+  // Additional effect to ensure melody, beep, and nature play constantly
   useEffect(() => {
     if (!audioEnabled) return;
 
     const interval = setInterval(() => {
       // Only update if the specific system is enabled
+      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
+        natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+      }
+      
       if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
         melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
@@ -462,7 +466,14 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     }, 100); // Update every 100ms to ensure constant playback
 
     return () => clearInterval(interval);
-  }, [audioEnabled, melodyEnabled, drumEnabled, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
+  }, [audioEnabled, natureEnabled, melodyEnabled, drumEnabled, natureSystem, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
+
+  // Start nature audio system when enabled
+  useEffect(() => {
+    if (natureEnabled && audioEnabled && natureSystem?.startNature) {
+      natureSystem.startNature();
+    }
+  }, [natureEnabled, audioEnabled, natureSystem]);
 
   // Force stop melody when disabled - immediate effect
   useEffect(() => {
@@ -490,6 +501,14 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
       }
     }
   }, [drumEnabled, beepSystem]);
+
+  useEffect(() => {
+    if (!natureEnabled) {
+      if (natureSystem?.stopNature) {
+        natureSystem.stopNature();
+      }
+    }
+  }, [natureEnabled, natureSystem]);
 
   // Stop all audio when audio is disabled
   useEffect(() => {

@@ -500,13 +500,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     step="0.01"
                     value={glitchVolume}
                     onChange={(e) => onVolumeChange('glitch', parseFloat(e.target.value))}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                     style={{
                       flex: 1,
                       height: '0.5rem',
                       borderRadius: '0.25rem',
                       background: '#4b5563',
                       outline: 'none',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      touchAction: 'manipulation',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      MozUserSelect: 'none',
+                      msUserSelect: 'none'
                     }}
                   />
                   <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
@@ -519,15 +527,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
               <span style={{ color: 'white' }}>Master Effects</span>
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  try {
-                    onToggleEffects();
-                  } catch (error) {
-                    console.error('Error toggling effects:', error);
-                  }
-                }}
+                {...createTouchButtonProps(onToggleEffects)}
                 style={{
                   position: 'relative',
                   width: '3rem',
@@ -536,7 +536,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                   border: 'none',
                   cursor: 'pointer',
                   backgroundColor: effectsEnabled ? '#8b5cf6' : '#6b7280',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
+                  ...createTouchButtonProps(onToggleEffects).style
                 }}
               >
                 <div
