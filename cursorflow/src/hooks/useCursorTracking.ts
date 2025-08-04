@@ -14,7 +14,7 @@ interface CursorTrackingOptions {
 }
 
 export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
-  const { enabled = true, sensitivity = 1, throttleMs = 16 } = options;
+  const { enabled = true, sensitivity = 3, throttleMs = 16 } = options; // 3x higher sensitivity for iPhone
   
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
     x: 0,
@@ -77,8 +77,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state
-    const shouldBeMoving = velocity > 0.003;
+    // Update moving state - LOWER THRESHOLD FOR IPHONE
+    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
@@ -150,8 +150,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state
-    const shouldBeMoving = velocity > 0.003;
+    // Update moving state - LOWER THRESHOLD FOR IPHONE
+    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
@@ -195,8 +195,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const newPosition = { x, y };
     const direction = calculateDirection(x, y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state
-    const shouldBeMoving = velocity > 0.003;
+    // Update moving state - LOWER THRESHOLD FOR IPHONE
+    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);

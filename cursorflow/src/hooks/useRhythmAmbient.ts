@@ -396,7 +396,7 @@ export const useRhythmAmbient = ({
       
       playDrumHit(drumType, velocityMultiplier);
       
-      if (velocity > 0.3 && Math.random() > 0.5) {
+      if (velocity > 0.1 && Math.random() > 0.5) { // 3x lower threshold for iPhone
         const secondDrum = currentPattern[(drumIndex + 1) % currentPattern.length];
         setTimeout(() => playDrumHit(secondDrum, velocityMultiplier * 0.7), 50);
       }

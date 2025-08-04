@@ -251,6 +251,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   natureEnabled = true,
   melodyEnabled = true,
   drumEnabled = true,
+  glitchEnabled = false,
   rainVisible = false,
   onMouseMove
 }) => {
@@ -321,6 +322,23 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
         rhythmSystem.updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
 
+      // GLITCH EFFECTS ON CURSOR MOVEMENT - FOR IPHONE
+      if (glitchEnabled && cursorPosition.velocity > 0.05) {
+        // Trigger glitch effects based on velocity
+        const glitchChance = Math.min(0.3, cursorPosition.velocity * 0.5);
+        if (Math.random() < glitchChance) {
+          // Import and use glitch effects
+          import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
+            // Create audio context for glitch effects
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            if (audioContext.state === 'suspended') {
+              audioContext.resume();
+            }
+            createGlitchClickSound(audioContext);
+          });
+        }
+      }
+
       if (onMouseMove) {
         onMouseMove(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
@@ -336,6 +354,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     natureEnabled,
     melodyEnabled,
     drumEnabled,
+    glitchEnabled,
     updateTrail,
     addParticles,
     updateNatureVisuals,

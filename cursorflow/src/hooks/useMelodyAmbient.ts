@@ -157,9 +157,9 @@ export const useMelodyAmbient = ({
       return;
     }
 
-    // Throttle updates - MORE AGGRESSIVE TO PREVENT OVERLOAD
+    // Throttle updates - LESS AGGRESSIVE FOR IPHONE
     const now = Date.now();
-    const throttleTime = 50; // 50ms instead of 20ms
+    const throttleTime = 20; // 20ms for iPhone responsiveness
     if (now - lastUpdateRef.current < throttleTime) return;
     lastUpdateRef.current = now;
 
@@ -232,8 +232,8 @@ export const useMelodyAmbient = ({
     
     // Trigger notes - SLOWER AND MORE MELODIC
     const isMobile = window.innerWidth <= 768;
-    const velocityThreshold = isMobile ? 0.05 : 0.1; // Lower threshold on mobile
-    const timeThreshold = isMobile ? 0.3 : 0.5; // Much slower response (0.3-0.5s between melodies)
+    const velocityThreshold = isMobile ? 0.02 : 0.1; // 2.5x lower threshold for iPhone
+    const timeThreshold = isMobile ? 0.2 : 0.5; // Faster response for iPhone (0.2s between melodies)
     
     if (velocity > velocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
       lastNoteTimeRef.current = audioTime;
