@@ -104,6 +104,9 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const handleTouchStart = useCallback((event: TouchEvent) => {
     if (!enabled) return;
     
+    // Prevent default to avoid scrolling conflicts
+    event.preventDefault();
+    
     const touch = event.touches[0];
     if (touch) {
       // Get the target element to calculate correct coordinates
@@ -133,7 +136,9 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (!enabled) return;
 
-    // No throttling for iPhone responsiveness
+    // Prevent default to avoid scrolling conflicts
+    event.preventDefault();
+
     const touch = event.touches[0];
     if (!touch) return;
 
@@ -149,17 +154,26 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       y: touch.clientY - rect.top
     };
 
-    // Enhanced velocity calculation for touch
+    // More conservative velocity calculation for iPhone stability
     let velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
-    velocity = Math.min(velocity * 2, 8); // Boost velocity but cap it
+    velocity = Math.min(velocity * 1.5, 6); // Reduced boost for stability
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Very low threshold for iPhone
-    const shouldBeMoving = velocity > 0.0001;
+    // Higher threshold to prevent excessive updates
+    const shouldBeMoving = velocity > 0.001;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
     }
+
+    // Use throttling for iPhone stability
+    if (throttleTimeoutRef.current) {
+      return; // Skip this update if throttled
+    }
+
+    throttleTimeoutRef.current = setTimeout(() => {
+      throttleTimeoutRef.current = null;
+    }, 16); // ~60fps throttling
 
     // Cancel previous RAF
     if (rafRef.current) {
@@ -235,11 +249,11 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   useEffect(() => {
     if (!enabled) return;
 
-    // Add passive listeners for better performance
+    // Add listeners with proper options for iPhone stability
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
     document.addEventListener('cursorUpdate', handleCursorUpdate as EventListener);
 
