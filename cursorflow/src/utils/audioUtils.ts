@@ -69,4 +69,111 @@ export const createHoverSound = (audioContext: AudioContext) => {
   
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + 0.1);
+};
+
+// 🔥 HEFTIGE GLITCH EFFECTEN 🔥
+export const createGlitchDistortion = (audioContext: AudioContext) => {
+  const waveshaper = audioContext.createWaveShaper();
+  const curve = new Float32Array(44100);
+  
+  // Extreme distortion curve
+  for (let i = 0; i < 44100; i++) {
+    const x = (i * 2) / 44100 - 1;
+    curve[i] = Math.sign(x) * Math.pow(Math.abs(x), 0.1) * 0.8;
+  }
+  
+  waveshaper.curve = curve;
+  return waveshaper;
+};
+
+export const createBitCrusher = (audioContext: AudioContext, bits: number = 4) => {
+  const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+  
+  scriptNode.onaudioprocess = (event) => {
+    const input = event.inputBuffer.getChannelData(0);
+    const output = event.outputBuffer.getChannelData(0);
+    
+    for (let i = 0; i < input.length; i++) {
+      const step = Math.pow(2, bits);
+      output[i] = Math.round(input[i] * step) / step;
+    }
+  };
+  
+  return scriptNode;
+};
+
+export const createFrequencyShifter = (audioContext: AudioContext) => {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.frequency.setValueAtTime(50, audioContext.currentTime);
+  oscillator.type = 'sine';
+  
+  gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+  
+  oscillator.connect(gainNode);
+  return { oscillator, gainNode };
+};
+
+export const createGlitchClickSound = (audioContext: AudioContext) => {
+  const { oscillator, gainNode } = createOscillator(audioContext, 400, 'square');
+  const filter = createFilter(audioContext, 2000, 'lowpass');
+  const distortion = createGlitchDistortion(audioContext);
+  const bitCrusher = createBitCrusher(audioContext, 3);
+  const { oscillator: shifterOsc, gainNode: shifterGain } = createFrequencyShifter(audioContext);
+  
+  // Random glitch effects
+  const randomFreq = 200 + Math.random() * 800;
+  const randomType = ['sawtooth', 'square', 'triangle'][Math.floor(Math.random() * 3)] as OscillatorType;
+  
+  oscillator.frequency.setValueAtTime(randomFreq, audioContext.currentTime);
+  oscillator.type = randomType;
+  
+  // Connect with glitch effects
+  oscillator.connect(gainNode);
+  gainNode.connect(distortion);
+  distortion.connect(bitCrusher);
+  bitCrusher.connect(filter);
+  filter.connect(audioContext.destination);
+  
+  // Add frequency shifting
+  shifterOsc.start(audioContext.currentTime);
+  shifterOsc.stop(audioContext.currentTime + 0.3);
+  
+  // Random volume spikes
+  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.3 + Math.random() * 0.2, audioContext.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2 + Math.random() * 0.1);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.2);
+};
+
+export const createGlitchHoverSound = (audioContext: AudioContext) => {
+  const { oscillator, gainNode } = createOscillator(audioContext, 600, 'sawtooth');
+  const distortion = createGlitchDistortion(audioContext);
+  const bitCrusher = createBitCrusher(audioContext, 5);
+  
+  // Random frequency modulation
+  const baseFreq = 400 + Math.random() * 400;
+  oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+  
+  // Add random frequency jumps
+  setTimeout(() => {
+    if (oscillator.frequency) {
+      oscillator.frequency.setValueAtTime(baseFreq + Math.random() * 200, audioContext.currentTime);
+    }
+  }, Math.random() * 50);
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(distortion);
+  distortion.connect(bitCrusher);
+  bitCrusher.connect(audioContext.destination);
+  
+  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.15 + Math.random() * 0.1, audioContext.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.1);
 }; 

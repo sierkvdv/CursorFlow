@@ -13,6 +13,7 @@ function App() {
   const [drumEnabled, setDrumEnabled] = useState(false);
   const [ambientEnabled, setAmbientEnabled] = useState(true);
   const [natureEnabled, setNatureEnabled] = useState(true);
+  const [glitchEnabled, setGlitchEnabled] = useState(false);
   const [currentTitle, setCurrentTitle] = useState(0);
 
   // Simple audio state
@@ -70,6 +71,11 @@ function App() {
     setNatureEnabled(prev => !prev);
   };
 
+  const handleToggleGlitch = () => {
+    console.log('⚠️ Toggle glitch mode clicked, current state:', glitchEnabled);
+    setGlitchEnabled(prev => !prev);
+  };
+
   const audioDebug = {
     isAudioSupported,
     hasUserInteracted,
@@ -110,12 +116,14 @@ function App() {
         melodyEnabled={melodyEnabled}
         drumEnabled={drumEnabled}
         natureEnabled={natureEnabled}
+        glitchEnabled={glitchEnabled}
       />
 
       {/* Interactive Elements */}
       <InteractiveElements
         audioEnabled={audioEnabled}
         effectsEnabled={effectsEnabled}
+        glitchEnabled={glitchEnabled}
         onToggleAudio={handleToggleAudio}
         onToggleEffects={handleToggleEffects}
         onToggleSettings={handleToggleSettings}
@@ -138,10 +146,12 @@ function App() {
         onToggleDrum={handleToggleDrum}
         onToggleAmbient={handleToggleAmbient}
         onToggleNature={handleToggleNature}
+        glitchEnabled={glitchEnabled}
+        onToggleGlitch={handleToggleGlitch}
       />
 
-      {/* Status Indicators - MOVED TO LEFT SIDE */}
-      <div className="fixed top-8 left-8 z-30 flex flex-col gap-8">
+      {/* Status Indicators - MOVED TO RIGHT SIDE */}
+      <div className="fixed top-8 right-8 z-20 flex flex-col gap-8">
         {/* Audio Status - NOW FIRST (with speaker icon) */}
         <div className="flex items-center justify-between px-8 py-4 bg-blue-500/20 backdrop-blur-md rounded-xl border border-blue-400/30 shadow-lg min-w-[320px]">
           <div className="flex items-center gap-6">

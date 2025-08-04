@@ -13,6 +13,7 @@ interface CursorTrackerProps {
   natureEnabled?: boolean;
   melodyEnabled?: boolean;
   drumEnabled?: boolean;
+  glitchEnabled?: boolean;
   onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
 

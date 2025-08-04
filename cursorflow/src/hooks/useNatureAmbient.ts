@@ -63,11 +63,17 @@ export const useNatureAmbient = ({
       // Create new audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Resume audio context if suspended
+      // Resume audio context if suspended (important for iOS)
       if (audioContextRef.current.state === 'suspended') {
         console.log('Audio context suspended, attempting to resume...');
-        await audioContextRef.current.resume();
-        console.log('Audio context resumed');
+        try {
+          await audioContextRef.current.resume();
+          console.log('Audio context resumed successfully');
+        } catch (error) {
+          console.error('Failed to resume audio context:', error);
+          // For iOS, we might need to wait for user interaction
+          return;
+        }
       }
       
       console.log('Audio context state:', audioContextRef.current.state);

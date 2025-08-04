@@ -180,9 +180,16 @@ export const useRhythmAmbient = ({
       // Create new audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Resume if suspended
+      // Resume if suspended (important for iOS)
       if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
+        try {
+          await audioContextRef.current.resume();
+          console.log('Rhythm audio context resumed successfully');
+        } catch (error) {
+          console.error('Failed to resume rhythm audio context:', error);
+          // For iOS, we might need to wait for user interaction
+          return;
+        }
       }
       
       // Create compressor

@@ -10,12 +10,14 @@ interface SettingsMenuProps {
   melodyEnabled: boolean;
   drumEnabled: boolean;
   ambientEnabled: boolean;
+  glitchEnabled?: boolean;
   onToggleAudio: () => void;
   onToggleEffects: () => void;
   onToggleNature: () => void;
   onToggleMelody: () => void;
   onToggleDrum: () => void;
   onToggleAmbient: () => void;
+  onToggleGlitch?: () => void;
 }
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({
@@ -27,12 +29,14 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   melodyEnabled,
   drumEnabled,
   // ambientEnabled,
+  glitchEnabled = false,
   onToggleAudio,
   onToggleEffects,
   // onToggleNature,
   onToggleMelody,
-  onToggleDrum
+  onToggleDrum,
   // onToggleAmbient
+  onToggleGlitch
 }) => {
   if (!isOpen) return null;
 
@@ -248,6 +252,49 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
               <Eye size={20} />
               Visual Effects
             </h3>
+            
+            {/* Glitch Mode Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
+              <span style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                Glitch Mode
+              </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    onToggleGlitch?.();
+                  } catch (error) {
+                    console.error('Error toggling glitch mode:', error);
+                  }
+                }}
+                className="interactive-element"
+                style={{
+                  position: 'relative',
+                  width: '3rem',
+                  height: '2rem',
+                  borderRadius: '1rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: glitchEnabled ? '#ef4444' : '#6b7280',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '0.25rem',
+                    left: glitchEnabled ? '1.25rem' : '0.25rem',
+                    width: '1.5rem',
+                    height: '1.5rem',
+                    backgroundColor: 'white',
+                    borderRadius: '50%',
+                    transition: 'left 0.2s'
+                  }}
+                />
+              </button>
+            </div>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
               <span style={{ color: 'white' }}>Master Effects</span>

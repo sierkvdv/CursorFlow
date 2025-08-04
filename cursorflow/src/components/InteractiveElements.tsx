@@ -1,10 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX, Eye, EyeOff, Settings } from 'lucide-react';
+import { createClickSound, createHoverSound, createGlitchClickSound, createGlitchHoverSound } from '../utils/audioUtils';
 
 interface InteractiveElementsProps {
   audioEnabled: boolean;
   effectsEnabled: boolean;
+  glitchEnabled?: boolean;
   onToggleAudio: () => void;
   onToggleEffects: () => void;
   onToggleSettings: () => void;
@@ -18,12 +20,80 @@ interface InteractiveElementsProps {
 export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   audioEnabled,
   effectsEnabled,
+  glitchEnabled = false,
   onToggleAudio,
   onToggleEffects,
   onToggleSettings,
   audioDebug
 }) => {
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize audio context with iOS support
+  const getAudioContext = useCallback(async () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // iOS requires user interaction to start audio context
+      if (audioContextRef.current.state === 'suspended') {
+        try {
+          await audioContextRef.current.resume();
+          console.log('Audio context resumed for iOS');
+        } catch (error) {
+          console.error('Failed to resume audio context:', error);
+        }
+      }
+    }
+    return audioContextRef.current;
+  }, []);
+
+  // Audio handlers with glitch support and iOS compatibility
+  const handleClick = useCallback(async (callback: () => void) => {
+    if (audioEnabled) {
+      try {
+        const audioContext = await getAudioContext();
+        if (glitchEnabled) {
+          createGlitchClickSound(audioContext);
+        } else {
+          createClickSound(audioContext);
+        }
+      } catch (error) {
+        console.error('Error playing click sound:', error);
+      }
+    }
+    callback();
+  }, [audioEnabled, glitchEnabled, getAudioContext]);
+
+  const handleHover = useCallback(async () => {
+    if (audioEnabled) {
+      try {
+        const audioContext = await getAudioContext();
+        if (glitchEnabled) {
+          createGlitchHoverSound(audioContext);
+        } else {
+          createHoverSound(audioContext);
+        }
+      } catch (error) {
+        console.error('Error playing hover sound:', error);
+      }
+    }
+  }, [audioEnabled, glitchEnabled, getAudioContext]);
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback(async (callback: () => void) => {
+    if (audioEnabled) {
+      try {
+        const audioContext = await getAudioContext();
+        if (glitchEnabled) {
+          createGlitchHoverSound(audioContext);
+        } else {
+          createHoverSound(audioContext);
+        }
+      } catch (error) {
+        console.error('Error playing touch sound:', error);
+      }
+    }
+  }, [audioEnabled, glitchEnabled, getAudioContext]);
 
   const buttonVariants = {
     initial: { scale: 1 },
@@ -40,7 +110,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   }, []);
 
   return (
-    <div className="fixed top-8 right-8 z-30 flex flex-col gap-6">
+    <div className="fixed top-8 left-8 z-50 flex flex-col gap-6">
       {/* Audio Button - MUCH LARGER */}
       <motion.button
         variants={buttonVariants}
@@ -48,9 +118,13 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         whileHover="hover"
         whileTap="tap"
         transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
-        onClick={onToggleAudio}
-        onMouseEnter={() => handleMouseEnter('audio')}
+        onClick={() => handleClick(onToggleAudio)}
+        onMouseEnter={() => {
+          handleMouseEnter('audio');
+          handleHover();
+        }}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={() => handleTouchStart(onToggleAudio)}
         className="relative group w-16 h-16 bg-gradient-to-br from-blue-500/30 to-blue-600/20 backdrop-blur-md border-2 border-blue-400/50 rounded-2xl hover:border-blue-300/70 hover:from-blue-400/40 hover:to-blue-500/30 transition-all duration-500 shadow-xl hover:shadow-blue-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
@@ -70,7 +144,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-blue-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
+              className="absolute right-full mr-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-blue-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
               <div className="text-blue-200 font-bold text-lg">{audioEnabled ? '🔊 Audio ON' : '🔇 Audio OFF'}</div>
               {audioDebug && (
@@ -92,9 +166,13 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         whileHover="hover"
         whileTap="tap"
         transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
-        onClick={onToggleEffects}
-        onMouseEnter={() => handleMouseEnter('effects')}
+        onClick={() => handleClick(onToggleEffects)}
+        onMouseEnter={() => {
+          handleMouseEnter('effects');
+          handleHover();
+        }}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={() => handleTouchStart(onToggleEffects)}
         className="relative group w-16 h-16 bg-gradient-to-br from-purple-500/30 to-purple-600/20 backdrop-blur-md border-2 border-purple-400/50 rounded-2xl hover:border-purple-300/70 hover:from-purple-400/40 hover:to-purple-500/30 transition-all duration-500 shadow-xl hover:shadow-purple-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
@@ -114,7 +192,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-purple-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
+              className="absolute right-full mr-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-purple-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
               <div className="text-purple-200 font-bold text-lg">{effectsEnabled ? '👁️ Effects ON' : '🙈 Effects OFF'}</div>
             </motion.div>
@@ -129,9 +207,13 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         whileHover="hover"
         whileTap="tap"
         transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
-        onClick={onToggleSettings}
-        onMouseEnter={() => handleMouseEnter('settings')}
+        onClick={() => handleClick(onToggleSettings)}
+        onMouseEnter={() => {
+          handleMouseEnter('settings');
+          handleHover();
+        }}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={() => handleTouchStart(onToggleSettings)}
         className="relative group w-16 h-16 bg-gradient-to-br from-orange-500/30 to-orange-600/20 backdrop-blur-md border-2 border-orange-400/50 rounded-2xl hover:border-orange-300/70 hover:from-orange-400/40 hover:to-orange-500/30 transition-all duration-500 shadow-xl hover:shadow-orange-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">
@@ -147,7 +229,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
               initial={{ opacity: 0, y: 5, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.9 }}
-              className="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-orange-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
+              className="absolute right-full mr-4 top-1/2 transform -translate-y-1/2 bg-black/90 backdrop-blur-md border border-orange-400/50 rounded-xl px-4 py-3 text-base whitespace-nowrap shadow-2xl"
             >
               <div className="text-orange-200 font-bold text-lg">⚙️ Settings</div>
             </motion.div>

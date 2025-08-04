@@ -12,6 +12,30 @@ button, a, input, select, textarea, [role="button"], .interactive-element {
   cursor: pointer !important;
 }
 
+/* Force cursor for ALL buttons regardless of inline styles */
+button {
+  cursor: pointer !important;
+}
+
+/* Make entire button areas clickable with cursor */
+button, .interactive-element {
+  cursor: pointer !important;
+  position: relative;
+}
+
+/* Make all interactive areas show cursor */
+button, .interactive-element, 
+div[style*="cursor: pointer"], 
+div[style*="padding"], 
+div[style*="borderRadius"] {
+  cursor: pointer !important;
+}
+
+/* Make settings menu items show cursor */
+div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent: space-between"] {
+  cursor: pointer !important;
+}
+
 /* Mobile-specific styles */
 @media (max-width: 768px) {
   * {
