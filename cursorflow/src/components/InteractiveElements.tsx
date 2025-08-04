@@ -63,9 +63,12 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
     if (audioEnabled) {
       try {
         const audioContext = await getAudioContext();
+        console.log('Glitch enabled:', glitchEnabled); // Debug log
         if (audioContext && glitchEnabled) {
+          console.log('Playing glitch click sound'); // Debug log
           createGlitchClickSound(audioContext);
         } else if (audioContext) {
+          console.log('Playing normal click sound'); // Debug log
           createClickSound(audioContext);
         }
       } catch (error) {
