@@ -14,7 +14,7 @@ interface CursorTrackingOptions {
 }
 
 export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
-  const { enabled = true, sensitivity = 3, throttleMs = 16 } = options; // Back to original smooth timing
+  const { enabled = true, sensitivity = 2, throttleMs = 0 } = options; // No throttling for smooth animation
   
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
     x: 0,
@@ -40,7 +40,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
   const calculateVelocity = useCallback((currentX: number, currentY: number, lastX: number, lastY: number, timeDiff: number) => {
     const distance = Math.sqrt(Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2));
-    return distance / timeDiff * sensitivity;
+    return Math.min(distance / timeDiff * sensitivity, 10); // Cap velocity to prevent extreme values
   }, [sensitivity]);
 
   const calculateDirection = useCallback((currentX: number, currentY: number, lastX: number, lastY: number) => {
@@ -54,18 +54,11 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     }
   }, []);
 
-  // Optimized mouse move handler
+  // Optimized mouse move handler with reduced throttling
   const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!enabled) return;
 
-    if (throttleTimeoutRef.current) {
-      return;
-    }
-
-    throttleTimeoutRef.current = window.setTimeout(() => {
-      throttleTimeoutRef.current = null;
-    }, throttleMs);
-
+    // No throttling for completely smooth animation
     const currentTime = performance.now();
     const timeDiff = Math.max(1, currentTime - lastTimeRef.current);
     
@@ -77,8 +70,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state - LOWER THRESHOLD FOR IPHONE
-    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
+    // Lower threshold for smoother movement detection
+    const shouldBeMoving = velocity > 0.0005;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
@@ -101,13 +94,9 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
     lastPositionRef.current = newPosition;
     lastTimeRef.current = currentTime;
-  }, [enabled, throttleMs, calculateVelocity, calculateDirection]);
+  }, [enabled, calculateVelocity, calculateDirection]);
 
-
-
-
-
-  // Touch event handlers for mobile support
+  // Improved touch event handlers for iPhone Safari
   const handleTouchStart = useCallback((event: TouchEvent) => {
     if (!enabled) return;
     
@@ -122,21 +111,20 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       lastTimeRef.current = performance.now();
       setIsMoving(true);
       isMovingRef.current = true;
+      
+      // Immediate position update for touch start
+      positionObjectRef.current.x = newPosition.x;
+      positionObjectRef.current.y = newPosition.y;
+      positionObjectRef.current.velocity = 0;
+      positionObjectRef.current.direction = 'none';
+      setCursorPosition({ ...positionObjectRef.current });
     }
   }, [enabled]);
 
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (!enabled) return;
 
-    // Remove throttling for iPhone - immediate response
-    if (throttleTimeoutRef.current) {
-      return;
-    }
-
-    throttleTimeoutRef.current = window.setTimeout(() => {
-      throttleTimeoutRef.current = null;
-    }, throttleMs);
-
+    // No throttling for iPhone responsiveness
     const touch = event.touches[0];
     if (!touch) return;
 
@@ -148,13 +136,13 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       y: touch.clientY
     };
 
-    // Boost velocity for touch events on iPhone
+    // Enhanced velocity calculation for touch
     let velocity = calculateVelocity(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y, timeDiff);
-    velocity = velocity * 3; // Triple the velocity for touch events
+    velocity = Math.min(velocity * 2, 8); // Boost velocity but cap it
     const direction = calculateDirection(newPosition.x, newPosition.y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state - LOWER THRESHOLD FOR IPHONE
-    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
+    // Very low threshold for iPhone
+    const shouldBeMoving = velocity > 0.0001;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
@@ -165,7 +153,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       cancelAnimationFrame(rafRef.current);
     }
 
-    // Use requestAnimationFrame for smooth updates
+    // Immediate update for touch events
     rafRef.current = requestAnimationFrame(() => {
       positionObjectRef.current.x = newPosition.x;
       positionObjectRef.current.y = newPosition.y;
@@ -177,7 +165,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
     lastPositionRef.current = newPosition;
     lastTimeRef.current = currentTime;
-  }, [enabled, calculateVelocity, calculateDirection, throttleMs]);
+  }, [enabled, calculateVelocity, calculateDirection]);
 
   const handleTouchEnd = useCallback(() => {
     setIsMoving(false);
@@ -198,8 +186,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
     const newPosition = { x, y };
     const direction = calculateDirection(x, y, lastPositionRef.current.x, lastPositionRef.current.y);
 
-    // Update moving state - LOWER THRESHOLD FOR IPHONE
-    const shouldBeMoving = velocity > 0.001; // 3x lower threshold for iPhone
+    // Very low threshold for iPhone
+    const shouldBeMoving = velocity > 0.0001;
     if (shouldBeMoving !== isMovingRef.current) {
       isMovingRef.current = shouldBeMoving;
       setIsMoving(shouldBeMoving);
@@ -210,7 +198,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
       cancelAnimationFrame(rafRef.current);
     }
 
-    // Use requestAnimationFrame for smooth updates
+    // Immediate update for custom events
     rafRef.current = requestAnimationFrame(() => {
       positionObjectRef.current.x = newPosition.x;
       positionObjectRef.current.y = newPosition.y;
@@ -234,6 +222,7 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
   useEffect(() => {
     if (!enabled) return;
 
+    // Add passive listeners for better performance
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('touchstart', handleTouchStart, { passive: true });

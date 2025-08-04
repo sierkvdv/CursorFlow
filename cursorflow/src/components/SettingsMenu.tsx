@@ -239,7 +239,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Drum size={16} />
-                      Rhythm
+                      Beep
                     </span>
                     <button
                       onClick={(e) => {
@@ -248,7 +248,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         try {
                           onToggleDrum();
                         } catch (error) {
-                          console.error('Error toggling rhythm:', error);
+                          console.error('Error toggling beep:', error);
                         }
                       }}
                       style={{

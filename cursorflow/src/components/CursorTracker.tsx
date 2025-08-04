@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useCursorTracking } from '../hooks/useCursorTracking';
-import { useVisualEffects } from '../hooks/useVisualEffects';
 import { useNatureAmbient } from '../hooks/useNatureAmbient';
 import { useMelodyAmbient } from '../hooks/useMelodyAmbient';
-import { useRhythmAmbient } from '../hooks/useRhythmAmbient';
+import { useBeepAmbient } from '../hooks/useBeepAmbient';
 
 interface CursorTrackerProps {
   enabled?: boolean;
@@ -22,229 +21,253 @@ interface CursorTrackerProps {
   onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
 
-// Optimized canvas renderer with adaptive performance
+// Simple Canvas Renderer Component
 const CanvasRenderer = React.memo(({ 
-  canvasRef, 
+  enabled, 
   showTrail, 
   showParticles, 
-  trail, 
-  particles, 
-  ripples, 
-  natureVisuals, 
-  cursorPosition,
-  performanceLevel,
-  drawNatureBackground
+  cursorPosition, 
+  isMoving 
 }: {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  enabled: boolean;
   showTrail: boolean;
   showParticles: boolean;
-  trail: any[];
-  particles: any[];
-  ripples: any[];
-  natureVisuals: any;
-  cursorPosition: { x: number; y: number };
-  performanceLevel: 'high' | 'medium' | 'low';
-  drawNatureBackground?: (ctx: CanvasRenderingContext2D) => void;
+  cursorPosition: { x: number; y: number; velocity: number };
+  isMoving: boolean;
 }) => {
-  useEffect(() => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const trailRef = useRef<Array<{ x: number; y: number; timestamp: number }>>([]);
+  const particlesRef = useRef<Array<{ x: number; y: number; vx: number; vy: number; life: number; color: string }>>([]);
+  const animationRef = useRef<number>();
+  const lightningRef = useRef<{ active: boolean; intensity: number; x: number; y: number; life: number }>({
+    active: false,
+    intensity: 0,
+    x: 0,
+    y: 0,
+    life: 0
+  });
+
+  // Resize canvas
+  const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+  }, []);
+
+  // Add trail point
+  const addTrailPoint = useCallback((x: number, y: number) => {
+    if (!showTrail) return;
+    
+    // Instead of storing trail points, create trail particles
+    const colors = [
+      'rgba(0, 255, 136, 1.0)',
+      'rgba(255, 0, 128, 1.0)', 
+      'rgba(0, 128, 255, 1.0)',
+      'rgba(255, 255, 0, 1.0)',
+      'rgba(255, 128, 0, 1.0)',
+      'rgba(128, 0, 255, 1.0)',
+      'rgba(0, 255, 255, 1.0)',
+      'rgba(255, 0, 255, 1.0)'
+    ];
+
+    // Add trail particles that follow the cursor
+    for (let i = 0; i < 3; i++) {
+      particlesRef.current.push({
+        x: x + (Math.random() - 0.5) * 8,
+        y: y + (Math.random() - 0.5) * 8,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        life: 1,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+
+    // Keep trail points for reference (but don't draw them as lines)
+    trailRef.current.push({ x, y, timestamp: Date.now() });
+    if (trailRef.current.length > 10) {
+      trailRef.current = trailRef.current.slice(-10);
+    }
+  }, [showTrail]);
+
+  // Add particle
+  const addParticle = useCallback((x: number, y: number, velocity: number) => {
+    if (!showParticles || !isMoving) return;
+
+    const colors = [
+      'rgba(0, 255, 136, 1.0)',
+      'rgba(255, 0, 128, 1.0)', 
+      'rgba(0, 128, 255, 1.0)',
+      'rgba(255, 255, 0, 1.0)',
+      'rgba(255, 128, 0, 1.0)',
+      'rgba(128, 0, 255, 1.0)',
+      'rgba(0, 255, 255, 1.0)',
+      'rgba(255, 0, 255, 1.0)'
+    ];
+
+    // Add more particles per movement
+    const particleCount = Math.min(5 + Math.floor(velocity * 3), 12);
+    
+    for (let i = 0; i < particleCount; i++) {
+      particlesRef.current.push({
+        x: x + (Math.random() - 0.5) * 15,
+        y: y + (Math.random() - 0.5) * 15,
+        vx: (Math.random() - 0.5) * 8 + velocity * 0.8,
+        vy: (Math.random() - 0.5) * 8 + velocity * 0.8,
+        life: 1,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+
+    // Keep more particles for richer effect
+    if (particlesRef.current.length > 120) {
+      particlesRef.current = particlesRef.current.slice(-120);
+    }
+  }, [showParticles, isMoving]);
+
+  // Add lightning effect
+  const addLightning = useCallback(() => {
+    // Random chance for lightning (independent of cursor)
+    if (Math.random() > 0.995) { // 0.5% chance per frame
+      lightningRef.current = {
+        active: true,
+        intensity: 0.8 + Math.random() * 0.2,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight * 0.3,
+        life: 1
+      };
+    }
+  }, []);
+
+  // Animation loop
+  const animate = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !enabled) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      
-      // Force canvas to be visible on iOS
-      canvas.style.display = 'block';
-      canvas.style.position = 'fixed';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.zIndex = '30';
-    };
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Add lightning
+    addLightning();
+
+    // Draw lightning
+    if (lightningRef.current.active) {
+      const lightning = lightningRef.current;
+      lightning.life -= 0.05;
+      
+      if (lightning.life > 0) {
+        const intensity = lightning.intensity * lightning.life;
+        const gradient = ctx.createRadialGradient(
+          lightning.x, lightning.y, 0,
+          lightning.x, lightning.y, window.innerWidth * 1.2
+        );
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${intensity * 0.1})`);
+        gradient.addColorStop(0.3, `rgba(200, 220, 255, ${intensity * 0.05})`);
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        lightning.active = false;
+      }
+    }
+
+    // Update and draw all particles (trail + movement particles)
+    if (showParticles || showTrail) {
+      particlesRef.current = particlesRef.current
+        .map(particle => ({
+          ...particle,
+          x: particle.x + particle.vx,
+          y: particle.y + particle.vy,
+          vx: particle.vx * 0.92,
+          vy: particle.vy * 0.92,
+          life: particle.life - 0.02
+        }))
+        .filter(particle => particle.life > 0);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      
+      particlesRef.current.forEach(particle => {
+        const size = 6 + particle.life * 4;
+        
+        // Draw glow
+        const gradient = ctx.createRadialGradient(
+          particle.x, particle.y, 0,
+          particle.x, particle.y, size * 2
+        );
+        gradient.addColorStop(0, particle.color.replace('1.0', (particle.life * 0.8).toString()));
+        gradient.addColorStop(0.5, particle.color.replace('1.0', (particle.life * 0.4).toString()));
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, size * 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw core
+        ctx.fillStyle = particle.color.replace('1.0', particle.life.toString());
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      ctx.restore();
+    }
+
+    animationRef.current = requestAnimationFrame(animate);
+  }, [enabled, showTrail, showParticles, addLightning]);
+
+  // Handle cursor updates
+  useEffect(() => {
+    if (enabled) {
+      addTrailPoint(cursorPosition.x, cursorPosition.y);
+      addParticle(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+    }
+  }, [enabled, cursorPosition.x, cursorPosition.y, cursorPosition.velocity, addTrailPoint, addParticle]);
+
+  // Start animation
+  useEffect(() => {
+    if (enabled) {
+      animate();
+    }
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [enabled, animate]);
+
+  // Handle resize
+  useEffect(() => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [resizeCanvas]);
 
-    // Adaptive animation loop based on performance
-    let animationId: number | null = null;
-    let lastRenderTime = 0;
-    
-    const animate = (currentTime: number) => {
-      // Adaptive frame rate based on performance
-      const targetFrameRate = performanceLevel === 'high' ? 16 : 
-                             performanceLevel === 'medium' ? 20 : 33;
-      
-      if (currentTime - lastRenderTime >= targetFrameRate) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!enabled) return null;
 
-        // Draw nature background effects first (for all performance levels) - ALWAYS RENDER
-        if (drawNatureBackground) {
-          drawNatureBackground(ctx);
-        }
-
-        // Draw optimized trail with adaptive quality
-        if (showTrail && trail.length > 1) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'screen';
-          
-          // Skip points based on performance
-          const skipPoints = performanceLevel === 'high' ? 1 : 
-                           performanceLevel === 'medium' ? 2 : 3;
-          
-          for (let i = 0; i < trail.length; i += skipPoints) {
-            const point = trail[i];
-            const age = Date.now() - point.timestamp;
-            const maxAge = 800;
-            const alpha = Math.max(0.1, (1 - age / maxAge) * 0.9);
-            const size = Math.max(6, 20 * alpha);
-            
-            const gradient = ctx.createRadialGradient(
-              point.x, point.y, 0,
-              point.x, point.y, size * 1.5
-            );
-            gradient.addColorStop(0, `rgba(0, 255, 136, ${alpha * 0.9})`);
-            gradient.addColorStop(0.4, `rgba(0, 255, 136, ${alpha * 0.6})`);
-            gradient.addColorStop(0.8, `rgba(0, 255, 136, ${alpha * 0.2})`);
-            gradient.addColorStop(1, 'transparent');
-            
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          
-          ctx.restore();
-        }
-
-        // Draw optimized ripples with adaptive count
-        if (showParticles && ripples.length > 0) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'overlay';
-          
-          // Limit ripple rendering based on performance
-          const maxRipplesToRender = performanceLevel === 'high' ? ripples.length : 
-                                    performanceLevel === 'medium' ? Math.floor(ripples.length * 0.7) : 
-                                    Math.floor(ripples.length * 0.5);
-          
-          ripples.slice(0, maxRipplesToRender).forEach(ripple => {
-            const alpha = ripple.life * ripple.intensity;
-            const gradient = ctx.createRadialGradient(
-              ripple.x, ripple.y, 0,
-              ripple.x, ripple.y, ripple.radius * 1.2
-            );
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.4})`);
-            gradient.addColorStop(0.2, `rgba(255, 255, 255, ${alpha * 0.25})`);
-            gradient.addColorStop(0.5, `rgba(0, 255, 136, ${alpha * 0.15})`);
-            gradient.addColorStop(0.8, `rgba(0, 0, 0, ${alpha * 0.1})`);
-            gradient.addColorStop(1, 'transparent');
-            
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
-            ctx.fill();
-          });
-          
-          ctx.restore();
-        }
-
-        // Draw optimized particles with adaptive rendering - IMPROVED FOR MOBILE
-        if (showParticles) {
-          // Limit particle rendering based on performance - MORE PARTICLES ON MOBILE
-          const maxParticlesToRender = performanceLevel === 'high' ? particles.length : 
-                                      performanceLevel === 'medium' ? Math.floor(particles.length * 0.9) : 
-                                      Math.floor(particles.length * 0.8);
-          
-          particles.slice(0, maxParticlesToRender).forEach(particle => {
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            ctx.globalAlpha = particle.life * 0.9;
-            
-            // Simplified rendering for low performance
-            if (performanceLevel === 'low') {
-              ctx.fillStyle = particle.color;
-              ctx.beginPath();
-              ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-              ctx.fill();
-            } else {
-              // Full glow effect for medium/high performance
-              const glowGradient = ctx.createRadialGradient(
-                particle.x, particle.y, 0,
-                particle.x, particle.y, particle.size * 4
-              );
-              glowGradient.addColorStop(0, particle.color);
-              glowGradient.addColorStop(0.3, particle.color.replace('0.9', '0.6'));
-              glowGradient.addColorStop(0.7, particle.color.replace('0.9', '0.3'));
-              glowGradient.addColorStop(1, 'transparent');
-              
-              ctx.fillStyle = glowGradient;
-              ctx.beginPath();
-              ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
-              ctx.fill();
-              
-              ctx.fillStyle = particle.color.replace('0.9', '1');
-              ctx.beginPath();
-              ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            
-            ctx.restore();
-          });
-        }
-
-        // Draw nature background gradient (always for better visuals)
-        if (performanceLevel === 'high') {
-          ctx.save();
-          ctx.globalCompositeOperation = 'overlay';
-          
-          // const xNormalized = cursorPosition.x / window.innerWidth;
-          // const yNormalized = cursorPosition.y / window.innerHeight;
-          
-          const gradient = ctx.createRadialGradient(
-            cursorPosition.x, cursorPosition.y, 0,
-            cursorPosition.x, cursorPosition.y, Math.max(window.innerWidth, window.innerHeight) * 0.8
-          );
-          
-          const centerColor = `rgba(${
-            Math.floor((natureVisuals.sea.intensity * 0 + natureVisuals.rain.intensity * 100 + natureVisuals.river.intensity * 0 + natureVisuals.waterfall.intensity * 0) / 4)
-          }, ${
-            Math.floor((natureVisuals.sea.intensity * 150 + natureVisuals.rain.intensity * 100 + natureVisuals.river.intensity * 200 + natureVisuals.waterfall.intensity * 255) / 4)
-          }, ${
-            Math.floor((natureVisuals.sea.intensity * 255 + natureVisuals.rain.intensity * 255 + natureVisuals.river.intensity * 150 + natureVisuals.waterfall.intensity * 200) / 4)
-          }, ${(natureVisuals.sea.intensity + natureVisuals.rain.intensity + natureVisuals.river.intensity + natureVisuals.waterfall.intensity) * 0.15})`;
-          
-          gradient.addColorStop(0, centerColor);
-          gradient.addColorStop(0.5, `rgba(0, 0, 0, 0.05)`);
-          gradient.addColorStop(1, 'transparent');
-          
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-          
-          ctx.restore();
-        }
-
-        lastRenderTime = currentTime;
-      }
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [showTrail, showParticles, trail, particles, ripples, natureVisuals, cursorPosition, performanceLevel, drawNatureBackground]);
-
-  return null;
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 1000
+      }}
+    />
+  );
 });
 
 export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
@@ -263,130 +286,50 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   rainVisible = false,
   onMouseMove
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { cursorPosition, isMoving } = useCursorTracking({ enabled });
-  const { 
-    particles, 
-    trail, 
-    ripples, 
-    addParticles, 
-    updateTrail, 
-    natureVisuals, 
-    updateNatureVisuals,
-    addNatureBackground,
-    drawNatureBackground,
-    performanceLevel
-  } = useVisualEffects({
-    enabled: showParticles || showTrail,
-    rainVisible: rainVisible || false
-  });
 
-  // Initialize audio systems with volume controls - ALWAYS ENABLE NATURE
+  // Initialize audio systems with volume controls
   const natureSystem = useNatureAmbient({ 
-    enabled: true, // Always enabled for better experience
-    baseVolume: natureVolume * 0.3 // Scale volume
+    enabled: natureEnabled && audioEnabled,
+    baseVolume: natureVolume * 0.3
   });
   
   const melodySystem = useMelodyAmbient({ 
     enabled: melodyEnabled && audioEnabled,
-    baseVolume: melodyVolume * 0.04 // Scale volume
+    baseVolume: melodyVolume * 0.8
   });
   
-  const rhythmSystem = useRhythmAmbient({ 
+    const beepSystem = useBeepAmbient({
     enabled: drumEnabled && audioEnabled,
-    baseVolume: drumVolume * 0.2 // Scale volume
+    baseVolume: drumVolume * 0.2
   });
 
   const lastAudioUpdateRef = useRef(0);
 
-  // Optimized cursor update handler with adaptive throttling
-  const handleCursorUpdate = useCallback(() => {
-    if (!enabled) return;
+  // Handle audio updates
+  const handleAudioUpdate = useCallback(() => {
+    if (!audioEnabled) return;
 
-    updateTrail(cursorPosition.x, cursorPosition.y);
+    const currentTime = performance.now();
+    const timeSinceLastAudioUpdate = currentTime - (lastAudioUpdateRef.current || 0);
+    const audioUpdateInterval = 32; // Fixed interval for smooth audio
     
-    // Adaptive particle generation based on performance - MORE PARTICLES
-    if (isMoving && showParticles) {
-      const particleCount = performanceLevel === 'high' ? 6 : performanceLevel === 'medium' ? 4 : 2;
-      addParticles(cursorPosition.x, cursorPosition.y, cursorPosition.velocity, particleCount);
-    }
-
-    // Update nature visuals - ALWAYS ACTIVE
-    if (updateNatureVisuals) {
-      updateNatureVisuals(cursorPosition.x, cursorPosition.y);
-    }
-
-    // Add nature background effects (rain, lightning, mist) - LIMITED TO PREVENT LOOPS
-    if (addNatureBackground) {
-      // Only add nature background effects occasionally to prevent infinite loops
-      const shouldAdd = Math.random() > 0.8; // 20% chance
-      if (shouldAdd) {
-        addNatureBackground();
+    if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
+      lastAudioUpdateRef.current = currentTime;
+      
+      // Nature system - only reacts to mouse movement
+      if (natureSystem?.updateNatureFromMouse) {
+        natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
-    }
-
-    // Update audio systems with performance-based throttling
-    if (audioEnabled) {
-      const currentTime = performance.now();
-      const timeSinceLastAudioUpdate = currentTime - (lastAudioUpdateRef.current || 0);
       
-      // Throttle audio updates based on performance level - IMPROVED RESPONSIVENESS
-      const audioUpdateInterval = performanceLevel === 'high' ? 8 : performanceLevel === 'medium' ? 16 : 32; // 120fps, 60fps, 30fps
+      // Melody system - plays constantly when enabled, mouse movement adds modulation
+      if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
+        melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+      }
       
-      if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
-        lastAudioUpdateRef.current = currentTime;
-        
-        // Update audio systems with reduced frequency - ALWAYS UPDATE NATURE
-        if (natureSystem?.updateNatureFromMouse) {
-          natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        }
-        
-        if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
-          melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        }
-        
-        if (drumEnabled && rhythmSystem?.updateRhythmFromMouse) {
-          rhythmSystem.updateRhythmFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-        }
-
-        // GLITCH EFFECTS ON CURSOR MOVEMENT - OPTIMIZED FOR PERFORMANCE
-        if (glitchEnabled && cursorPosition.velocity > 0.05) {
-          // Trigger glitch effects based on velocity with performance throttling
-          const glitchChance = Math.min(0.15, cursorPosition.velocity * 0.3); // Reduced chance
-          if (Math.random() < glitchChance) {
-            // Use requestIdleCallback for non-critical glitch effects
-            if ('requestIdleCallback' in window) {
-              (window as any).requestIdleCallback(() => {
-                import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
-                  // Create audio context for glitch effects
-                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-                  if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                  }
-                  // Apply volume scaling to glitch effects
-                  const originalVolume = (window as any).glitchVolume || 1;
-                  (window as any).glitchVolume = glitchVolume;
-                  createGlitchClickSound(audioContext);
-                  (window as any).glitchVolume = originalVolume;
-                });
-              }, { timeout: 100 });
-            } else {
-              // Fallback for browsers without requestIdleCallback
-              setTimeout(() => {
-                import('../utils/audioUtils').then(({ createGlitchClickSound }) => {
-                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-                  if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                  }
-                  const originalVolume = (window as any).glitchVolume || 1;
-                  (window as any).glitchVolume = glitchVolume;
-                  createGlitchClickSound(audioContext);
-                  (window as any).glitchVolume = originalVolume;
-                });
-              }, 0);
-            }
-          }
-        }
+      // Beep system - plays constantly when enabled, mouse movement adds modulation
+      if (drumEnabled && beepSystem?.updateBeepFromMouse) {
+        beepSystem.updateBeepFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
 
       if (onMouseMove) {
@@ -394,81 +337,48 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
       }
     }
   }, [
-    enabled, 
-    cursorPosition.x, 
-    cursorPosition.y, 
-    cursorPosition.velocity, 
-    isMoving, 
-    showParticles, 
     audioEnabled,
-    natureEnabled,
+    cursorPosition.x,
+    cursorPosition.y,
+    cursorPosition.velocity,
     melodyEnabled,
     drumEnabled,
-    glitchEnabled,
-    updateTrail,
-    addParticles,
-    updateNatureVisuals,
-    addNatureBackground,
     natureSystem,
     melodySystem,
-    rhythmSystem,
-    onMouseMove,
-    performanceLevel,
-    glitchVolume
+    beepSystem,
+    onMouseMove
   ]);
 
+  // Update audio on cursor movement AND constantly for melody/rhythm
   useEffect(() => {
-    handleCursorUpdate();
-  }, [handleCursorUpdate]);
+    handleAudioUpdate();
+  }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
 
-  // Add touch event listener for iPhone cursor effects
+  // Additional effect to ensure melody and rhythm play constantly
   useEffect(() => {
-    if (!enabled) return;
+    if (!audioEnabled) return;
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        // Force cursor update on touch move
-        const customEvent = new CustomEvent('cursorUpdate', {
-          detail: { 
-            x: touch.clientX, 
-            y: touch.clientY, 
-            velocity: 0.5 
-          }
-        });
-        document.dispatchEvent(customEvent);
+    const interval = setInterval(() => {
+      // Ensure melody and beep systems are active even without mouse movement
+      if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
+        melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
-    };
+      
+      if (drumEnabled && beepSystem?.updateBeepFromMouse) {
+        beepSystem.updateBeepFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+      }
+    }, 100); // Update every 100ms to ensure constant playback
 
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
-
-    return () => {
-      document.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [enabled]);
-
-  if (!enabled) return null;
+    return () => clearInterval(interval);
+  }, [audioEnabled, melodyEnabled, drumEnabled, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-30"
-        style={{ mixBlendMode: 'screen' }}
-      />
-
-      <CanvasRenderer
-        canvasRef={canvasRef}
-        showTrail={showTrail}
-        showParticles={showParticles}
-        trail={trail}
-        particles={particles}
-        ripples={ripples}
-        natureVisuals={natureVisuals}
-        cursorPosition={cursorPosition}
-        performanceLevel={performanceLevel}
-        drawNatureBackground={drawNatureBackground}
-      />
-    </>
+    <CanvasRenderer
+      enabled={enabled}
+      showTrail={showTrail}
+      showParticles={showParticles}
+      cursorPosition={cursorPosition}
+      isMoving={isMoving}
+    />
   );
 });

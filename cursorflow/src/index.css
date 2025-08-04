@@ -74,10 +74,11 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   cursor: pointer !important;
 }
 
-/* Mobile-specific styles */
+/* Mobile-specific styles with better iPhone Safari support */
 @media (max-width: 768px) {
+  /* Don't hide cursor on mobile for better usability */
   * {
-    cursor: none;
+    cursor: auto;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -86,26 +87,35 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     user-select: none;
   }
   
-  /* Show cursor for interactive elements on mobile too */
+  /* Show cursor for interactive elements on mobile */
   button, a, input, select, textarea, [role="button"], .interactive-element {
     cursor: pointer !important;
   }
   
-  /* Prevent zoom on double tap */
+  /* Prevent zoom on double tap and improve touch handling */
   * {
     touch-action: manipulation;
   }
   
-  /* Optimize rain for mobile */
-  .rain-drop {
-    width: 2px;
-    height: 25px;
-    background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.9), transparent);
-    box-shadow: 0 0 6px rgba(100, 150, 255, 0.8);
+  /* Better touch handling for iPhone Safari */
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
   
-  .rain-drop.visible {
-    animation-duration: 6s !important; /* Realistic hang and fall on mobile */
+  /* Optimize canvas for mobile */
+  canvas {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
 
@@ -148,6 +158,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     color: #ffffff;
   }
 }
+
 @keyframes ripple-animation {
   0% {
     transform: scale(0);
@@ -176,8 +187,6 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
 ::-webkit-scrollbar-thumb:hover {
   background: #00cc6a;
 }
-
-
 
 /* Background Rain Effect */
 @keyframes rain-fall {
@@ -251,6 +260,7 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   animation: rain-fall linear infinite;
 }
 
+/* Individual rain drop timing for natural effect */
 .rain-drop:nth-child(1) { left: 5%; animation-duration: 2.2s; animation-delay: 0s; }
 .rain-drop:nth-child(2) { left: 15%; animation-duration: 2.8s; animation-delay: 0.3s; }
 .rain-drop:nth-child(3) { left: 25%; animation-duration: 1.9s; animation-delay: 0.6s; }
@@ -307,6 +317,18 @@ select:focus,
   textarea:active,
   select:active {
     -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Optimize rain for mobile */
+  .rain-drop {
+    width: 2px;
+    height: 25px;
+    background: linear-gradient(to bottom, transparent, rgba(100, 150, 255, 0.9), transparent);
+    box-shadow: 0 0 6px rgba(100, 150, 255, 0.8);
+  }
+  
+  .rain-drop.visible {
+    animation-duration: 6s !important; /* Realistic hang and fall on mobile */
   }
 }
 
