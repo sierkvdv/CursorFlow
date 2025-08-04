@@ -252,11 +252,14 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+  /* Ensure rain drops are completely hidden by default */
+  display: none;
 }
 
 .rain-drop.visible {
   opacity: 1;
   visibility: visible;
+  display: block;
   animation: rain-fall linear infinite;
 }
 
