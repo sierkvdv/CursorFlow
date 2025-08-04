@@ -414,8 +414,8 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
       lastAudioUpdateRef.current = currentTime;
       
-      // Nature system - only reacts to mouse movement
-      if (natureSystem?.updateNatureFromMouse) {
+      // Nature system - only reacts to mouse movement when enabled
+      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
         natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
       
@@ -438,6 +438,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     cursorPosition.x,
     cursorPosition.y,
     cursorPosition.velocity,
+    natureEnabled,
     melodyEnabled,
     drumEnabled,
     natureSystem,
@@ -451,16 +452,12 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     handleAudioUpdate();
   }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
 
-  // Additional effect to ensure melody, beep, and nature play constantly
+  // Additional effect to ensure melody and beep play constantly (nature only reacts to mouse)
   useEffect(() => {
     if (!audioEnabled) return;
 
     const interval = setInterval(() => {
-      // Only update if the specific system is enabled
-      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
-        natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
-      }
-      
+      // Melody and beep play constantly when enabled
       if (melodyEnabled && melodySystem?.updateMelodyFromMouse) {
         melodySystem.updateMelodyFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
@@ -468,10 +465,12 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
       if (drumEnabled && beepSystem?.updateBeepFromMouse) {
         beepSystem.updateBeepFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
+      
+      // Nature only reacts to mouse movement, not constant updates
     }, 100); // Update every 100ms to ensure constant playback
 
     return () => clearInterval(interval);
-  }, [audioEnabled, natureEnabled, melodyEnabled, drumEnabled, natureSystem, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
+  }, [audioEnabled, melodyEnabled, drumEnabled, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
 
   // Start nature audio system when enabled
   useEffect(() => {
