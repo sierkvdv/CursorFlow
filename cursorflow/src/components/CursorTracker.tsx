@@ -148,11 +148,16 @@ const CanvasRenderer = React.memo(({
       const canvas = canvasRef.current;
       if (!canvas) return;
       
+      // Scale coordinates for device pixel ratio
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const viewportWidth = window.innerWidth * devicePixelRatio;
+      const viewportHeight = window.innerHeight * devicePixelRatio;
+      
       lightningRef.current = {
         active: true,
         intensity: 0.8 + Math.random() * 0.2,
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height * 0.3,
+        x: Math.random() * viewportWidth,
+        y: Math.random() * viewportHeight * 0.3,
         life: 1
       };
     }
@@ -243,8 +248,16 @@ const CanvasRenderer = React.memo(({
   // Handle cursor updates
   useEffect(() => {
     if (enabled) {
-      addTrailPoint(cursorPosition.x, cursorPosition.y);
-      addParticle(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      // Scale coordinates for device pixel ratio
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const scaledX = cursorPosition.x * devicePixelRatio;
+      const scaledY = cursorPosition.y * devicePixelRatio;
+      
+      addTrailPoint(scaledX, scaledY);
+      addParticle(scaledX, scaledY, cursorPosition.velocity);
     }
   }, [enabled, cursorPosition.x, cursorPosition.y, cursorPosition.velocity, addTrailPoint, addParticle]);
 
