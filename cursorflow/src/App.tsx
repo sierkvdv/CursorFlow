@@ -308,7 +308,8 @@ function App() {
                       <motion.h1 
                         className="text-9xl md:text-[12rem] font-black text-yellow-300 leading-none"
                       >
-                        CURSORFLOW
+                        <span className="font-black">CURSOR</span>
+                        <span className="font-bold">FLOW</span>
                       </motion.h1>
                     </motion.div>
                   )}
