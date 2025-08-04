@@ -211,11 +211,11 @@ div[style*="display: flex"][style*="alignItems: center"][style*="justifyContent:
     opacity: 1;
   }
   90% {
-    transform: translateY(10vh) scale(1.0);
+    transform: translateY(50vh) scale(1.0);
     opacity: 1;
   }
   100% {
-    transform: translateY(100vh) scale(1.0);
+    transform: translateY(150vh) scale(1.0);
     opacity: 0;
   }
 }

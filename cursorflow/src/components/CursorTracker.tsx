@@ -288,7 +288,10 @@ const CanvasRenderer = React.memo(({
       
       try {
         // Create a silent audio context to unlock iOS audio
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+          sampleRate: 44100,
+          latencyHint: 'interactive'
+        });
         
         // Resume audio context if suspended
         if (audioContext.state === 'suspended') {
@@ -315,6 +318,8 @@ const CanvasRenderer = React.memo(({
         document.removeEventListener('touchstart', initializeAudioContext);
         document.removeEventListener('mousedown', initializeAudioContext);
         document.removeEventListener('click', initializeAudioContext);
+        document.removeEventListener('touchend', initializeAudioContext);
+        document.removeEventListener('keydown', initializeAudioContext);
       } catch (error) {
         console.error('Failed to initialize audio context:', error);
         audioContextInitialized = false;
@@ -325,9 +330,13 @@ const CanvasRenderer = React.memo(({
     document.addEventListener('touchstart', initializeAudioContext, { once: true, passive: false });
     document.addEventListener('mousedown', initializeAudioContext, { once: true });
     document.addEventListener('click', initializeAudioContext, { once: true });
+    document.addEventListener('touchend', initializeAudioContext, { once: true });
+    document.addEventListener('keydown', initializeAudioContext, { once: true });
     
-    // Also try to initialize on component mount
+    // Also try to initialize on component mount with multiple attempts
     setTimeout(initializeAudioContext, 100);
+    setTimeout(initializeAudioContext, 500);
+    setTimeout(initializeAudioContext, 1000);
   }, []);
 
   // Handle resize
@@ -414,8 +423,8 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     if (timeSinceLastAudioUpdate >= audioUpdateInterval) {
       lastAudioUpdateRef.current = currentTime;
       
-      // Nature system - only reacts to mouse movement when enabled and moving
-      if (natureEnabled && natureSystem?.updateNatureFromMouse && cursorPosition.velocity > 0.1) {
+      // Nature system - only reacts to mouse movement when enabled
+      if (natureEnabled && natureSystem?.updateNatureFromMouse) {
         natureSystem.updateNatureFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
       
@@ -452,7 +461,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     handleAudioUpdate();
   }, [cursorPosition.x, cursorPosition.y, cursorPosition.velocity, handleAudioUpdate]);
 
-  // Additional effect to ensure melody, beep, and nature play constantly
+  // Additional effect to ensure melody and beep play constantly (nature only reacts to mouse)
   useEffect(() => {
     if (!audioEnabled) return;
 
@@ -466,39 +475,27 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
         beepSystem.updateBeepFromMouse(cursorPosition.x, cursorPosition.y, cursorPosition.velocity);
       }
       
-      // Nature plays constantly with base volume
-      if (natureEnabled && natureSystem?.updateNatureConstant) {
-        natureSystem.updateNatureConstant();
-      }
+      // Nature only reacts to mouse movement, not constant updates
     }, 100); // Update every 100ms to ensure constant playback
 
     return () => clearInterval(interval);
-  }, [audioEnabled, melodyEnabled, drumEnabled, natureEnabled, melodySystem, beepSystem, natureSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
+  }, [audioEnabled, melodyEnabled, drumEnabled, melodySystem, beepSystem, cursorPosition.x, cursorPosition.y, cursorPosition.velocity]);
 
   // Start nature audio system when enabled
   useEffect(() => {
     if (natureEnabled && audioEnabled && natureSystem?.startNature) {
-      // Force reinitialize nature audio system
-      setTimeout(() => {
-        if (natureSystem?.startNature) {
-          natureSystem.startNature();
-        }
-      }, 100);
+      natureSystem.startNature();
     }
-  }, [natureEnabled, audioEnabled, natureSystem, audioKey]);
+  }, [natureEnabled, audioEnabled, natureSystem]);
 
-  // Force nature audio system to reinitialize when audio context is ready
+  // Stop nature audio system when disabled
   useEffect(() => {
-    if (natureEnabled && audioEnabled && natureSystem?.stopNature && natureSystem?.startNature) {
-      // Stop and restart nature audio to force reinitialization
+    if ((!natureEnabled || !audioEnabled) && natureSystem?.stopNature) {
       natureSystem.stopNature();
-      setTimeout(() => {
-        if (natureSystem?.startNature) {
-          natureSystem.startNature();
-        }
-      }, 50);
     }
-  }, [audioKey, natureEnabled, audioEnabled, natureSystem]);
+  }, [natureEnabled, audioEnabled, natureSystem]);
+
+
 
   // Force stop melody when disabled - immediate effect
   useEffect(() => {

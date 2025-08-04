@@ -56,6 +56,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         console.error('Error in button click:', error);
       }
     },
+    onTouchStart: (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
     onTouchEnd: (e: React.TouchEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -65,12 +69,18 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         console.error('Error in button touch:', error);
       }
     },
+    onTouchMove: (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
     style: {
       touchAction: 'manipulation' as const,
       userSelect: 'none' as const,
       WebkitUserSelect: 'none' as const,
       MozUserSelect: 'none' as const,
-      msUserSelect: 'none' as const
+      msUserSelect: 'none' as const,
+      WebkitTapHighlightColor: 'transparent' as const,
+      WebkitTouchCallout: 'none' as const
     }
   });
   if (!isOpen) return null;
@@ -88,8 +98,12 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
-        msUserSelect: 'none'
+        msUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        WebkitTouchCallout: 'none'
       }}
+      onTouchStart={(e) => e.preventDefault()}
+      onTouchMove={(e) => e.preventDefault()}
     >
       {/* Backdrop */}
       <div 
