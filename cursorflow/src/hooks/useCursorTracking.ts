@@ -105,6 +105,8 @@ export const useCursorTracking = (options: CursorTrackingOptions = {}) => {
 
 
 
+
+
   // Touch event handlers for mobile support
   const handleTouchStart = useCallback((event: TouchEvent) => {
     if (!enabled) return;

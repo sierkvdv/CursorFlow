@@ -52,6 +52,15 @@ const CanvasRenderer = React.memo(({
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      
+      // Force canvas to be visible on iOS
+      canvas.style.display = 'block';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '30';
     };
 
     resizeCanvas();
@@ -340,50 +349,42 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     handleCursorUpdate();
   }, [handleCursorUpdate]);
 
+  // Add touch event listener for iPhone cursor effects
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        // Force cursor update on touch move
+        const customEvent = new CustomEvent('cursorUpdate', {
+          detail: { 
+            x: touch.clientX, 
+            y: touch.clientY, 
+            velocity: 0.5 
+          }
+        });
+        document.dispatchEvent(customEvent);
+      }
+    };
+
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [enabled]);
+
   if (!enabled) return null;
 
   return (
     <>
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 pointer-events-auto z-30"
+        className="fixed inset-0 pointer-events-none z-30"
         style={{ mixBlendMode: 'screen' }}
-        onTouchStart={(e) => {
-          // Don't prevent default to allow normal touch handling
-          const touch = e.touches[0];
-          if (touch) {
-            // Update cursor position directly
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            
-            // Dispatch a custom event for cursor tracking
-            const customEvent = new CustomEvent('cursorUpdate', {
-              detail: { x, y, velocity: 0.1 }
-            });
-            document.dispatchEvent(customEvent);
-          }
-        }}
-        onTouchMove={(e) => {
-          // Don't prevent default to allow normal touch handling
-          const touch = e.touches[0];
-          if (touch) {
-            // Update cursor position directly
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            
-            // Dispatch a custom event for cursor tracking
-            const customEvent = new CustomEvent('cursorUpdate', {
-              detail: { x, y, velocity: 0.2 }
-            });
-            document.dispatchEvent(customEvent);
-          }
-        }}
-        onTouchEnd={(e) => {
-          // Don't prevent default
-        }}
       />
+
       <CanvasRenderer
         canvasRef={canvasRef}
         showTrail={showTrail}

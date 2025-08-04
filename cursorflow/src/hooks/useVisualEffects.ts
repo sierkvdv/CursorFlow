@@ -320,28 +320,32 @@ export const useVisualEffects = (options: VisualEffectOptions = {}) => {
 
     ctx.save();
     
-    // Draw lightning flash (only for high performance)
-    if (natureBackground.lightning.active && performanceLevelRef.current === 'high') {
+    // Draw lightning flash (less bright on desktop, same on mobile)
+    if (natureBackground.lightning.active) {
+      const isMobile = window.innerWidth <= 768;
+      const intensity = isMobile ? 0.3 : 0.1; // Less bright on desktop
+      const secondaryIntensity = isMobile ? 0.2 : 0.05; // Much less bright on desktop
+      
       const gradient = ctx.createRadialGradient(
         natureBackground.lightning.x, natureBackground.lightning.y, 0,
         natureBackground.lightning.x, natureBackground.lightning.y, window.innerWidth * 0.8
       );
-      gradient.addColorStop(0, `rgba(255, 255, 255, ${natureBackground.lightning.intensity * 0.1})`);
-      gradient.addColorStop(0.3, `rgba(200, 220, 255, ${natureBackground.lightning.intensity * 0.05})`);
+      gradient.addColorStop(0, `rgba(255, 255, 255, ${natureBackground.lightning.intensity * intensity})`);
+      gradient.addColorStop(0.3, `rgba(200, 220, 255, ${natureBackground.lightning.intensity * secondaryIntensity})`);
       gradient.addColorStop(1, 'transparent');
       
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     }
 
-    // Draw rain drops
+    // Draw rain drops (much more subtle)
     if (natureBackground.rainDrops.length > 0) {
-      ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)'; // Back to original subtle
-      ctx.lineWidth = 1; // Back to original thin
+      ctx.strokeStyle = 'rgba(100, 150, 255, 0.1)'; // Much more subtle
+      ctx.lineWidth = 0.5; // Very thin
       natureBackground.rainDrops.forEach(drop => {
         ctx.beginPath();
         ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x + natureBackground.wind * 5, drop.y + 15);
+        ctx.lineTo(drop.x + natureBackground.wind * 2, drop.y + 8);
         ctx.stroke();
       });
     }

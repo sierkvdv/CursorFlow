@@ -6,6 +6,7 @@ import { SettingsMenu } from './components/SettingsMenu';
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [rainVisible, setRainVisible] = useState(false);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -22,7 +23,11 @@ function App() {
   const [isMuted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 300);
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+      // Show rain after a short delay to prevent early appearance
+      setTimeout(() => setRainVisible(true), 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -111,38 +116,101 @@ function App() {
     setGlitchEnabled(prev => !prev);
   };
 
-  // iOS Audio unlock on any touch
+  // iOS Audio unlock on any touch - improved for immediate audio
   useEffect(() => {
+    let audioUnlocked = false;
+    
     const handleIOSAudioUnlock = () => {
-      unlockAudioForIOS();
-      // Remove listeners after first touch
-      document.removeEventListener('touchstart', handleIOSAudioUnlock);
-      document.removeEventListener('touchend', handleIOSAudioUnlock);
+      if (!audioUnlocked) {
+        unlockAudioForIOS();
+        audioUnlocked = true;
+        
+        // Force audio context resume on first touch
+        setTimeout(() => {
+          try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            if (audioContext.state === 'suspended') {
+              audioContext.resume();
+            }
+          } catch (error) {
+            // Silent fail
+          }
+        }, 50);
+        
+        // Remove listeners after first touch
+        document.removeEventListener('touchstart', handleIOSAudioUnlock);
+        document.removeEventListener('touchend', handleIOSAudioUnlock);
+        document.removeEventListener('mousedown', handleIOSAudioUnlock);
+      }
     };
 
-    document.addEventListener('touchstart', handleIOSAudioUnlock);
-    document.addEventListener('touchend', handleIOSAudioUnlock);
+    // Add multiple event listeners for better iOS compatibility
+    document.addEventListener('touchstart', handleIOSAudioUnlock, { passive: true });
+    document.addEventListener('touchend', handleIOSAudioUnlock, { passive: true });
+    document.addEventListener('mousedown', handleIOSAudioUnlock, { passive: true });
 
     return () => {
       document.removeEventListener('touchstart', handleIOSAudioUnlock);
       document.removeEventListener('touchend', handleIOSAudioUnlock);
+      document.removeEventListener('mousedown', handleIOSAudioUnlock);
     };
   }, [unlockAudioForIOS]);
 
   // Prevent iOS Safari scroll issues and black screen
   useEffect(() => {
     const preventScrollIssues = (e: TouchEvent) => {
-      // Prevent all scrolling to avoid black screen
-      e.preventDefault();
+      // Only prevent default for specific gestures that might cause issues
+      if (e.touches.length > 1) {
+        e.preventDefault(); // Prevent pinch zoom
+      }
+      // Allow normal touch events for cursor tracking
     };
     
     // Prevent pull-to-refresh and overscroll
-    document.addEventListener('touchmove', preventScrollIssues, { passive: false });
-    document.addEventListener('touchstart', preventScrollIssues, { passive: false });
+    document.addEventListener('touchmove', preventScrollIssues, { passive: true });
+    document.addEventListener('touchstart', preventScrollIssues, { passive: true });
+    
+    // Add specific iOS Safari fixes for black screen
+    const preventOverscroll = (e: TouchEvent) => {
+      // Only prevent overscroll at edges that causes black screen
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const windowHeight = window.innerHeight;
+        const windowWidth = window.innerWidth;
+        
+        // Only prevent at screen edges to avoid black screen
+        if (touch.clientY < 10 || touch.clientY > windowHeight - 10 || 
+            touch.clientX < 10 || touch.clientX > windowWidth - 10) {
+          e.preventDefault();
+        }
+      }
+    };
+    
+    document.addEventListener('touchstart', preventOverscroll, { passive: false });
+    
+    // Add touch event handler for cursor tracking
+    const handleTouchForCursor = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        // Dispatch custom event for cursor tracking
+        const customEvent = new CustomEvent('cursorUpdate', {
+          detail: { 
+            x: touch.clientX, 
+            y: touch.clientY, 
+            velocity: 0.3 
+          }
+        });
+        document.dispatchEvent(customEvent);
+      }
+    };
+    
+    document.addEventListener('touchmove', handleTouchForCursor, { passive: true });
     
     return () => {
       document.removeEventListener('touchmove', preventScrollIssues);
       document.removeEventListener('touchstart', preventScrollIssues);
+      document.removeEventListener('touchstart', preventOverscroll);
+      document.removeEventListener('touchmove', handleTouchForCursor);
     };
   }, []);
 
@@ -167,16 +235,16 @@ function App() {
         
         {/* Background Rain Effect */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
-          <div className="rain-drop"></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
+          <div className={`rain-drop ${rainVisible ? 'visible' : ''}`}></div>
         </div>
       </div>
 
@@ -301,10 +369,11 @@ function App() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.8 }}
                     >
+                      {/* Updated CURSORFLOW logo with thicker CURSOR */}
                       <motion.h1 
                         className="text-9xl md:text-[12rem] font-black text-white leading-none"
                       >
-                        <span className="font-black text-8xl md:text-[10rem] text-white" style={{ fontWeight: '900', textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>CURSOR</span>
+                        <span className="font-black text-8xl md:text-[10rem] text-white" style={{ fontWeight: '900', textShadow: '0 0 25px rgba(255,255,255,0.9)' }}>CURSOR</span>
                         <span className="font-bold text-7xl md:text-[9rem] text-white">FLOW</span>
                       </motion.h1>
                     </motion.div>
