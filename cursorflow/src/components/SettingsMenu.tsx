@@ -282,13 +282,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         step="0.01"
                         value={melodyVolume}
                         onChange={(e) => onVolumeChange('melody', parseFloat(e.target.value))}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         style={{
                           flex: 1,
                           height: '0.5rem',
                           borderRadius: '0.25rem',
                           background: '#374151',
                           outline: 'none',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none',
+                          MozUserSelect: 'none',
+                          msUserSelect: 'none'
                         }}
                       />
                       <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
@@ -305,15 +313,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                       Beep
                     </span>
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        try {
-                          onToggleDrum();
-                        } catch (error) {
-                          console.error('Error toggling beep:', error);
-                        }
-                      }}
+                      {...createTouchButtonProps(onToggleDrum)}
                       style={{
                         position: 'relative',
                         width: '2.5rem',
@@ -322,7 +322,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: drumEnabled ? '#10b981' : '#6b7280',
-                        transition: 'background-color 0.2s'
+                        transition: 'background-color 0.2s',
+                        ...createTouchButtonProps(onToggleDrum).style
                       }}
                     >
                       <div
@@ -349,13 +350,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         step="0.01"
                         value={drumVolume}
                         onChange={(e) => onVolumeChange('drum', parseFloat(e.target.value))}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         style={{
                           flex: 1,
                           height: '0.5rem',
                           borderRadius: '0.25rem',
                           background: '#374151',
                           outline: 'none',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none',
+                          MozUserSelect: 'none',
+                          msUserSelect: 'none'
                         }}
                       />
                       <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
@@ -372,15 +381,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                       Nature
                     </span>
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        try {
-                          onToggleNature();
-                        } catch (error) {
-                          console.error('Error toggling nature:', error);
-                        }
-                      }}
+                      {...createTouchButtonProps(onToggleNature)}
                       style={{
                         position: 'relative',
                         width: '2.5rem',
@@ -389,7 +390,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: natureEnabled ? '#10b981' : '#6b7280',
-                        transition: 'background-color 0.2s'
+                        transition: 'background-color 0.2s',
+                        ...createTouchButtonProps(onToggleNature).style
                       }}
                     >
                       <div
@@ -416,13 +418,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         step="0.01"
                         value={natureVolume}
                         onChange={(e) => onVolumeChange('nature', parseFloat(e.target.value))}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         style={{
                           flex: 1,
                           height: '0.5rem',
                           borderRadius: '0.25rem',
                           background: '#374151',
                           outline: 'none',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none',
+                          MozUserSelect: 'none',
+                          msUserSelect: 'none'
                         }}
                       />
                       <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
@@ -452,15 +462,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                   Glitch Mode
                 </span>
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                      onToggleGlitch?.();
-                    } catch (error) {
-                      console.error('Error toggling glitch mode:', error);
-                    }
-                  }}
+                  {...createTouchButtonProps(() => onToggleGlitch?.())}
                   className="interactive-element"
                   style={{
                     position: 'relative',
@@ -470,7 +472,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     border: 'none',
                     cursor: 'pointer',
                     backgroundColor: glitchEnabled ? '#ef4444' : '#6b7280',
-                    transition: 'background-color 0.2s'
+                    transition: 'background-color 0.2s',
+                    ...createTouchButtonProps(() => onToggleGlitch?.()).style
                   }}
                 >
                   <div

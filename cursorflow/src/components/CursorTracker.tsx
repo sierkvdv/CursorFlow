@@ -373,7 +373,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
 }) => {
   const { cursorPosition, isMoving } = useCursorTracking({ enabled });
 
-  // Initialize audio systems with volume controls
+  // Initialize audio systems with volume controls and force re-render
   const natureSystem = useNatureAmbient({ 
     enabled: natureEnabled && audioEnabled,
     baseVolume: natureVolume * 0.3
@@ -394,7 +394,7 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   
   useEffect(() => {
     setAudioKey((prev: number) => prev + 1);
-  }, [melodyEnabled, drumEnabled, natureEnabled, audioEnabled]);
+  }, [melodyEnabled, drumEnabled, natureEnabled, audioEnabled, melodyVolume, drumVolume, natureVolume]);
 
   const lastAudioUpdateRef = useRef(0);
 
