@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CursorTracker } from './components/CursorTracker';
 import { InteractiveElements } from './components/InteractiveElements';
@@ -25,6 +25,8 @@ function App() {
     const timer = setTimeout(() => setIsLoaded(true), 300);
     return () => clearTimeout(timer);
   }, []);
+
+
 
   // Cycle through titles every 3 seconds
   useEffect(() => {
@@ -71,10 +73,67 @@ function App() {
     setNatureEnabled(prev => !prev);
   };
 
+  // iOS Audio Unlock function
+  const unlockAudioForIOS = useCallback(async () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      if (audioContext.state === 'suspended') {
+        // Create a silent buffer to unlock audio on iOS
+        const silentBuffer = audioContext.createBuffer(1, 1, 22050);
+        const silentSource = audioContext.createBufferSource();
+        silentSource.buffer = silentBuffer;
+        silentSource.connect(audioContext.destination);
+        silentSource.start();
+        
+        await audioContext.resume();
+        console.log('🎵 iOS Audio unlocked successfully!');
+        
+        // Test audio immediately after unlock
+        setTimeout(() => {
+          try {
+            const testOsc = audioContext.createOscillator();
+            const testGain = audioContext.createGain();
+            testGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            testOsc.frequency.setValueAtTime(800, audioContext.currentTime);
+            testOsc.connect(testGain);
+            testGain.connect(audioContext.destination);
+            testOsc.start();
+            testOsc.stop(audioContext.currentTime + 0.2);
+            console.log('🎵 iOS Audio test after unlock!');
+          } catch (error) {
+            console.error('iOS Audio test failed:', error);
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Failed to unlock iOS audio:', error);
+    }
+  }, []);
+
   const handleToggleGlitch = () => {
     console.log('⚠️ Toggle glitch mode clicked, current state:', glitchEnabled);
     setGlitchEnabled(prev => !prev);
+    console.log('🚀 Vercel deployment triggered!');
   };
+
+  // iOS Audio unlock on any touch
+  useEffect(() => {
+    const handleIOSAudioUnlock = () => {
+      unlockAudioForIOS();
+      // Remove listeners after first touch
+      document.removeEventListener('touchstart', handleIOSAudioUnlock);
+      document.removeEventListener('touchend', handleIOSAudioUnlock);
+    };
+
+    document.addEventListener('touchstart', handleIOSAudioUnlock);
+    document.addEventListener('touchend', handleIOSAudioUnlock);
+
+    return () => {
+      document.removeEventListener('touchstart', handleIOSAudioUnlock);
+      document.removeEventListener('touchend', handleIOSAudioUnlock);
+    };
+  }, [unlockAudioForIOS]);
 
   const audioDebug = {
     isAudioSupported,

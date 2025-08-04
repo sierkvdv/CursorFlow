@@ -37,8 +37,17 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
       // iOS requires user interaction to start audio context
       if (audioContextRef.current.state === 'suspended') {
         try {
+          // Create a silent oscillator to unlock audio on iOS
+          const silentOsc = audioContextRef.current.createOscillator();
+          const silentGain = audioContextRef.current.createGain();
+          silentGain.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+          silentOsc.connect(silentGain);
+          silentGain.connect(audioContextRef.current.destination);
+          silentOsc.start();
+          silentOsc.stop(audioContextRef.current.currentTime + 0.001);
+          
           await audioContextRef.current.resume();
-          console.log('Audio context resumed for iOS');
+          console.log('Audio context resumed for iOS with silent oscillator');
         } catch (error) {
           console.error('Failed to resume audio context:', error);
         }
@@ -79,11 +88,40 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
     }
   }, [audioEnabled, glitchEnabled, getAudioContext]);
 
+  // iOS Audio Unlock function
+  const unlockAudioForIOS = useCallback(async () => {
+    try {
+      const audioContext = await getAudioContext();
+      if (audioContext.state === 'suspended') {
+        const silentBuffer = audioContext.createBuffer(1, 1, 22050);
+        const silentSource = audioContext.createBufferSource();
+        silentSource.buffer = silentBuffer;
+        silentSource.connect(audioContext.destination);
+        silentSource.start();
+        await audioContext.resume();
+        console.log('🎵 iOS Audio unlocked successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to unlock iOS audio:', error);
+    }
+  }, [getAudioContext]);
+
   // Touch handlers for mobile
   const handleTouchStart = useCallback(async (callback: () => void) => {
     if (audioEnabled) {
       try {
         const audioContext = await getAudioContext();
+        
+        // iOS requires a silent audio buffer to unlock audio
+        if (audioContext.state === 'suspended') {
+          const silentBuffer = audioContext.createBuffer(1, 1, 22050);
+          const silentSource = audioContext.createBufferSource();
+          silentSource.buffer = silentBuffer;
+          silentSource.connect(audioContext.destination);
+          silentSource.start();
+          await audioContext.resume();
+        }
+        
         if (glitchEnabled) {
           createGlitchHoverSound(audioContext);
         } else {
@@ -93,6 +131,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         console.error('Error playing touch sound:', error);
       }
     }
+    callback();
   }, [audioEnabled, glitchEnabled, getAudioContext]);
 
   const buttonVariants = {
@@ -125,6 +164,30 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         }}
         onMouseLeave={handleMouseLeave}
         onTouchStart={() => handleTouchStart(onToggleAudio)}
+        onTouchEnd={() => {
+          // iOS audio unlock on first touch
+          if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+            unlockAudioForIOS();
+          }
+        }}
+        onTouchMove={() => {
+          // Force audio test on touch move for iOS
+          if (audioEnabled && audioContextRef.current) {
+            try {
+              const testOsc = audioContextRef.current.createOscillator();
+              const testGain = audioContextRef.current.createGain();
+              testGain.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
+              testOsc.frequency.setValueAtTime(440, audioContextRef.current.currentTime);
+              testOsc.connect(testGain);
+              testGain.connect(audioContextRef.current.destination);
+              testOsc.start();
+              testOsc.stop(audioContextRef.current.currentTime + 0.1);
+              console.log('🎵 iOS Audio test sound played!');
+            } catch (error) {
+              console.error('iOS Audio test failed:', error);
+            }
+          }
+        }}
         className="relative group w-16 h-16 bg-gradient-to-br from-blue-500/30 to-blue-600/20 backdrop-blur-md border-2 border-blue-400/50 rounded-2xl hover:border-blue-300/70 hover:from-blue-400/40 hover:to-blue-500/30 transition-all duration-500 shadow-xl hover:shadow-blue-500/30 hover:scale-110 interactive-element"
       >
         <div className="relative z-10 flex items-center justify-center w-full h-full">

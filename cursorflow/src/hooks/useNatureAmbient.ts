@@ -67,6 +67,13 @@ export const useNatureAmbient = ({
       if (audioContextRef.current.state === 'suspended') {
         console.log('Audio context suspended, attempting to resume...');
         try {
+          // iOS requires a silent audio buffer to unlock audio
+          const silentBuffer = audioContextRef.current.createBuffer(1, 1, 22050);
+          const silentSource = audioContextRef.current.createBufferSource();
+          silentSource.buffer = silentBuffer;
+          silentSource.connect(audioContextRef.current.destination);
+          silentSource.start();
+          
           await audioContextRef.current.resume();
           console.log('Audio context resumed successfully');
         } catch (error) {
