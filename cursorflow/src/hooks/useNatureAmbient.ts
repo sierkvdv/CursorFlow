@@ -61,8 +61,8 @@ export const useNatureAmbient = ({
       
       // Create new context with iOS optimizations
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-        sampleRate: 44100, // Standard sample rate for iOS compatibility
-        latencyHint: 'interactive' // Better for real-time audio
+        sampleRate: 22050, // Lower sample rate for iOS compatibility
+        latencyHint: 'balanced' // Better for iOS
       });
       
       // Resume if suspended (iOS)
@@ -84,9 +84,9 @@ export const useNatureAmbient = ({
       // Create LFO with iOS-safe frequencies
       lfoRef.current = audioContextRef.current.createOscillator();
       lfoRef.current.type = 'sine';
-      lfoRef.current.frequency.setValueAtTime(0.05, audioContextRef.current.currentTime); // Slower LFO for iOS
+      lfoRef.current.frequency.setValueAtTime(0.02, audioContextRef.current.currentTime); // Much slower LFO
       lfoGainRef.current = audioContextRef.current.createGain();
-      lfoGainRef.current.gain.setValueAtTime(5, audioContextRef.current.currentTime); // Reduced LFO depth
+      lfoGainRef.current.gain.setValueAtTime(2, audioContextRef.current.currentTime); // Much reduced LFO depth
       
       // Create gain nodes
       seaGain1Ref.current = audioContextRef.current.createGain();
@@ -101,69 +101,69 @@ export const useNatureAmbient = ({
       // Create filters with iOS-safe settings
       seaFilterRef.current = audioContextRef.current.createBiquadFilter();
       seaFilterRef.current.type = 'lowpass';
-      seaFilterRef.current.frequency.setValueAtTime(80, audioContextRef.current.currentTime); // Lower frequency
-      seaFilterRef.current.Q.setValueAtTime(0.8, audioContextRef.current.currentTime); // Gentler Q
+      seaFilterRef.current.frequency.setValueAtTime(60, audioContextRef.current.currentTime); // Much lower frequency
+      seaFilterRef.current.Q.setValueAtTime(0.5, audioContextRef.current.currentTime); // Much gentler Q
       
       rainFilterRef.current = audioContextRef.current.createBiquadFilter();
       rainFilterRef.current.type = 'lowpass';
-      rainFilterRef.current.frequency.setValueAtTime(120, audioContextRef.current.currentTime); // Lower frequency
-      rainFilterRef.current.Q.setValueAtTime(0.6, audioContextRef.current.currentTime); // Gentler Q
+      rainFilterRef.current.frequency.setValueAtTime(80, audioContextRef.current.currentTime); // Much lower frequency
+      rainFilterRef.current.Q.setValueAtTime(0.4, audioContextRef.current.currentTime); // Much gentler Q
       
       riverFilterRef.current = audioContextRef.current.createBiquadFilter();
       riverFilterRef.current.type = 'lowpass';
-      riverFilterRef.current.frequency.setValueAtTime(100, audioContextRef.current.currentTime); // Lower frequency
-      riverFilterRef.current.Q.setValueAtTime(0.7, audioContextRef.current.currentTime); // Gentler Q
+      riverFilterRef.current.frequency.setValueAtTime(70, audioContextRef.current.currentTime); // Much lower frequency
+      riverFilterRef.current.Q.setValueAtTime(0.5, audioContextRef.current.currentTime); // Much gentler Q
       
       waterfallFilterRef.current = audioContextRef.current.createBiquadFilter();
       waterfallFilterRef.current.type = 'lowpass';
-      waterfallFilterRef.current.frequency.setValueAtTime(140, audioContextRef.current.currentTime); // Lower frequency
-      waterfallFilterRef.current.Q.setValueAtTime(0.8, audioContextRef.current.currentTime); // Gentler Q
+      waterfallFilterRef.current.frequency.setValueAtTime(90, audioContextRef.current.currentTime); // Much lower frequency
+      waterfallFilterRef.current.Q.setValueAtTime(0.6, audioContextRef.current.currentTime); // Much gentler Q
       
       // Create delay with iOS-safe settings
       delayRef.current = audioContextRef.current.createDelay();
-      delayRef.current.delayTime.setValueAtTime(0.2, audioContextRef.current.currentTime); // Shorter delay
+      delayRef.current.delayTime.setValueAtTime(0.1, audioContextRef.current.currentTime); // Much shorter delay
       delayGainRef.current = audioContextRef.current.createGain();
-      delayGainRef.current.gain.setValueAtTime(0.2, audioContextRef.current.currentTime); // Lower delay volume
+      delayGainRef.current.gain.setValueAtTime(0.1, audioContextRef.current.currentTime); // Much lower delay volume
       
       // Create oscillators with iOS-safe frequencies
       seaOsc1Ref.current = audioContextRef.current.createOscillator();
       seaOsc1Ref.current.type = 'sine';
-      seaOsc1Ref.current.frequency.setValueAtTime(30, audioContextRef.current.currentTime); // Lower frequency
+      seaOsc1Ref.current.frequency.setValueAtTime(20, audioContextRef.current.currentTime); // Much lower frequency
       seaOsc1Ref.current.connect(seaGain1Ref.current);
       
       seaOsc2Ref.current = audioContextRef.current.createOscillator();
       seaOsc2Ref.current.type = 'triangle';
-      seaOsc2Ref.current.frequency.setValueAtTime(60, audioContextRef.current.currentTime); // Lower frequency
+      seaOsc2Ref.current.frequency.setValueAtTime(40, audioContextRef.current.currentTime); // Much lower frequency
       seaOsc2Ref.current.connect(seaGain2Ref.current);
       
       rainOsc1Ref.current = audioContextRef.current.createOscillator();
       rainOsc1Ref.current.type = 'sawtooth';
-      rainOsc1Ref.current.frequency.setValueAtTime(45, audioContextRef.current.currentTime); // Lower frequency
+      rainOsc1Ref.current.frequency.setValueAtTime(30, audioContextRef.current.currentTime); // Much lower frequency
       rainOsc1Ref.current.connect(rainGain1Ref.current);
       
       rainOsc2Ref.current = audioContextRef.current.createOscillator();
       rainOsc2Ref.current.type = 'square';
-      rainOsc2Ref.current.frequency.setValueAtTime(90, audioContextRef.current.currentTime); // Lower frequency
+      rainOsc2Ref.current.frequency.setValueAtTime(60, audioContextRef.current.currentTime); // Much lower frequency
       rainOsc2Ref.current.connect(rainGain2Ref.current);
       
       riverOsc1Ref.current = audioContextRef.current.createOscillator();
       riverOsc1Ref.current.type = 'sine';
-      riverOsc1Ref.current.frequency.setValueAtTime(35, audioContextRef.current.currentTime); // Lower frequency
+      riverOsc1Ref.current.frequency.setValueAtTime(25, audioContextRef.current.currentTime); // Much lower frequency
       riverOsc1Ref.current.connect(riverGain1Ref.current);
       
       riverOsc2Ref.current = audioContextRef.current.createOscillator();
       riverOsc2Ref.current.type = 'triangle';
-      riverOsc2Ref.current.frequency.setValueAtTime(70, audioContextRef.current.currentTime); // Lower frequency
+      riverOsc2Ref.current.frequency.setValueAtTime(50, audioContextRef.current.currentTime); // Much lower frequency
       riverOsc2Ref.current.connect(riverGain2Ref.current);
       
       waterfallOsc1Ref.current = audioContextRef.current.createOscillator();
       waterfallOsc1Ref.current.type = 'sawtooth';
-      waterfallOsc1Ref.current.frequency.setValueAtTime(50, audioContextRef.current.currentTime); // Lower frequency
+      waterfallOsc1Ref.current.frequency.setValueAtTime(35, audioContextRef.current.currentTime); // Much lower frequency
       waterfallOsc1Ref.current.connect(waterfallGain1Ref.current);
       
       waterfallOsc2Ref.current = audioContextRef.current.createOscillator();
       waterfallOsc2Ref.current.type = 'square';
-      waterfallOsc2Ref.current.frequency.setValueAtTime(100, audioContextRef.current.currentTime); // Lower frequency
+      waterfallOsc2Ref.current.frequency.setValueAtTime(70, audioContextRef.current.currentTime); // Much lower frequency
       waterfallOsc2Ref.current.connect(waterfallGain2Ref.current);
       
       // Connect gains to filters
@@ -202,16 +202,16 @@ export const useNatureAmbient = ({
       waterfallOsc2Ref.current.start();
       lfoRef.current.start();
       
-      // Set initial volumes (lower for iOS)
-      const initialVolume = baseVolume * 1.5; // Reduced from 2.0
-      seaGain1Ref.current.gain.setValueAtTime(initialVolume * 0.6, audioContextRef.current.currentTime); // Reduced
-      seaGain2Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime); // Reduced
-      rainGain1Ref.current.gain.setValueAtTime(initialVolume * 0.5, audioContextRef.current.currentTime); // Reduced
-      rainGain2Ref.current.gain.setValueAtTime(initialVolume * 0.2, audioContextRef.current.currentTime); // Reduced
-      riverGain1Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime); // Reduced
-      riverGain2Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime); // Reduced
-      waterfallGain1Ref.current.gain.setValueAtTime(initialVolume * 0.6, audioContextRef.current.currentTime); // Reduced
-      waterfallGain2Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime); // Reduced
+      // Set initial volumes (much lower for iOS)
+      const initialVolume = baseVolume * 1.0; // Much reduced from 1.5
+      seaGain1Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime); // Much reduced
+      seaGain2Ref.current.gain.setValueAtTime(initialVolume * 0.2, audioContextRef.current.currentTime); // Much reduced
+      rainGain1Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime); // Much reduced
+      rainGain2Ref.current.gain.setValueAtTime(initialVolume * 0.1, audioContextRef.current.currentTime); // Much reduced
+      riverGain1Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime); // Much reduced
+      riverGain2Ref.current.gain.setValueAtTime(initialVolume * 0.2, audioContextRef.current.currentTime); // Much reduced
+      waterfallGain1Ref.current.gain.setValueAtTime(initialVolume * 0.4, audioContextRef.current.currentTime); // Much reduced
+      waterfallGain2Ref.current.gain.setValueAtTime(initialVolume * 0.3, audioContextRef.current.currentTime); // Much reduced
       
       isPlayingRef.current = true;
       console.log('Nature ambient initialized successfully');
@@ -226,9 +226,9 @@ export const useNatureAmbient = ({
       return;
     }
 
-    // Throttle updates (slower for iOS to prevent crackling)
+    // Throttle updates (much slower for iOS to prevent crackling)
     const now = Date.now();
-    if (now - lastUpdateRef.current < 50) return; // Increased from 30ms to 50ms
+    if (now - lastUpdateRef.current < 100) return; // Much increased from 50ms to 100ms
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
@@ -271,34 +271,34 @@ export const useNatureAmbient = ({
     }
     
     // Dynamic frequency modulation (iOS-safe)
-    const time = audioTime * 0.3; // Slower modulation for iOS
+    const time = audioTime * 0.1; // Much slower modulation for iOS
     
     if (seaOsc1Ref.current && seaOsc2Ref.current) {
-      const baseFreq1 = 30 + Math.sin(time * 0.2) * 5 + Math.sin(xNormalized * Math.PI * 2) * 8; // Reduced modulation
-      const baseFreq2 = baseFreq1 * 2 + Math.sin(time * 0.3) * 10 + Math.sin(yNormalized * Math.PI * 3) * 5; // Reduced modulation
-      seaOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.3); // Slower transitions
-      seaOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.3); // Slower transitions
+      const baseFreq1 = 20 + Math.sin(time * 0.1) * 2 + Math.sin(xNormalized * Math.PI * 2) * 3; // Much reduced modulation
+      const baseFreq2 = baseFreq1 * 2 + Math.sin(time * 0.15) * 4 + Math.sin(yNormalized * Math.PI * 3) * 2; // Much reduced modulation
+      seaOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.5); // Much slower transitions
+      seaOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.5); // Much slower transitions
     }
     
     if (rainOsc1Ref.current && rainOsc2Ref.current) {
-      const baseFreq1 = 45 + Math.sin(time * 0.5) * 12 + Math.sin((xNormalized + yNormalized) * Math.PI * 4) * 10; // Reduced modulation
-      const baseFreq2 = baseFreq1 * 1.8 + Math.sin(time * 0.7) * 15 + Math.sin(xNormalized * Math.PI * 5) * 8; // Reduced modulation
-      rainOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.25); // Slower transitions
-      rainOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.25); // Slower transitions
+      const baseFreq1 = 30 + Math.sin(time * 0.2) * 4 + Math.sin((xNormalized + yNormalized) * Math.PI * 4) * 3; // Much reduced modulation
+      const baseFreq2 = baseFreq1 * 1.8 + Math.sin(time * 0.3) * 6 + Math.sin(xNormalized * Math.PI * 5) * 3; // Much reduced modulation
+      rainOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.4); // Much slower transitions
+      rainOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.4); // Much slower transitions
     }
     
     if (riverOsc1Ref.current && riverOsc2Ref.current) {
-      const baseFreq1 = 35 + Math.sin(time * 0.4) * 8 + Math.sin((xNormalized - yNormalized) * Math.PI * 3) * 10; // Reduced modulation
-      const baseFreq2 = baseFreq1 * 2.2 + Math.sin(time * 0.6) * 12 + Math.sin(yNormalized * Math.PI * 4) * 6; // Reduced modulation
-      riverOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.28); // Slower transitions
-      riverOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.28); // Slower transitions
+      const baseFreq1 = 25 + Math.sin(time * 0.15) * 3 + Math.sin((xNormalized - yNormalized) * Math.PI * 3) * 4; // Much reduced modulation
+      const baseFreq2 = baseFreq1 * 2.2 + Math.sin(time * 0.25) * 5 + Math.sin(yNormalized * Math.PI * 4) * 2; // Much reduced modulation
+      riverOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.45); // Much slower transitions
+      riverOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.45); // Much slower transitions
     }
     
     if (waterfallOsc1Ref.current && waterfallOsc2Ref.current) {
-      const baseFreq1 = 50 + Math.sin(time * 0.7) * 15 + Math.sin(xNormalized * Math.PI * 6) * 12; // Reduced modulation
-      const baseFreq2 = baseFreq1 * 1.6 + Math.sin(time * 0.9) * 20 + Math.sin((xNormalized + yNormalized) * Math.PI * 7) * 10; // Reduced modulation
-      waterfallOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.22); // Slower transitions
-      waterfallOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.22); // Slower transitions
+      const baseFreq1 = 35 + Math.sin(time * 0.3) * 6 + Math.sin(xNormalized * Math.PI * 6) * 4; // Much reduced modulation
+      const baseFreq2 = baseFreq1 * 1.6 + Math.sin(time * 0.4) * 8 + Math.sin((xNormalized + yNormalized) * Math.PI * 7) * 3; // Much reduced modulation
+      waterfallOsc1Ref.current.frequency.setTargetAtTime(baseFreq1, audioTime, 0.35); // Much slower transitions
+      waterfallOsc2Ref.current.frequency.setTargetAtTime(baseFreq2, audioTime, 0.35); // Much slower transitions
     }
     
     // Update filters
