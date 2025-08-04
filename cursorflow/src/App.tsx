@@ -15,6 +15,12 @@ function App() {
 
   const [natureEnabled, setNatureEnabled] = useState(false); // Start disabled
   const [glitchEnabled, setGlitchEnabled] = useState(false);
+  
+  // Volume controls
+  const [natureVolume, setNatureVolume] = useState(0.5);
+  const [melodyVolume, setMelodyVolume] = useState(0.5);
+  const [drumVolume, setDrumVolume] = useState(0.5);
+  const [glitchVolume, setGlitchVolume] = useState(0.5);
   const [currentTitle, setCurrentTitle] = useState(0);
 
   // Simple audio state
@@ -141,6 +147,24 @@ function App() {
 
   const handleToggleGlitch = () => {
     setGlitchEnabled(prev => !prev);
+  };
+
+  // Volume change handlers
+  const handleVolumeChange = (type: 'nature' | 'melody' | 'drum' | 'glitch', volume: number) => {
+    switch (type) {
+      case 'nature':
+        setNatureVolume(volume);
+        break;
+      case 'melody':
+        setMelodyVolume(volume);
+        break;
+      case 'drum':
+        setDrumVolume(volume);
+        break;
+      case 'glitch':
+        setGlitchVolume(volume);
+        break;
+    }
   };
 
   // iOS Audio unlock on any touch - improved for immediate audio
@@ -311,6 +335,10 @@ function App() {
         drumEnabled={drumEnabled}
         natureEnabled={natureEnabled}
         glitchEnabled={glitchEnabled}
+        natureVolume={natureVolume}
+        melodyVolume={melodyVolume}
+        drumVolume={drumVolume}
+        glitchVolume={glitchVolume}
         rainVisible={rainVisible}
       />
 
@@ -334,6 +362,10 @@ function App() {
         melodyEnabled={melodyEnabled}
         drumEnabled={drumEnabled}
         natureEnabled={natureEnabled}
+        natureVolume={natureVolume}
+        melodyVolume={melodyVolume}
+        drumVolume={drumVolume}
+        glitchVolume={glitchVolume}
         onToggleAudio={handleToggleAudio}
         onToggleEffects={handleToggleEffects}
         onToggleMelody={handleToggleMelody}
@@ -341,6 +373,7 @@ function App() {
         onToggleNature={handleToggleNature}
         glitchEnabled={glitchEnabled}
         onToggleGlitch={handleToggleGlitch}
+        onVolumeChange={handleVolumeChange}
       />
 
       {/* Status Indicators - MOVED TO RIGHT SIDE */}

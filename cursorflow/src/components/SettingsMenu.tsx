@@ -10,12 +10,18 @@ interface SettingsMenuProps {
   melodyEnabled: boolean;
   drumEnabled: boolean;
   glitchEnabled?: boolean;
+  // Volume controls
+  natureVolume: number;
+  melodyVolume: number;
+  drumVolume: number;
+  glitchVolume: number;
   onToggleAudio: () => void;
   onToggleEffects: () => void;
   onToggleNature: () => void;
   onToggleMelody: () => void;
   onToggleDrum: () => void;
   onToggleGlitch?: () => void;
+  onVolumeChange: (type: 'nature' | 'melody' | 'drum' | 'glitch', volume: number) => void;
 }
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({
@@ -27,12 +33,17 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   melodyEnabled,
   drumEnabled,
   glitchEnabled = false,
+  natureVolume = 0.5,
+  melodyVolume = 0.5,
+  drumVolume = 0.5,
+  glitchVolume = 0.5,
   onToggleAudio,
   onToggleEffects,
   onToggleNature,
   onToggleMelody,
   onToggleDrum,
-  onToggleGlitch
+  onToggleGlitch,
+  onVolumeChange
 }) => {
   if (!isOpen) return null;
 
@@ -157,127 +168,205 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             {/* Audio Sub-settings */}
             {audioEnabled && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginLeft: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
-                  <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Music size={16} />
-                    Melody
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      try {
-                        onToggleMelody();
-                      } catch (error) {
-                        console.error('Error toggling melody:', error);
-                      }
-                    }}
-                    style={{
-                      position: 'relative',
-                      width: '2.5rem',
-                      height: '1.5rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: melodyEnabled ? '#10b981' : '#6b7280',
-                      transition: 'background-color 0.2s'
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '0.125rem',
-                        left: melodyEnabled ? '1rem' : '0.125rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                        backgroundColor: 'white',
-                        borderRadius: '50%',
-                        transition: 'left 0.2s'
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Music size={16} />
+                      Melody
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                          onToggleMelody();
+                        } catch (error) {
+                          console.error('Error toggling melody:', error);
+                        }
                       }}
-                    />
-                  </button>
+                      style={{
+                        position: 'relative',
+                        width: '2.5rem',
+                        height: '1.5rem',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: melodyEnabled ? '#10b981' : '#6b7280',
+                        transition: 'background-color 0.2s'
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '0.125rem',
+                          left: melodyEnabled ? '1rem' : '0.125rem',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          backgroundColor: 'white',
+                          borderRadius: '50%',
+                          transition: 'left 0.2s'
+                        }}
+                      />
+                    </button>
+                  </div>
+                  {melodyEnabled && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem' }}>Vol</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={melodyVolume}
+                        onChange={(e) => onVolumeChange('melody', parseFloat(e.target.value))}
+                        style={{
+                          flex: 1,
+                          height: '0.5rem',
+                          borderRadius: '0.25rem',
+                          background: '#374151',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
+                        {Math.round(melodyVolume * 100)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
-                  <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Drum size={16} />
-                    Rhythm
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      try {
-                        onToggleDrum();
-                      } catch (error) {
-                        console.error('Error toggling rhythm:', error);
-                      }
-                    }}
-                    style={{
-                      position: 'relative',
-                      width: '2.5rem',
-                      height: '1.5rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: drumEnabled ? '#10b981' : '#6b7280',
-                      transition: 'background-color 0.2s'
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '0.125rem',
-                        left: drumEnabled ? '1rem' : '0.125rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                        backgroundColor: 'white',
-                        borderRadius: '50%',
-                        transition: 'left 0.2s'
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Drum size={16} />
+                      Rhythm
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                          onToggleDrum();
+                        } catch (error) {
+                          console.error('Error toggling rhythm:', error);
+                        }
                       }}
-                    />
-                  </button>
+                      style={{
+                        position: 'relative',
+                        width: '2.5rem',
+                        height: '1.5rem',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: drumEnabled ? '#10b981' : '#6b7280',
+                        transition: 'background-color 0.2s'
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '0.125rem',
+                          left: drumEnabled ? '1rem' : '0.125rem',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          backgroundColor: 'white',
+                          borderRadius: '50%',
+                          transition: 'left 0.2s'
+                        }}
+                      />
+                    </button>
+                  </div>
+                  {drumEnabled && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem' }}>Vol</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={drumVolume}
+                        onChange={(e) => onVolumeChange('drum', parseFloat(e.target.value))}
+                        style={{
+                          flex: 1,
+                          height: '0.5rem',
+                          borderRadius: '0.25rem',
+                          background: '#374151',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
+                        {Math.round(drumVolume * 100)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
-                  <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🌊</span>
-                    Nature
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      try {
-                        onToggleNature();
-                      } catch (error) {
-                        console.error('Error toggling nature:', error);
-                      }
-                    }}
-                    style={{
-                      position: 'relative',
-                      width: '2.5rem',
-                      height: '1.5rem',
-                      borderRadius: '0.75rem',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: natureEnabled ? '#10b981' : '#6b7280',
-                      transition: 'background-color 0.2s'
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '0.125rem',
-                        left: natureEnabled ? '1rem' : '0.125rem',
-                        width: '1.25rem',
-                        height: '1.25rem',
-                        backgroundColor: 'white',
-                        borderRadius: '50%',
-                        transition: 'left 0.2s'
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🌊</span>
+                      Nature
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                          onToggleNature();
+                        } catch (error) {
+                          console.error('Error toggling nature:', error);
+                        }
                       }}
-                    />
-                  </button>
+                      style={{
+                        position: 'relative',
+                        width: '2.5rem',
+                        height: '1.5rem',
+                        borderRadius: '0.75rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: natureEnabled ? '#10b981' : '#6b7280',
+                        transition: 'background-color 0.2s'
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '0.125rem',
+                          left: natureEnabled ? '1rem' : '0.125rem',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          backgroundColor: 'white',
+                          borderRadius: '50%',
+                          transition: 'left 0.2s'
+                        }}
+                      />
+                    </button>
+                  </div>
+                  {natureEnabled && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem' }}>Vol</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={natureVolume}
+                        onChange={(e) => onVolumeChange('nature', parseFloat(e.target.value))}
+                        style={{
+                          flex: 1,
+                          height: '0.5rem',
+                          borderRadius: '0.25rem',
+                          background: '#374151',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
+                        {Math.round(natureVolume * 100)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
 
 
@@ -293,46 +382,72 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             </h3>
             
             {/* Glitch Mode Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
-              <span style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                Glitch Mode
-              </span>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  try {
-                    onToggleGlitch?.();
-                  } catch (error) {
-                    console.error('Error toggling glitch mode:', error);
-                  }
-                }}
-                className="interactive-element"
-                style={{
-                  position: 'relative',
-                  width: '3rem',
-                  height: '2rem',
-                  borderRadius: '1rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: glitchEnabled ? '#ef4444' : '#6b7280',
-                  transition: 'background-color 0.2s'
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '0.25rem',
-                    left: glitchEnabled ? '1.25rem' : '0.25rem',
-                    width: '1.5rem',
-                    height: '1.5rem',
-                    backgroundColor: 'white',
-                    borderRadius: '50%',
-                    transition: 'left 0.2s'
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                  Glitch Mode
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                      onToggleGlitch?.();
+                    } catch (error) {
+                      console.error('Error toggling glitch mode:', error);
+                    }
                   }}
-                />
-              </button>
+                  className="interactive-element"
+                  style={{
+                    position: 'relative',
+                    width: '3rem',
+                    height: '2rem',
+                    borderRadius: '1rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: glitchEnabled ? '#ef4444' : '#6b7280',
+                    transition: 'background-color 0.2s'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '0.25rem',
+                      left: glitchEnabled ? '1.25rem' : '0.25rem',
+                      width: '1.5rem',
+                      height: '1.5rem',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: 'left 0.2s'
+                    }}
+                  />
+                </button>
+              </div>
+              {glitchEnabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem' }}>Vol</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={glitchVolume}
+                    onChange={(e) => onVolumeChange('glitch', parseFloat(e.target.value))}
+                    style={{
+                      flex: 1,
+                      height: '0.5rem',
+                      borderRadius: '0.25rem',
+                      background: '#4b5563',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ color: '#9ca3af', fontSize: '0.75rem', minWidth: '2rem', textAlign: 'right' }}>
+                    {Math.round(glitchVolume * 100)}%
+                  </span>
+                </div>
+              )}
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#374151', borderRadius: '0.5rem' }}>

@@ -14,6 +14,10 @@ interface CursorTrackerProps {
   melodyEnabled?: boolean;
   drumEnabled?: boolean;
   glitchEnabled?: boolean;
+  natureVolume?: number;
+  melodyVolume?: number;
+  drumVolume?: number;
+  glitchVolume?: number;
   rainVisible?: boolean;
   onMouseMove?: (x: number, y: number, velocity: number) => void;
 }
@@ -252,6 +256,10 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
   melodyEnabled = true,
   drumEnabled = true,
   glitchEnabled = false,
+  natureVolume = 0.5,
+  melodyVolume = 0.5,
+  drumVolume = 0.5,
+  glitchVolume = 0.5,
   rainVisible = false,
   onMouseMove
 }) => {
@@ -273,17 +281,20 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
     rainVisible: rainVisible || false
   });
 
-  // Initialize audio systems
+  // Initialize audio systems with volume controls
   const natureSystem = useNatureAmbient({ 
-    enabled: natureEnabled && audioEnabled 
+    enabled: natureEnabled && audioEnabled,
+    baseVolume: natureVolume * 0.3 // Scale volume
   });
   
   const melodySystem = useMelodyAmbient({ 
-    enabled: melodyEnabled && audioEnabled 
+    enabled: melodyEnabled && audioEnabled,
+    baseVolume: melodyVolume * 0.04 // Scale volume
   });
   
   const rhythmSystem = useRhythmAmbient({ 
-    enabled: drumEnabled && audioEnabled 
+    enabled: drumEnabled && audioEnabled,
+    baseVolume: drumVolume * 0.2 // Scale volume
   });
 
   // Optimized cursor update handler with adaptive throttling
@@ -334,7 +345,11 @@ export const CursorTracker: React.FC<CursorTrackerProps> = React.memo(({
             if (audioContext.state === 'suspended') {
               audioContext.resume();
             }
+            // Apply volume scaling to glitch effects
+            const originalVolume = (window as any).glitchVolume || 1;
+            (window as any).glitchVolume = glitchVolume;
             createGlitchClickSound(audioContext);
+            (window as any).glitchVolume = originalVolume;
           });
         }
       }
