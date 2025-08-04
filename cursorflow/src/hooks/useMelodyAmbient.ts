@@ -7,12 +7,14 @@ interface MelodyAmbientOptions {
 
 export const useMelodyAmbient = ({
   enabled = false,
-  baseVolume = 0.15
+  baseVolume = 0.08 // Much softer for ambient feel
 }: MelodyAmbientOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const isPlayingRef = useRef(false);
   const lastUpdateRef = useRef(0);
   const lastNoteTimeRef = useRef(0);
+  const activeOscillatorsRef = useRef<OscillatorNode[]>([]);
+  const activeGainsRef = useRef<GainNode[]>([]);
   
   // Oscillators
   const melodyOsc1Ref = useRef<OscillatorNode | null>(null);
@@ -155,9 +157,10 @@ export const useMelodyAmbient = ({
       return;
     }
 
-    // Throttle updates
+    // Throttle updates - MORE AGGRESSIVE TO PREVENT OVERLOAD
     const now = Date.now();
-    if (now - lastUpdateRef.current < 20) return;
+    const throttleTime = 50; // 50ms instead of 20ms
+    if (now - lastUpdateRef.current < throttleTime) return;
     lastUpdateRef.current = now;
 
     const ctx = audioContextRef.current;
@@ -227,15 +230,17 @@ export const useMelodyAmbient = ({
       delayRef.current.delayTime.setTargetAtTime(delayTime, audioTime, 0.5);
     }
     
-    // Trigger notes - MORE RESPONSIVE FOR MOBILE
+    // Trigger notes - SLOWER AND MORE MELODIC
     const isMobile = window.innerWidth <= 768;
     const velocityThreshold = isMobile ? 0.05 : 0.1; // Lower threshold on mobile
-    const timeThreshold = isMobile ? 0.05 : 0.1; // Faster response on mobile
+    const timeThreshold = isMobile ? 0.3 : 0.5; // Much slower response (0.3-0.5s between melodies)
     
     if (velocity > velocityThreshold && audioTime - lastNoteTimeRef.current > timeThreshold) {
       lastNoteTimeRef.current = audioTime;
       
-      playMelodyNote(melodyFreq1, melodyFreq2, harmonyFreq1, harmonyFreq2, melodyVolume, harmonyVolume, velocity);
+      // Create a real melody sequence instead of just one note
+      const melodySequence = createMelodySequence(currentScale, velocity);
+      playMelodySequence(melodySequence, melodyVolume, harmonyVolume, velocity);
       
       // More frequent flourishes on mobile
       const flourishThreshold = isMobile ? 0.2 : 0.3;
@@ -289,6 +294,94 @@ export const useMelodyAmbient = ({
     }
   }, []);
 
+  // Create melody sequence - SLOWER AND MORE MELODIC
+  const createMelodySequence = useCallback((scale: number[], velocity: number) => {
+    const sequenceLength = Math.max(2, Math.floor(velocity * 4)); // 2-6 notes (shorter sequences)
+    const sequence: number[] = [];
+    
+    // Start with a base note
+    const baseNoteIndex = Math.floor(Math.random() * scale.length);
+    const baseOctave = 1; // Always start in base octave
+    sequence.push(scale[baseNoteIndex] * baseOctave);
+    
+    // Add melodic progression (not random)
+    for (let i = 1; i < sequenceLength; i++) {
+      // Choose next note based on musical intervals (not completely random)
+      const intervals = [0, 2, 4, 7, 9, 11]; // Musical intervals (unison, major 2nd, major 3rd, perfect 5th, major 6th, major 7th)
+      const interval = intervals[Math.floor(Math.random() * intervals.length)];
+      const nextNoteIndex = (baseNoteIndex + interval) % scale.length;
+      const octave = baseOctave + Math.floor(interval / 7); // Higher intervals go to higher octaves
+      sequence.push(scale[nextNoteIndex] * Math.pow(2, octave));
+    }
+    
+    return sequence;
+  }, []);
+
+  // Play melody sequence - SLOWER AND MORE MELODIC
+  const playMelodySequence = useCallback((sequence: number[], melodyVolume: number, harmonyVolume: number, velocity: number) => {
+    if (!audioContextRef.current || !isPlayingRef.current) return; // Don't play if stopped
+    
+    const ctx = audioContextRef.current;
+    const noteDuration = 0.4 + (velocity * 0.3); // 0.4-0.7s per note (much slower)
+    
+    sequence.forEach((frequency, index) => {
+      if (!isPlayingRef.current) return; // Stop if disabled during playback
+      
+      const startTime = ctx.currentTime + (index * noteDuration * 1.2); // No overlap, slight pause between notes
+      
+      // Create new oscillators for each note
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      const gain2 = ctx.createGain();
+      
+      // Track active oscillators for cleanup
+      activeOscillatorsRef.current.push(osc1, osc2);
+      activeGainsRef.current.push(gain1, gain2);
+      
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(frequency, startTime);
+      osc2.frequency.setValueAtTime(frequency * 1.5, startTime);
+      
+      // Apply envelope - MUCH SOFTER AND AMBIENT
+      gain1.gain.setValueAtTime(0, startTime);
+      gain1.gain.linearRampToValueAtTime(melodyVolume * 0.15, startTime + 0.01); // 75% softer
+      gain1.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
+      
+      gain2.gain.setValueAtTime(0, startTime);
+      gain2.gain.linearRampToValueAtTime(harmonyVolume * 0.08, startTime + 0.01); // 80% softer
+      gain2.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
+      
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      gain1.connect(ctx.destination);
+      gain2.connect(ctx.destination);
+      
+      osc1.start(startTime);
+      osc2.start(startTime);
+      osc1.stop(startTime + noteDuration);
+      osc2.stop(startTime + noteDuration);
+      
+      // Cleanup after note ends
+      setTimeout(() => {
+        if (!isPlayingRef.current) {
+          try {
+            osc1.disconnect();
+            osc2.disconnect();
+            gain1.disconnect();
+            gain2.disconnect();
+          } catch (e) {
+            // Already disconnected
+          }
+        }
+        // Remove from tracking arrays
+        activeOscillatorsRef.current = activeOscillatorsRef.current.filter(o => o !== osc1 && o !== osc2);
+        activeGainsRef.current = activeGainsRef.current.filter(g => g !== gain1 && g !== gain2);
+      }, (noteDuration + 0.1) * 1000);
+    });
+  }, []);
+
   // Play melodic flourish
   const playMelodicFlourish = useCallback((frequency: number, velocity: number) => {
     if (!audioContextRef.current) return;
@@ -326,9 +419,19 @@ export const useMelodyAmbient = ({
 
   // Start melody
   const startMelody = useCallback(async () => {
-    if (!enabled || isPlayingRef.current) return;
+    if (!enabled) return;
+    
+    // Reset playing state to allow restart
     isPlayingRef.current = true;
-    await initAudio();
+    
+    // Initialize audio if not already done
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+      await initAudio();
+    } else if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
+    
+    console.log('Melody started successfully');
   }, [enabled, initAudio]);
 
   // Stop melody
@@ -336,69 +439,97 @@ export const useMelodyAmbient = ({
     isPlayingRef.current = false;
     
     try {
+      // Stop all active sequence oscillators immediately
+      activeOscillatorsRef.current.forEach(osc => {
+        try { osc.stop(); } catch (e) {}
+        try { osc.disconnect(); } catch (e) {}
+      });
+      activeOscillatorsRef.current = [];
+      
+      // Disconnect all active sequence gains immediately
+      activeGainsRef.current.forEach(gain => {
+        try { gain.disconnect(); } catch (e) {}
+      });
+      activeGainsRef.current = [];
+      
+      // Reset audio context for clean restart
+      if (audioContextRef.current && audioContextRef.current.state === 'running') {
+        // Don't close, just reset the flag
+        console.log('Melody stopped, ready for restart');
+      }
+      
+      // Stop all main oscillators
       if (melodyOsc1Ref.current) {
-        melodyOsc1Ref.current.stop();
-        melodyOsc1Ref.current.disconnect();
+        try { melodyOsc1Ref.current.stop(); } catch (e) {}
+        try { melodyOsc1Ref.current.disconnect(); } catch (e) {}
         melodyOsc1Ref.current = null;
       }
       if (melodyOsc2Ref.current) {
-        melodyOsc2Ref.current.stop();
-        melodyOsc2Ref.current.disconnect();
+        try { melodyOsc2Ref.current.stop(); } catch (e) {}
+        try { melodyOsc2Ref.current.disconnect(); } catch (e) {}
         melodyOsc2Ref.current = null;
       }
       if (harmonyOsc1Ref.current) {
-        harmonyOsc1Ref.current.stop();
-        harmonyOsc1Ref.current.disconnect();
+        try { harmonyOsc1Ref.current.stop(); } catch (e) {}
+        try { harmonyOsc1Ref.current.disconnect(); } catch (e) {}
         harmonyOsc1Ref.current = null;
       }
       if (harmonyOsc2Ref.current) {
-        harmonyOsc2Ref.current.stop();
-        harmonyOsc2Ref.current.disconnect();
+        try { harmonyOsc2Ref.current.stop(); } catch (e) {}
+        try { harmonyOsc2Ref.current.disconnect(); } catch (e) {}
         harmonyOsc2Ref.current = null;
       }
       if (lfoRef.current) {
-        lfoRef.current.stop();
-        lfoRef.current.disconnect();
+        try { lfoRef.current.stop(); } catch (e) {}
+        try { lfoRef.current.disconnect(); } catch (e) {}
         lfoRef.current = null;
       }
       
+      // Disconnect all gain nodes
       if (melodyGain1Ref.current) {
-        melodyGain1Ref.current.disconnect();
+        try { melodyGain1Ref.current.disconnect(); } catch (e) {}
         melodyGain1Ref.current = null;
       }
       if (melodyGain2Ref.current) {
-        melodyGain2Ref.current.disconnect();
+        try { melodyGain2Ref.current.disconnect(); } catch (e) {}
         melodyGain2Ref.current = null;
       }
       if (harmonyGain1Ref.current) {
-        harmonyGain1Ref.current.disconnect();
+        try { harmonyGain1Ref.current.disconnect(); } catch (e) {}
         harmonyGain1Ref.current = null;
       }
       if (harmonyGain2Ref.current) {
-        harmonyGain2Ref.current.disconnect();
+        try { harmonyGain2Ref.current.disconnect(); } catch (e) {}
         harmonyGain2Ref.current = null;
       }
       if (lfoGainRef.current) {
-        lfoGainRef.current.disconnect();
+        try { lfoGainRef.current.disconnect(); } catch (e) {}
         lfoGainRef.current = null;
       }
       
+      // Disconnect all filters
       if (melodyFilterRef.current) {
-        melodyFilterRef.current.disconnect();
+        try { melodyFilterRef.current.disconnect(); } catch (e) {}
         melodyFilterRef.current = null;
       }
       if (harmonyFilterRef.current) {
-        harmonyFilterRef.current.disconnect();
+        try { harmonyFilterRef.current.disconnect(); } catch (e) {}
         harmonyFilterRef.current = null;
       }
       
+      // Disconnect delay nodes
       if (delayRef.current) {
-        delayRef.current.disconnect();
+        try { delayRef.current.disconnect(); } catch (e) {}
         delayRef.current = null;
       }
       if (delayGainRef.current) {
-        delayGainRef.current.disconnect();
+        try { delayGainRef.current.disconnect(); } catch (e) {}
         delayGainRef.current = null;
+      }
+      
+      // Force garbage collection if available
+      if ((window as any).gc) {
+        (window as any).gc();
       }
     } catch (error) {
       console.error('Error stopping melody system:', error);

@@ -142,6 +142,14 @@ export const createGlitchClickSound = (audioContext: AudioContext) => {
   const isMobile = window.innerWidth <= 768;
   const baseFreq = isMobile ? 600 : 400; // Higher frequency on mobile for better audibility
   
+  // Limit concurrent audio nodes to prevent overload
+  const maxConcurrentNodes = 10;
+  const activeNodes = (audioContext as any)._activeNodes || 0;
+  
+  if (activeNodes > maxConcurrentNodes) {
+    return; // Skip creating new nodes if too many are active
+  }
+  
   const { oscillator, gainNode } = createOscillator(audioContext, baseFreq, 'square');
   const filter = createFilter(audioContext, isMobile ? 3000 : 2000, 'lowpass'); // Higher cutoff on mobile
   const distortion = createGlitchDistortion(audioContext);
@@ -167,7 +175,6 @@ export const createGlitchClickSound = (audioContext: AudioContext) => {
   shifterOsc.stop(audioContext.currentTime + 0.3);
   
   // Random volume spikes - LOUDER ON MOBILE
-  const isMobile = window.innerWidth <= 768;
   const baseVolume = isMobile ? 0.5 : 0.3; // 67% louder on mobile
   const volumeVariation = isMobile ? 0.3 : 0.2; // More variation on mobile
   

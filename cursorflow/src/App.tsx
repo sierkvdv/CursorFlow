@@ -12,8 +12,8 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [melodyEnabled, setMelodyEnabled] = useState(false);
   const [drumEnabled, setDrumEnabled] = useState(false);
-  const [ambientEnabled, setAmbientEnabled] = useState(true);
-  const [natureEnabled, setNatureEnabled] = useState(true);
+  const [ambientEnabled, setAmbientEnabled] = useState(false); // Start disabled
+  const [natureEnabled, setNatureEnabled] = useState(false); // Start disabled
   const [glitchEnabled, setGlitchEnabled] = useState(false);
   const [currentTitle, setCurrentTitle] = useState(0);
 
@@ -44,11 +44,37 @@ function App() {
     return () => clearInterval(interval);
   }, [isLoaded]);
 
+  // Audio cleanup function to prevent overload
+  const cleanupAudioContext = useCallback(() => {
+    try {
+      // Force garbage collection of audio nodes (if available)
+      if ((window as any).gc) {
+        (window as any).gc();
+      }
+      
+      // Reset audio context if it exists
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContext.state === 'running') {
+        // Create a silent buffer to clear any stuck audio
+        const silentBuffer = audioContext.createBuffer(1, 1, 22050);
+        const silentSource = audioContext.createBufferSource();
+        silentSource.buffer = silentBuffer;
+        silentSource.connect(audioContext.destination);
+        silentSource.start();
+        silentSource.stop(audioContext.currentTime + 0.01);
+      }
+    } catch (error) {
+      // Silent cleanup
+    }
+  }, []);
+
   const handleToggleAudio = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setAudioEnabled(prev => !prev);
   };
 
   const handleToggleEffects = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setEffectsEnabled(prev => !prev);
   };
 
@@ -61,18 +87,22 @@ function App() {
   };
 
   const handleToggleMelody = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setMelodyEnabled(prev => !prev);
   };
 
   const handleToggleDrum = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setDrumEnabled(prev => !prev);
   };
 
   const handleToggleAmbient = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setAmbientEnabled(prev => !prev);
   };
 
   const handleToggleNature = () => {
+    cleanupAudioContext(); // Cleanup before toggle
     setNatureEnabled(prev => !prev);
   };
 

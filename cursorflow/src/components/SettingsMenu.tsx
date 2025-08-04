@@ -9,14 +9,12 @@ interface SettingsMenuProps {
   natureEnabled: boolean;
   melodyEnabled: boolean;
   drumEnabled: boolean;
-  ambientEnabled: boolean;
   glitchEnabled?: boolean;
   onToggleAudio: () => void;
   onToggleEffects: () => void;
   onToggleNature: () => void;
   onToggleMelody: () => void;
   onToggleDrum: () => void;
-  onToggleAmbient: () => void;
   onToggleGlitch?: () => void;
 }
 
@@ -25,17 +23,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
   onClose,
   audioEnabled,
   effectsEnabled,
-  // natureEnabled,
+  natureEnabled,
   melodyEnabled,
   drumEnabled,
-  // ambientEnabled,
   glitchEnabled = false,
   onToggleAudio,
   onToggleEffects,
-  // onToggleNature,
+  onToggleNature,
   onToggleMelody,
   onToggleDrum,
-  // onToggleAmbient
   onToggleGlitch
 }) => {
   if (!isOpen) return null;
@@ -242,6 +238,49 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     />
                   </button>
                 </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#4b5563', borderRadius: '0.5rem' }}>
+                  <span style={{ color: '#d1d5db', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🌊</span>
+                    Nature
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      try {
+                        onToggleNature();
+                      } catch (error) {
+                        console.error('Error toggling nature:', error);
+                      }
+                    }}
+                    style={{
+                      position: 'relative',
+                      width: '2.5rem',
+                      height: '1.5rem',
+                      borderRadius: '0.75rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      backgroundColor: natureEnabled ? '#10b981' : '#6b7280',
+                      transition: 'background-color 0.2s'
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '0.125rem',
+                        left: natureEnabled ? '1rem' : '0.125rem',
+                        width: '1.25rem',
+                        height: '1.25rem',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: 'left 0.2s'
+                      }}
+                    />
+                  </button>
+                </div>
+
+
               </div>
             )}
           </div>

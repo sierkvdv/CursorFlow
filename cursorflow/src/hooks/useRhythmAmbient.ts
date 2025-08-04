@@ -543,109 +543,117 @@ export const useRhythmAmbient = ({
     isPlayingRef.current = false;
     
     try {
+      // Stop all oscillators
       if (kickOsc1Ref.current) {
-        kickOsc1Ref.current.stop();
-        kickOsc1Ref.current.disconnect();
+        try { kickOsc1Ref.current.stop(); } catch (e) {}
+        try { kickOsc1Ref.current.disconnect(); } catch (e) {}
         kickOsc1Ref.current = null;
       }
       if (kickOsc2Ref.current) {
-        kickOsc2Ref.current.stop();
-        kickOsc2Ref.current.disconnect();
+        try { kickOsc2Ref.current.stop(); } catch (e) {}
+        try { kickOsc2Ref.current.disconnect(); } catch (e) {}
         kickOsc2Ref.current = null;
       }
       if (snareOsc1Ref.current) {
-        snareOsc1Ref.current.stop();
-        snareOsc1Ref.current.disconnect();
+        try { snareOsc1Ref.current.stop(); } catch (e) {}
+        try { snareOsc1Ref.current.disconnect(); } catch (e) {}
         snareOsc1Ref.current = null;
       }
       if (snareOsc2Ref.current) {
-        snareOsc2Ref.current.stop();
-        snareOsc2Ref.current.disconnect();
+        try { snareOsc2Ref.current.stop(); } catch (e) {}
+        try { snareOsc2Ref.current.disconnect(); } catch (e) {}
         snareOsc2Ref.current = null;
       }
       if (hihatOsc1Ref.current) {
-        hihatOsc1Ref.current.stop();
-        hihatOsc1Ref.current.disconnect();
+        try { hihatOsc1Ref.current.stop(); } catch (e) {}
+        try { hihatOsc1Ref.current.disconnect(); } catch (e) {}
         hihatOsc1Ref.current = null;
       }
       if (hihatOsc2Ref.current) {
-        hihatOsc2Ref.current.stop();
-        hihatOsc2Ref.current.disconnect();
+        try { hihatOsc2Ref.current.stop(); } catch (e) {}
+        try { hihatOsc2Ref.current.disconnect(); } catch (e) {}
         hihatOsc2Ref.current = null;
       }
       if (tomOsc1Ref.current) {
-        tomOsc1Ref.current.stop();
-        tomOsc1Ref.current.disconnect();
+        try { tomOsc1Ref.current.stop(); } catch (e) {}
+        try { tomOsc1Ref.current.disconnect(); } catch (e) {}
         tomOsc1Ref.current = null;
       }
       if (tomOsc2Ref.current) {
-        tomOsc2Ref.current.stop();
-        tomOsc2Ref.current.disconnect();
+        try { tomOsc2Ref.current.stop(); } catch (e) {}
+        try { tomOsc2Ref.current.disconnect(); } catch (e) {}
         tomOsc2Ref.current = null;
       }
       
+      // Disconnect all gain nodes
       if (kickGain1Ref.current) {
-        kickGain1Ref.current.disconnect();
+        try { kickGain1Ref.current.disconnect(); } catch (e) {}
         kickGain1Ref.current = null;
       }
       if (kickGain2Ref.current) {
-        kickGain2Ref.current.disconnect();
+        try { kickGain2Ref.current.disconnect(); } catch (e) {}
         kickGain2Ref.current = null;
       }
       if (snareGain1Ref.current) {
-        snareGain1Ref.current.disconnect();
+        try { snareGain1Ref.current.disconnect(); } catch (e) {}
         snareGain1Ref.current = null;
       }
       if (snareGain2Ref.current) {
-        snareGain2Ref.current.disconnect();
+        try { snareGain2Ref.current.disconnect(); } catch (e) {}
         snareGain2Ref.current = null;
       }
       if (hihatGain1Ref.current) {
-        hihatGain1Ref.current.disconnect();
+        try { hihatGain1Ref.current.disconnect(); } catch (e) {}
         hihatGain1Ref.current = null;
       }
       if (hihatGain2Ref.current) {
-        hihatGain2Ref.current.disconnect();
+        try { hihatGain2Ref.current.disconnect(); } catch (e) {}
         hihatGain2Ref.current = null;
       }
       if (tomGain1Ref.current) {
-        tomGain1Ref.current.disconnect();
+        try { tomGain1Ref.current.disconnect(); } catch (e) {}
         tomGain1Ref.current = null;
       }
       if (tomGain2Ref.current) {
-        tomGain2Ref.current.disconnect();
+        try { tomGain2Ref.current.disconnect(); } catch (e) {}
         tomGain2Ref.current = null;
       }
       
+      // Disconnect all filters
       if (kickFilterRef.current) {
-        kickFilterRef.current.disconnect();
+        try { kickFilterRef.current.disconnect(); } catch (e) {}
         kickFilterRef.current = null;
       }
       if (snareFilterRef.current) {
-        snareFilterRef.current.disconnect();
+        try { snareFilterRef.current.disconnect(); } catch (e) {}
         snareFilterRef.current = null;
       }
       if (hihatFilterRef.current) {
-        hihatFilterRef.current.disconnect();
+        try { hihatFilterRef.current.disconnect(); } catch (e) {}
         hihatFilterRef.current = null;
       }
       if (tomFilterRef.current) {
-        tomFilterRef.current.disconnect();
+        try { tomFilterRef.current.disconnect(); } catch (e) {}
         tomFilterRef.current = null;
       }
       
+      // Disconnect compressor and delay
       if (compressorRef.current) {
-        compressorRef.current.disconnect();
+        try { compressorRef.current.disconnect(); } catch (e) {}
         compressorRef.current = null;
       }
-      
       if (delayRef.current) {
-        delayRef.current.disconnect();
+        try { delayRef.current.disconnect(); } catch (e) {}
         delayRef.current = null;
       }
       if (delayGainRef.current) {
-        delayGainRef.current.disconnect();
+        try { delayGainRef.current.disconnect(); } catch (e) {}
         delayGainRef.current = null;
+      }
+      
+      // Force garbage collection if available
+      if ((window as any).gc) {
+        (window as any).gc();
       }
     } catch (error) {
       console.error('Error stopping rhythm system:', error);

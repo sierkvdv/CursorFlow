@@ -6,7 +6,7 @@ interface NatureAmbientOptions {
 }
 
 export const useNatureAmbient = ({
-  enabled = true,
+  enabled = false, // Changed to false - should be controlled by parent
   baseVolume = 0.3 // Balanced volume for bassline
 }: NatureAmbientOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -358,8 +358,86 @@ export const useNatureAmbient = ({
   const stopNature = useCallback(() => {
     console.log('Nature: Stopping nature ambient...');
     isPlayingRef.current = false;
-    // Don't close audio context - other systems might be using it
-    // Just stop playing by setting the flag
+    
+    // Stop all oscillators
+    if (seaOsc1Ref.current) {
+      try { seaOsc1Ref.current.stop(); } catch (e) {}
+      seaOsc1Ref.current = null;
+    }
+    if (seaOsc2Ref.current) {
+      try { seaOsc2Ref.current.stop(); } catch (e) {}
+      seaOsc2Ref.current = null;
+    }
+    if (rainOsc1Ref.current) {
+      try { rainOsc1Ref.current.stop(); } catch (e) {}
+      rainOsc1Ref.current = null;
+    }
+    if (rainOsc2Ref.current) {
+      try { rainOsc2Ref.current.stop(); } catch (e) {}
+      rainOsc2Ref.current = null;
+    }
+    if (riverOsc1Ref.current) {
+      try { riverOsc1Ref.current.stop(); } catch (e) {}
+      riverOsc1Ref.current = null;
+    }
+    if (riverOsc2Ref.current) {
+      try { riverOsc2Ref.current.stop(); } catch (e) {}
+      riverOsc2Ref.current = null;
+    }
+    if (waterfallOsc1Ref.current) {
+      try { waterfallOsc1Ref.current.stop(); } catch (e) {}
+      waterfallOsc1Ref.current = null;
+    }
+    if (waterfallOsc2Ref.current) {
+      try { waterfallOsc2Ref.current.stop(); } catch (e) {}
+      waterfallOsc2Ref.current = null;
+    }
+    if (lfoRef.current) {
+      try { lfoRef.current.stop(); } catch (e) {}
+      lfoRef.current = null;
+    }
+    
+    // Disconnect all gain nodes
+    if (seaGain1Ref.current) {
+      try { seaGain1Ref.current.disconnect(); } catch (e) {}
+      seaGain1Ref.current = null;
+    }
+    if (seaGain2Ref.current) {
+      try { seaGain2Ref.current.disconnect(); } catch (e) {}
+      seaGain2Ref.current = null;
+    }
+    if (rainGain1Ref.current) {
+      try { rainGain1Ref.current.disconnect(); } catch (e) {}
+      rainGain1Ref.current = null;
+    }
+    if (rainGain2Ref.current) {
+      try { rainGain2Ref.current.disconnect(); } catch (e) {}
+      rainGain2Ref.current = null;
+    }
+    if (riverGain1Ref.current) {
+      try { riverGain1Ref.current.disconnect(); } catch (e) {}
+      riverGain1Ref.current = null;
+    }
+    if (riverGain2Ref.current) {
+      try { riverGain2Ref.current.disconnect(); } catch (e) {}
+      riverGain2Ref.current = null;
+    }
+    if (waterfallGain1Ref.current) {
+      try { waterfallGain1Ref.current.disconnect(); } catch (e) {}
+      waterfallGain1Ref.current = null;
+    }
+    if (waterfallGain2Ref.current) {
+      try { waterfallGain2Ref.current.disconnect(); } catch (e) {}
+      waterfallGain2Ref.current = null;
+    }
+    if (lfoGainRef.current) {
+      try { lfoGainRef.current.disconnect(); } catch (e) {}
+      lfoGainRef.current = null;
+    }
+    if (delayGainRef.current) {
+      try { delayGainRef.current.disconnect(); } catch (e) {}
+      delayGainRef.current = null;
+    }
   }, []);
 
   // Auto-start when enabled changes

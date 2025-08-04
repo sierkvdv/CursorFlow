@@ -29,8 +29,10 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize audio context with iOS support
+  // Initialize audio context with iOS support - ONLY WHEN AUDIO IS ENABLED
   const getAudioContext = useCallback(async () => {
+    if (!audioEnabled) return null; // Don't create audio context if audio is disabled
+    
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       
@@ -54,16 +56,16 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
       }
     }
     return audioContextRef.current;
-  }, []);
+  }, [audioEnabled]);
 
   // Audio handlers with glitch support and iOS compatibility
   const handleClick = useCallback(async (callback: () => void) => {
     if (audioEnabled) {
       try {
         const audioContext = await getAudioContext();
-        if (glitchEnabled) {
+        if (audioContext && glitchEnabled) {
           createGlitchClickSound(audioContext);
-        } else {
+        } else if (audioContext) {
           createClickSound(audioContext);
         }
       } catch (error) {
@@ -77,9 +79,9 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
     if (audioEnabled) {
       try {
         const audioContext = await getAudioContext();
-        if (glitchEnabled) {
+        if (audioContext && glitchEnabled) {
           createGlitchHoverSound(audioContext);
-        } else {
+        } else if (audioContext) {
           createHoverSound(audioContext);
         }
       } catch (error) {
@@ -92,7 +94,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
   const unlockAudioForIOS = useCallback(async () => {
     try {
       const audioContext = await getAudioContext();
-      if (audioContext.state === 'suspended') {
+      if (audioContext && audioContext.state === 'suspended') {
         const silentBuffer = audioContext.createBuffer(1, 1, 22050);
         const silentSource = audioContext.createBufferSource();
         silentSource.buffer = silentBuffer;
@@ -113,7 +115,7 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
         const audioContext = await getAudioContext();
         
         // iOS requires a silent audio buffer to unlock audio
-        if (audioContext.state === 'suspended') {
+        if (audioContext && audioContext.state === 'suspended') {
           const silentBuffer = audioContext.createBuffer(1, 1, 22050);
           const silentSource = audioContext.createBufferSource();
           silentSource.buffer = silentBuffer;
@@ -122,9 +124,9 @@ export const InteractiveElements: React.FC<InteractiveElementsProps> = ({
           await audioContext.resume();
         }
         
-        if (glitchEnabled) {
+        if (audioContext && glitchEnabled) {
           createGlitchHoverSound(audioContext);
-        } else {
+        } else if (audioContext) {
           createHoverSound(audioContext);
         }
       } catch (error) {
