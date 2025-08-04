@@ -310,6 +310,7 @@ function App() {
                       >
                         <span className="font-black">CURSOR</span>
                         <span className="font-bold">FLOW</span>
+                        <span className="text-sm text-yellow-200">v2</span>
                       </motion.h1>
                     </motion.div>
                   )}
